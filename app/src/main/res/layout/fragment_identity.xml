@@ -1,10 +1,9 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     android:orientation="vertical">
 
     <RelativeLayout
-        android:id="@+id/header_layout"
         style="@style/Header"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
@@ -13,90 +12,23 @@
             android:id="@+id/uid"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentTop="true"
-            android:textColor="@color/textPrimary"
-            android:text="User"
-            android:textSize="@dimen/abc_text_size_display_3_material" />
-
-        <ImageView
-            android:id="@+id/qr_code"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
             android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
             android:layout_alignParentTop="true"
-            android:contentDescription="@string/identity_icon"
-            android:src="@drawable/ic_account_white_36dp" />
-
-        <TextView
-            android:id="@+id/timestamp_label"
-
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true"
-            android:layout_below="@+id/uid"
-            android:text="@string/registration_date"
             android:textColor="@color/textPrimary"
-            android:textSize="@dimen/abc_text_size_caption_material" />
-
-        <TextView
-            android:id="@+id/timestamp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true"
-            android:layout_below="@+id/timestamp_label"
-            android:maxLines="1"
-            android:singleLine="true"
-            android:text="Dec 12, 2014"
-            android:textColor="@color/textPrimary"
-            android:textSize="@dimen/abc_text_size_subhead_material" />
-
+            android:textSize="@dimen/abc_text_size_title_material" />
     </RelativeLayout>
 
-    <LinearLayout
-        android:layout_width="wrap_content"
+    <io.ucoin.app.view.SlidingTabLayout
+        android:id="@+id/sliding_tabs"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/header_layout"
-        android:orientation="vertical"
-        android:paddingStart="8dp"
-        android:paddingLeft="8dp">
+        android:background="@color/primary" />
 
-        <TextView
-            style="@style/headline"
-            android:text="@string/signature"/>
-
-        <TextView
-            android:id="@+id/signature"
-            style="@style/subhead"/>
-
-        <TextView
-            style="@style/headline"
-            android:text="@string/public_key"/>
-
-        <TextView
-            android:id="@+id/pubkey"
-            style="@style/subhead"/>
-
-        <!-- Search progress -->
-        <ProgressBar
-            android:id="@+id/load_progress"
-            style="?android:attr/progressBarStyleLarge"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:visibility="gone" />
-
-        <ExpandableListView
-            android:id="@+id/wot_list_view"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:scrollbarStyle="outsideOverlay"
-            android:layout_marginLeft="8dp" />
-    </LinearLayout>
+    <android.support.v4.view.ViewPager
+        android:id="@+id/viewpager"
+        android:layout_width="match_parent"
+        android:layout_height="0px"
+        android:layout_weight="1"
+        android:background="@android:color/white" />
 </LinearLayout>
-

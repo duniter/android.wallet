@@ -4,7 +4,7 @@ import android.net.Uri;
 
 import io.ucoin.app.R;
 import io.ucoin.app.config.Configuration;
-import io.ucoin.app.model.Identity;
+import io.ucoin.app.model.oldmodels.Identity;
 
 /**
  * Created by eis on 12/01/15.

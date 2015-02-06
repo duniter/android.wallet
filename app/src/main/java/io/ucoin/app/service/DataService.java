@@ -1,7 +1,7 @@
 package io.ucoin.app.service;
 
-import io.ucoin.app.model.Identity;
-import io.ucoin.app.model.Wallet;
+import io.ucoin.app.model.oldmodels.Identity;
+import io.ucoin.app.model.oldmodels.Wallet;
 import io.ucoin.app.technical.crypto.CryptoUtils;
 import io.ucoin.app.technical.crypto.TestFixtures;
 

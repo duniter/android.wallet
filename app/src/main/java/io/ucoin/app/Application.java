@@ -1,22 +1,17 @@
 package io.ucoin.app;
-
-import android.accounts.Account;
-import android.accounts.AccountManager;
+import io.ucoin.app.model.UcoinCurrencies;
 
 public class Application extends android.app.Application{
 
-    private Account mAccount;
+    private UcoinCurrencies mCurrencies;
 
     public Application() {
         super();
-        mAccount = null;
+        mCurrencies = null;
     }
 
-    public void setAccount(Account account) {
-        mAccount = account;
-    }
-
-    public String getAccountId() {
-        return AccountManager.get(this).getUserData(mAccount, "_id");
+    public UcoinCurrencies getCurrencies() { return mCurrencies; }
+    public void setCurrencies(UcoinCurrencies currencies) {
+        mCurrencies = currencies;
     }
 }

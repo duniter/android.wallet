@@ -1,9 +1,7 @@
 package io.ucoin.app.fragment;
 
-import android.app.Fragment;
 import android.app.FragmentManager;
 import android.os.Bundle;
-import android.util.Log;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -17,15 +15,16 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 
+import io.ucoin.app.Fragment;
 import io.ucoin.app.R;
 import io.ucoin.app.activity.MainActivity;
 import io.ucoin.app.adapter.ProgressViewAdapter;
 import io.ucoin.app.adapter.WotExpandableListAdapter;
 import io.ucoin.app.config.Configuration;
-import io.ucoin.app.model.Identity;
-import io.ucoin.app.model.Wallet;
-import io.ucoin.app.model.WotCertification;
-import io.ucoin.app.model.WotIdentityCertifications;
+import io.ucoin.app.model.oldmodels.Identity;
+import io.ucoin.app.model.oldmodels.Wallet;
+import io.ucoin.app.model.oldmodels.WotCertification;
+import io.ucoin.app.model.oldmodels.WotIdentityCertifications;
 import io.ucoin.app.service.ServiceLocator;
 import io.ucoin.app.service.WotService;
 import io.ucoin.app.technical.AsyncTaskHandleException;
@@ -52,7 +51,6 @@ public class IdentityFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true);
     }
 
     @Override
@@ -104,7 +102,7 @@ public class IdentityFragment extends Fragment {
         });
 */
         // Wot list
-        ExpandableListView wotListView = (ExpandableListView) view.findViewById(R.id.wot_list_view);
+        ExpandableListView wotListView = (ExpandableListView) view.findViewById(R.id.uid);
         wotListView.setVisibility(View.GONE);
         mWotListAdapter = new WotExpandableListAdapter(getActivity()) {
             @Override
@@ -183,6 +181,7 @@ public class IdentityFragment extends Fragment {
         switch (item.getItemId()) {
             case R.id.action_transfer:
                 Fragment fragment = TransferFragment.newInstance(identity);
+                fragment.setHasOptionsMenu(true);
                 FragmentManager fragmentManager = getFragmentManager();
                 fragmentManager.beginTransaction()
                         .setCustomAnimations(R.animator.slide_in_down,

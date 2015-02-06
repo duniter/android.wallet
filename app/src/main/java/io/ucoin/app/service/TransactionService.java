@@ -12,10 +12,10 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.ucoin.app.model.TxOutput;
-import io.ucoin.app.model.TxSource;
-import io.ucoin.app.model.TxSourceResults;
-import io.ucoin.app.model.Wallet;
+import io.ucoin.app.model.oldmodels.TxOutput;
+import io.ucoin.app.model.oldmodels.TxSource;
+import io.ucoin.app.model.oldmodels.TxSourceResults;
+import io.ucoin.app.model.oldmodels.Wallet;
 import io.ucoin.app.technical.UCoinTechnicalException;
 import io.ucoin.app.technical.crypto.DigestUtils;
 

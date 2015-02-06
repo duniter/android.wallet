@@ -1,6 +1,6 @@
 package io.ucoin.app.technical.gson;
 
-import io.ucoin.app.model.Identity;
+import io.ucoin.app.model.oldmodels.Identity;
 import io.ucoin.app.technical.StringUtils;
 
 import java.lang.reflect.Type;

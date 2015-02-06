@@ -3,8 +3,8 @@ package io.ucoin.app.service;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 
-import io.ucoin.app.model.BlockchainBlock;
-import io.ucoin.app.model.BlockchainParameter;
+import io.ucoin.app.model.http_api.BlockchainBlock;
+import io.ucoin.app.model.http_api.BlockchainParameter;
 
 public class BlockchainService extends AbstractNetworkService {
 

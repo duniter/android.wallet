@@ -1,6 +1,5 @@
 package io.ucoin.app.fragment;
 
-import android.app.Fragment;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextUtils;
@@ -16,12 +15,13 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import io.ucoin.app.Fragment;
 import io.ucoin.app.R;
 import io.ucoin.app.adapter.ProgressViewAdapter;
 import io.ucoin.app.activity.MainActivity;
-import io.ucoin.app.model.BlockchainParameter;
-import io.ucoin.app.model.Identity;
-import io.ucoin.app.model.Wallet;
+import io.ucoin.app.model.http_api.BlockchainParameter;
+import io.ucoin.app.model.oldmodels.Identity;
+import io.ucoin.app.model.oldmodels.Wallet;
 import io.ucoin.app.service.DataContext;
 import io.ucoin.app.service.InsufficientCreditException;
 import io.ucoin.app.service.ServiceLocator;
@@ -60,7 +60,6 @@ public class TransferFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true);
     }
 
     @Override
@@ -292,7 +291,7 @@ public class TransferFragment extends Fragment {
             }
 
             // load UD
-            mUniversalDividend = p.getUd0();
+            mUniversalDividend = p.ud0;
 
             // TODO: load other variables
 

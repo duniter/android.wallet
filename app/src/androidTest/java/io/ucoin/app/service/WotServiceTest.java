@@ -5,13 +5,13 @@ import android.test.suitebuilder.annotation.SmallTest;
 import junit.framework.Assert;
 
 import io.ucoin.app.TestFixtures;
-import io.ucoin.app.model.BasicIdentity;
-import io.ucoin.app.model.Identity;
-import io.ucoin.app.model.WotCertification;
-import io.ucoin.app.model.WotCertificationTime;
-import io.ucoin.app.model.WotIdentityCertifications;
-import io.ucoin.app.model.WotLookupResults;
-import io.ucoin.app.model.WotLookupUId;
+import io.ucoin.app.model.oldmodels.BasicIdentity;
+import io.ucoin.app.model.oldmodels.Identity;
+import io.ucoin.app.model.oldmodels.WotCertification;
+import io.ucoin.app.model.oldmodels.WotCertificationTime;
+import io.ucoin.app.model.oldmodels.WotIdentityCertifications;
+import io.ucoin.app.model.oldmodels.WotLookupResults;
+import io.ucoin.app.model.oldmodels.WotLookupUId;
 import io.ucoin.app.technical.CollectionUtils;
 
 

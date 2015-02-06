@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.ucoin.app.R;
-import io.ucoin.app.model.Identity;
+import io.ucoin.app.model.oldmodels.Identity;
 import io.ucoin.app.technical.DateUtils;
 
 public class IdentityArrayAdapter extends ArrayAdapter<Identity> {

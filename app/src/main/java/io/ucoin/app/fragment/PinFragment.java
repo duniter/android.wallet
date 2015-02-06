@@ -1,6 +1,5 @@
 package io.ucoin.app.fragment;
 
-import android.app.Fragment;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -12,6 +11,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import io.ucoin.app.Fragment;
 import io.ucoin.app.R;
 
 public class PinFragment extends Fragment {

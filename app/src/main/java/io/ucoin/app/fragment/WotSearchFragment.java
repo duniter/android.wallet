@@ -3,7 +3,6 @@ package io.ucoin.app.fragment;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
-import android.app.ListFragment;
 import android.app.SearchManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -19,11 +18,13 @@ import android.widget.TextView;
 
 import java.util.List;
 
+import io.ucoin.app.ListFragment;
 import io.ucoin.app.R;
 import io.ucoin.app.activity.MainActivity;
 import io.ucoin.app.adapter.IdentityArrayAdapter;
 import io.ucoin.app.adapter.ProgressViewAdapter;
-import io.ucoin.app.model.Identity;
+import io.ucoin.app.model.UcoinCurrency;
+import io.ucoin.app.model.oldmodels.Identity;
 
 
 public class WotSearchFragment extends ListFragment
@@ -33,8 +34,9 @@ public class WotSearchFragment extends ListFragment
     private IdentityArrayAdapter mIdentityArrayAdapter;
     private ProgressViewAdapter mProgressViewAdapter;
 
-    static public WotSearchFragment newInstance(String query) {
+    static public WotSearchFragment newInstance(UcoinCurrency currency, String query) {
         Bundle newInstanceArgs = new Bundle();
+        newInstanceArgs.putSerializable(UcoinCurrency.class.getSimpleName(), currency);
         newInstanceArgs.putString("query", query);
 
         WotSearchFragment fragment = new WotSearchFragment();
@@ -46,7 +48,6 @@ public class WotSearchFragment extends ListFragment
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true);
 
         mIdentityArrayAdapter = new IdentityArrayAdapter(getActivity());
         setListAdapter(mIdentityArrayAdapter);
@@ -80,6 +81,8 @@ public class WotSearchFragment extends ListFragment
     @Override
     public void onPrepareOptionsMenu(Menu menu) {
         Bundle newInstanceArgs = getArguments();
+        final UcoinCurrency currency =
+                (UcoinCurrency) newInstanceArgs.getSerializable(UcoinCurrency.class.getSimpleName());
         String query = newInstanceArgs
                 .getString("query");
 
@@ -103,7 +106,7 @@ public class WotSearchFragment extends ListFragment
             @Override
             public boolean onQueryTextSubmit(String s) {
                 getFragmentManager().popBackStack();
-                return ((MainActivity) getActivity()).onQueryTextSubmit(searchItem, s);
+                return ((MainActivity) getActivity()).onQueryTextSubmit(searchItem, currency, s);
             }
 
             @Override
@@ -125,6 +128,7 @@ public class WotSearchFragment extends ListFragment
     public void onListItemClick(ListView l, View v, int position, long id) {
         Identity identity = (Identity) l.getAdapter().getItem(position);
         Fragment fragment = IdentityFragment.newInstance(identity);
+        fragment.setHasOptionsMenu(true);
         FragmentManager fragmentManager = getFragmentManager();
         fragmentManager.beginTransaction()
                 .setCustomAnimations(

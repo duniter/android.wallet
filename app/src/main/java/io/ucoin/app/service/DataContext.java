@@ -1,7 +1,7 @@
 package io.ucoin.app.service;
 
-import io.ucoin.app.model.BlockchainParameter;
-import io.ucoin.app.model.Wallet;
+import io.ucoin.app.model.http_api.BlockchainParameter;
+import io.ucoin.app.model.oldmodels.Wallet;
 
 /**
  * Created by eis on 14/01/15.

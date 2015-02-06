@@ -1,14 +1,11 @@
 package io.ucoin.app.fragment;
 
-import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.LoaderManager;
 import android.content.ContentResolver;
-import android.content.ContentValues;
 import android.content.CursorLoader;
 import android.content.Loader;
 import android.database.Cursor;
-import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -18,14 +15,19 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toolbar;
 
-import java.util.Random;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 
+import io.ucoin.app.Fragment;
 import io.ucoin.app.R;
 import io.ucoin.app.activity.MainActivity;
 import io.ucoin.app.content.Provider;
-import io.ucoin.app.database.Contract;
+import io.ucoin.app.model.http_api.Sources;
+import io.ucoin.app.sqlite.Contract;
 import io.ucoin.app.service.CryptoService;
 import io.ucoin.app.service.ServiceLocator;
 import io.ucoin.app.service.WotService;
@@ -34,8 +36,7 @@ import io.ucoin.app.technical.crypto.CryptoUtils;
 import io.ucoin.app.technical.crypto.KeyPair;
 import io.ucoin.app.technical.crypto.TestFixtures;
 
-public class DevFragment extends Fragment implements
-        LoaderManager.LoaderCallbacks<Cursor>{
+public class DevFragment extends Fragment{
 
     private TextView resultText;
     private TextView uid;
@@ -48,7 +49,9 @@ public class DevFragment extends Fragment implements
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true);
+
+        LoadCommunityTask tast = new LoadCommunityTask();
+        tast.execute("");
     }
 
     @Override
@@ -67,14 +70,6 @@ public class DevFragment extends Fragment implements
         uid = (TextView) view.findViewById(R.id.uid);
         public_key = (TextView) view.findViewById(R.id.public_key);
 
-        Cursor cursor = null;
-
-
-        ContentResolver cr = getActivity().getContentResolver();
-        Uri uri = Uri.parse(Provider.CONTENT_URI + "/identity/");
-        cursor = cr.query(uri, null, null, null, null);
-
-        this.getLoaderManager().initLoader(0, null, this);
     }
 
 
@@ -219,29 +214,6 @@ public class DevFragment extends Fragment implements
         return expectedData.equals(actualData);
     }
 
-    @Override
-    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        Uri uri = Uri.parse(Provider.CONTENT_URI + "/account/");
-        Log.d("DEVFRAGMENT", "ONCREATELOADER");
-        return new CursorLoader(getActivity(), uri, null,
-                null, null, null);
-    }
-
-    @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        int uidIndex = data.getColumnIndex(Contract.Account.UID);
-        int pubkeyIndex = data.getColumnIndex(Contract.Account.PUBLIC_KEY);
-
-        while (data.moveToNext()) {
-            uid.setText(data.getString(uidIndex));
-            public_key.setText(data.getString(pubkeyIndex));
-        }
-    }
-
-    @Override
-    public void onLoaderReset(Loader<Cursor> loader) {
-        Log.d("DEVFRAGMENT", "onLoaderReset");
-    }
 
     /**
      * Represents an asynchronous task used to send self certification
@@ -284,6 +256,49 @@ public class DevFragment extends Fragment implements
 
         @Override
         protected void onCancelled() {
+        }
+    }
+
+    public class LoadCommunityTask extends AsyncTaskHandleException<String, Void, String> {
+
+
+        @Override
+        protected String doInBackgroundHandleException(String... args) throws Exception {
+
+            //Load Peer
+            URL url = null;
+            try {
+                url = new URL("http", "metab.ucoin.io", 9201, "/tx/sources/HnFcSms8jzwngtVomTTnzudZx7SHUQY8sVE1y8yBmULk/");
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
+            HttpURLConnection conn = null;
+            try {
+                conn = (HttpURLConnection) url.openConnection();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            conn.setConnectTimeout(5000);
+            InputStream stream = null;
+            try {
+                stream = conn.getInputStream();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            Sources sources = Sources.fromJson(stream);
+            Log.d("DEVFRAGMENT", sources.toString());
+
+            return "";
+        }
+
+        @Override
+        protected void onSuccess(String result) {
+
+        }
+
+        @Override
+        protected void onFailed(Throwable t) {
+            t.printStackTrace();
         }
     }
 }

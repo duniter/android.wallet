@@ -32,7 +32,7 @@
     <string name="amount">Amount</string>
     <string name="universal_dividend_acronym">UD</string>
     <string name="unit_coins_label">coins</string>
-    <string name="main_wallet">Main wallet</string>
+    <string name="wallet">Wallet</string>
     <string name="comment_hint">Comment</string>
     <string name="amount_not_integer">Amount must a valid integer</string>
     <string name="transactions">Transactions</string>
@@ -42,7 +42,6 @@
     <string name="generate_seed">Generate seed</string>
     <string name="sign">Sign</string>
     <string name="self">Self</string>
-    <string name="home">home</string>
     <string name="search">Search</string>
     <string name="sign_in">Sign in</string>
     <string name="dev">Dev</string>
@@ -56,19 +55,19 @@
     <string name="delete">Delete</string>
     <string name="remove">Remove</string>
 
-    <!-- Strings related to community -->
+    <!-- Strings related to currency -->
     <string name="lookup">Lookup</string>
     <string name="node_address">Node address</string>
     <string name="node_port">Node port</string>
     <string name="rules">Rules</string>
     <string name="growth">Growth</string>
-    <string name="community">Community</string>
-    <string name="no_community">No community</string>
+    <string name="currency">Currency</string>
+    <string name="no_currency">No currency</string>
     <string name="no_transfer">No transfer</string>
-    <string name="communities">Communities</string>
+    <string name="currencies">Currencies</string>
     <string name="members">Members</string>
 
-    <!-- Strings related to peer/node -->
+    <!-- Strings related to apiPeer/node -->
     <string name="enter_node_info">Enter node info</string>
     <string name="enter_remote_address">Enter remote address</string>
     <string name="add_node">Add node</string>
@@ -117,12 +116,55 @@
     <string name="password_cannot_be_empty">Password cannot be empty</string>
     <string name="confirm_password_cannot_be_empty">Confirm password cannot be empty</string>
     <string name="passwords_dont_match">Passwords don\'t match</string>
+    <string name="community_added">Community added</string>
+    <string name="invalid_node_address">Invalid node address</string>
+    <string name="invalid_node_port">Invalid node port</string>
+    <string name="wallets">Wallets</string>
+    <string name="create_new">Create new</string>
+    <string name="add_wallet">Add wallet</string>
+    <string name="no_wallet">No wallet</string>
+    <string name="sources">Sources</string>
+    <string name="no_source">No source</string>
+    <string name="alias_hint">local alias (optionnal)</string>
+    <string name="alias">Alias</string>
+    <string name="add_currency">Add currency</string>
+
+    <string name="ud0">ud0</string>
+    <string name="sig_delay">sig_delay</string>
+    <string name="sig_validity">sig_validity</string>
+    <string name="sig_qty">sig_qty</string>
+    <string name="sig_woT">sig_woT</string>
+    <string name="ms_validity">ms_validity</string>
+    <string name="step_max">step_max</string>
+    <string name="median_time_blocks">median_time_blocks</string>
+    <string name="avg_gen_time">avg_gen_time</string>
+    <string name="dt_diff_eval">dt_diff_eval</string>
+    <string name="blocks_rot">blocks_rot</string>
+    <string name="percent_rot">percent_rot</string>
+    <string name="dt">dt</string>
+    <string name="dividend">dividend</string>
+    <string name="transaction">transaction</string>
+    <string name="type">type</string>
+    <string name="fingerprint">fingerprint</string>
+    <string name="number">number</string>
+    <string name="seconds">seconds</string>
+    <string name="received">received</string>
+    <string name="no_peer">no peer</string>
+    <string name="add_peer">Add peer</string>
+    <string name="block">block</string>
+    <string name="peer_not_match_currency">This peer does not match the currency</string>
+    <string name="delete_wallet">delete wallet</string>
+    <string name="create_uid">create UID</string>
+    <string name="enter_identity_info">Enter identity info</string>
+    <string name="uid_hint">UID</string>
+    <string name="certifiers">certifiers</string>
+    <string name="certifiees">certifiees</string>
+    <string name="add_identity">Add identity</string>
+    <string name="no_member">No member</string>
 
     <string-array name="drawer_items">
-        <item>@string/home</item>
-        <item>@string/community</item>
-        <item>@string/login</item>
-        <item>@string/transactions</item>
+        <item>@string/wallets</item>
+        <item>@string/currencies</item>
         <item>@string/settings</item>
         <item>@string/dev</item>
     </string-array>

@@ -9,11 +9,10 @@ import android.widget.BaseExpandableListAdapter;
 import android.widget.CheckedTextView;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import io.ucoin.app.R;
-import io.ucoin.app.model.WotCertification;
-import io.ucoin.app.model.WotIdentityCertifications;
+import io.ucoin.app.model.oldmodels.WotCertification;
+import io.ucoin.app.model.oldmodels.WotIdentityCertifications;
 import io.ucoin.app.technical.DateUtils;
 
 public abstract class WotExpandableListAdapter extends BaseExpandableListAdapter {

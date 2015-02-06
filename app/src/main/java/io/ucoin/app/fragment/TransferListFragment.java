@@ -2,48 +2,36 @@ package io.ucoin.app.fragment;
 
 import android.app.Fragment;
 import android.app.FragmentManager;
-import android.app.ListFragment;
-import android.content.Context;
-import android.content.SharedPreferences;
+import android.app.LoaderManager;
+import android.content.CursorLoader;
+import android.content.Loader;
 import android.database.Cursor;
-import android.net.Uri;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
+import io.ucoin.app.ListFragment;
 import io.ucoin.app.R;
 import io.ucoin.app.activity.MainActivity;
-import io.ucoin.app.adapter.CommunityCursorAdapter;
-import io.ucoin.app.adapter.ProgressViewAdapter;
+import io.ucoin.app.adapter.DrawerCurrencyCursorAdapter;
 import io.ucoin.app.content.Provider;
-import io.ucoin.app.database.Contract;
-import io.ucoin.app.model.BlockchainBlock;
-import io.ucoin.app.model.BlockchainParameter;
-import io.ucoin.app.service.ServiceLocator;
-import io.ucoin.app.technical.AsyncTaskHandleException;
 
 
-public class TransferListFragment extends ListFragment {
-    private CommunityCursorAdapter mCommunityCursorAdapter;
-    private ProgressViewAdapter mProgressViewAdapter;
+public class TransferListFragment extends ListFragment
+        implements LoaderManager.LoaderCallbacks<Cursor> {
 
     static public TransferListFragment newInstance() {
-        TransferListFragment fragment = new TransferListFragment();
-        return fragment;
+        return new TransferListFragment();
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true);
     }
 
     @Override
@@ -58,22 +46,10 @@ public class TransferListFragment extends ListFragment {
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        mProgressViewAdapter = new ProgressViewAdapter(
-                view.findViewById(R.id.progressbar),
-                getListView());
-
-
-        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getActivity());
-
-        Uri uri = Uri.parse(Provider.CONTENT_URI + "/community/");
-
-        String selection = Contract.Community.ACCOUNT_ID + "=?";
-        String[] selectionArgs = {sharedPref.getString("_id", "")};
-
-        Cursor cursor = getActivity().getContentResolver().query(uri, new String[]{}, null,
-                null, null);
-        mCommunityCursorAdapter = new CommunityCursorAdapter((Context) getActivity(), cursor, 0);
-        setListAdapter(mCommunityCursorAdapter);
+        DrawerCurrencyCursorAdapter transferCursorAdapter
+                = new DrawerCurrencyCursorAdapter(getActivity(), null, 0);
+        setListAdapter(transferCursorAdapter);
+        getLoaderManager().initLoader(0, null, this);
     }
 
     @Override
@@ -92,6 +68,7 @@ public class TransferListFragment extends ListFragment {
         switch (item.getItemId()) {
             case R.id.action_transfer:
                 Fragment fragment = TransferFragment.newInstance(null);
+                fragment.setHasOptionsMenu(true);
                 FragmentManager fragmentManager = getFragmentManager();
                 fragmentManager.beginTransaction()
                         .setCustomAnimations(
@@ -105,5 +82,26 @@ public class TransferListFragment extends ListFragment {
                 return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        return new CursorLoader(
+        getActivity(),
+                Provider.TX_URI,
+                null,
+                null,
+                null,
+                null);
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        ((DrawerCurrencyCursorAdapter)this.getListAdapter()).swapCursor(data);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        ((DrawerCurrencyCursorAdapter)this.getListAdapter()).swapCursor(null);
     }
 }

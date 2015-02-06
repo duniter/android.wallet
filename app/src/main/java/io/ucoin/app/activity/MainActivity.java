@@ -5,12 +5,11 @@ import android.accounts.AccountManager;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.LoaderManager;
-import android.content.ContentResolver;
 import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
-import android.net.Uri;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.v4.widget.DrawerLayout;
@@ -24,30 +23,43 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
+import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.List;
 
 import io.ucoin.app.Application;
 import io.ucoin.app.R;
+import io.ucoin.app.adapter.DrawerCurrencyCursorAdapter;
 import io.ucoin.app.config.Configuration;
 import io.ucoin.app.content.Provider;
-import io.ucoin.app.database.Contract;
-import io.ucoin.app.fragment.CommunityListFragment;
-import io.ucoin.app.fragment.DevFragment;
-import io.ucoin.app.fragment.HomeFragment;
-import io.ucoin.app.fragment.LoginFragment;
-import io.ucoin.app.fragment.TransferListFragment;
+import io.ucoin.app.fragment.AddIdentityDialogFragment;
+import io.ucoin.app.fragment.AddPeerDialogFragment;
+import io.ucoin.app.fragment.currency.CurrencyFragment;
+import io.ucoin.app.fragment.currency.CurrencyParametersFragment;
+import io.ucoin.app.fragment.identity.IdentityFragment;
+import io.ucoin.app.model.UcoinIdentity;
+import io.ucoin.app.model.http_api.BlockchainBlock;
+import io.ucoin.app.model.http_api.BlockchainParameter;
+import io.ucoin.app.model.http_api.Peer;
+import io.ucoin.app.sqlite.Currencies;
 import io.ucoin.app.fragment.WotSearchFragment;
-import io.ucoin.app.model.Identity;
-import io.ucoin.app.model.WotLookupResults;
+import io.ucoin.app.model.oldmodels.Identity;
+import io.ucoin.app.model.oldmodels.WotLookupResults;
 import io.ucoin.app.service.ServiceLocator;
 import io.ucoin.app.service.WotService;
+import io.ucoin.app.model.UcoinCurrencies;
+import io.ucoin.app.model.UcoinCurrency;
+import io.ucoin.app.model.UcoinPeer;
+import io.ucoin.app.sqlite.Contract;
 import io.ucoin.app.technical.AsyncTaskHandleException;
 import io.ucoin.app.technical.DateUtils;
 
@@ -60,10 +72,11 @@ public class MainActivity extends ActionBarActivity
     private ActionBarDrawerToggle mToggle;
     private DrawerLayout mDrawerLayout;
     private QueryResultListener mQueryResultListener;
+    private ListView mDrawerListView;
 
-    private TextView mUidView;
-    private TextView mPubkeyView;
     private Toolbar mToolbar;
+
+    private UcoinCurrency mCurrency = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,23 +84,18 @@ public class MainActivity extends ActionBarActivity
 
         //LOAD account
         AccountManager accountManager = AccountManager.get(this);
-        Account[] accounts = accountManager.getAccountsByType(getString(R.string.ACCOUNT_TYPE));
+        android.accounts.Account[] accounts = accountManager
+                .getAccountsByType(getString(R.string.ACCOUNT_TYPE));
 
         if (accounts.length == 0) {
-            Intent intent = new Intent(this, AddAccountActivity.class);
-            startActivity(intent);
-            finish();
-            return;
+            AccountManager.get(this).addAccountExplicitly(new Account(
+                            getString(R.string.app_name),
+                            getString(R.string.ACCOUNT_TYPE)),
+                    null, null);
         }
 
-        //todo handle this case
-        Account account = loadLastAccountUsed();
-        if (account == null) {
-            Toast.makeText(this, "Could Not load account", Toast.LENGTH_LONG).show();
-            finish();
-            return;
-
-        }
+        UcoinCurrencies currencies = new Currencies(this);
+        ((Application) getApplication()).setCurrencies(currencies);
 
         // Prepare some utilities
         //Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler(this));
@@ -109,33 +117,55 @@ public class MainActivity extends ActionBarActivity
         }
 
         //Navigation drawer
-        View listHeader = getLayoutInflater().inflate(R.layout.drawer_header, null);
-        mUidView = (TextView) listHeader.findViewById(R.id.uid);
-        mPubkeyView = (TextView) listHeader.findViewById(R.id.public_key);
-
-        String[] drawerListItems = getResources().getStringArray(R.array.drawer_items);
-        ListView drawerListView = (ListView) findViewById(R.id.drawer_listview);
-
-        drawerListView.addHeaderView(listHeader);
-
-
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         // Set the adapter for the drawer list view
-        drawerListView.setAdapter(new ArrayAdapter<>(this,
-                R.layout.drawer_list_item, drawerListItems));
+        DrawerCurrencyCursorAdapter drawerCurrencyCursorAdapter
+                = new DrawerCurrencyCursorAdapter(this, null, 0);
+        mDrawerListView = (ListView) findViewById(R.id.drawer_listview);
+        mDrawerListView.setAdapter(drawerCurrencyCursorAdapter);
+        mDrawerListView.setOnItemClickListener(this);
+        getLoaderManager().initLoader(0, null, this);
 
-        drawerListView.setOnItemClickListener(this);
         //Navigation drawer toggle
         //Please use ActionBarDrawerToggle(Activity, DrawerLayout, int, int)
         // if you are setting the Toolbar as the ActionBar of your activity.
         mToggle = new ActionBarDrawerToggle(this, mDrawerLayout
                 , R.string.open_drawer, R.string.close_drawer);
 
+        TextView addCurrency = (TextView) findViewById(R.id.drawer_add_currency);
 
-        ContentResolver.setSyncAutomatically(account, getString(R.string.AUTHORITY), true);
+        final AddPeerDialogFragment.OnClickListener listener = new AddPeerDialogFragment.OnClickListener() {
+            @Override
+            public void onPositiveClick(Bundle args) {
+                LoadCurrencyTask task = new LoadCurrencyTask();
+                task.execute(args);
+            }
+        };
 
+        addCurrency.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AddPeerDialogFragment fragment = AddPeerDialogFragment.newInstance(listener);
+                fragment.show(getFragmentManager(),
+                        fragment.getClass().getSimpleName());
+            }
+        });
+
+        TextView settings = (TextView) findViewById(R.id.drawer_settings);
+        settings.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this,
+                        SettingsActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        //ContentResolver.setSyncAutomatically(account, getString(R.string.AUTHORITY), true);
+/*
         Fragment fragment;
-        fragment = HomeFragment.newInstance();
+        fragment = WalletListFragment.newInstance();
+        fragment.setHasOptionsMenu(true);
 
         getFragmentManager().beginTransaction()
                 .setCustomAnimations(
@@ -144,6 +174,7 @@ public class MainActivity extends ActionBarActivity
                 .add(R.id.frame_content, fragment, fragment.getClass().getSimpleName())
                 .addToBackStack(fragment.getClass().getSimpleName())
                 .commit();
+                */
     }
 
     @Override
@@ -194,6 +225,11 @@ public class MainActivity extends ActionBarActivity
         }
 
         int bsEntryCount = getFragmentManager().getBackStackEntryCount();
+        if (bsEntryCount <= 1) {
+            super.onBackPressed();
+            return;
+        }
+
         String currentFragment = getFragmentManager()
                 .getBackStackEntryAt(bsEntryCount - 1)
                 .getName();
@@ -202,25 +238,20 @@ public class MainActivity extends ActionBarActivity
 
         //fragment that need to handle onBackPressed
         //shoud implements MainActivity.OnBackPressedInterface
-        if(fragment instanceof OnBackPressed) {
-            if(((OnBackPressed) fragment).onBackPressed()) {
+        if (fragment instanceof OnBackPressed) {
+            if (((OnBackPressed) fragment).onBackPressed()) {
                 return;
             }
         }
 
-
-        if (getFragmentManager().getBackStackEntryCount() == 1) {
-            //leave the activity
-            super.onBackPressed();
-        } else {
-            getFragmentManager().popBackStack();
-        }
+        getFragmentManager().popBackStack();
     }
 
-    public boolean onQueryTextSubmit(MenuItem searchItem, String query) {
+    public boolean onQueryTextSubmit(MenuItem searchItem, UcoinCurrency currency, String query) {
 
         searchItem.getActionView().clearFocus();
-        WotSearchFragment fragment = WotSearchFragment.newInstance(query);
+        WotSearchFragment fragment = WotSearchFragment.newInstance(currency, query);
+        fragment.setHasOptionsMenu(true);
         mQueryResultListener = fragment;
         getFragmentManager().beginTransaction()
                 .setCustomAnimations(
@@ -233,90 +264,94 @@ public class MainActivity extends ActionBarActivity
                 .commit();
 
         if (query.length() > MIN_SEARCH_CHARACTERS) {
-            SearchTask searchTask = new SearchTask(query);
+            SearchTask searchTask = new SearchTask(currency, query);
             searchTask.execute((Void) null);
         }
 
         return true;
     }
 
-    // nav drawer items
+    // nav drawer currency items click
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        Fragment fragment = null;
-        switch (position) {
-            case 1: //0 is home we only pop back, no need for new fragment
-                break;
-            case 2:
-                fragment = CommunityListFragment.newInstance();
-                break;
-            case 3:
-                fragment = LoginFragment.newInstance();
-                break;
-            case 4:
-                fragment = TransferListFragment.newInstance();
-                break;
-            case 5:
-                Intent intent = new Intent(MainActivity.this,
-                        SettingsActivity.class);
-                startActivity(intent);
-                break;
-            case 6:
-                fragment = DevFragment.newInstance();
-                break;
-            default:
+        mCurrency = ((Application) getApplication()).getCurrencies().getById(id);
+        Log.d("CURRENCY", mCurrency.toString());
+        Fragment fragment = CurrencyFragment.newInstance(mCurrency);
 
-        }
-
-        //replace fragment
+        // Insert the fragment by replacing any existing fragment
         FragmentManager fragmentManager = getFragmentManager();
-        if (fragment == null) {
-            fragmentManager.popBackStack(HomeFragment.class.getSimpleName(), 0);
-        } else {
-            // Insert the fragment by replacing any existing fragment
-            fragmentManager.popBackStack(HomeFragment.class.getSimpleName(), 0);
-            fragmentManager.beginTransaction()
-                    .setCustomAnimations(
-                            R.animator.delayed_fade_in,
-                            R.animator.fade_out,
-                            R.animator.delayed_fade_in,
-                            R.animator.fade_out)
-                    .replace(R.id.frame_content, fragment, fragment.getClass().getSimpleName())
-                    .addToBackStack(fragment.getClass().getSimpleName())
-                    .commit();
-        }
+        fragment.setHasOptionsMenu(true);
+        fragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+        fragmentManager.beginTransaction()
+                .setCustomAnimations(
+                        R.animator.delayed_fade_in,
+                        R.animator.fade_out,
+                        R.animator.delayed_fade_in,
+                        R.animator.fade_out)
+                .replace(R.id.frame_content, fragment, fragment.getClass().getSimpleName())
+                .addToBackStack(fragment.getClass().getSimpleName())
+                .commit();
 
         // close the drawer
-        mDrawerLayout.closeDrawer(findViewById(R.id.drawer_listview));
-    }
+        mDrawerLayout.closeDrawer(findViewById(R.id.drawer_panel));
 
-    @Override
-    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        String account_id = ((Application) getApplication()).getAccountId();
-        Uri uri = Uri.parse(Provider.CONTENT_URI + "/account/" + account_id);
-
-        return new CursorLoader(this, uri, null,
-                null, null, null);
-    }
-
-    @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        int uidIndex = data.getColumnIndex(Contract.Account.UID);
-        int pubkeyIndex = data.getColumnIndex(Contract.Account.PUBLIC_KEY);
-
-        while (data.moveToNext()) {
-            mUidView.setText(data.getString(uidIndex));
-            mPubkeyView.setText(data.getString(pubkeyIndex));
-        }
-    }
-
-    @Override
-    public void onLoaderReset(Loader<Cursor> loader) {
-        Log.d("MAINACTIVITY", "onLoaderReset");
+        setDrawerIdentity(mCurrency.identity());
     }
 
     public void setToolbarColor(int colorRes) {
         mToolbar.setBackgroundColor(colorRes);
+    }
+
+    public void setDrawerIdentity(final UcoinIdentity identity) {
+        LinearLayout drawerHeader = (LinearLayout) findViewById(R.id.drawer_header);
+        drawerHeader.setVisibility(View.VISIBLE);
+
+        ImageButton drawerButton = (ImageButton) findViewById(R.id.drawer_button);
+        TextView drawerUid = (TextView) findViewById(R.id.drawer_uid);
+        TextView drawerPublicKey = (TextView) findViewById(R.id.drawer_public_key);
+
+        if (identity == null) {
+            View.OnClickListener listener = new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    AddIdentityDialogFragment fragment =
+                            AddIdentityDialogFragment.newInstance(mCurrency);
+                    fragment.show(getFragmentManager(),
+                            fragment.getClass().getSimpleName());
+                }
+            };
+
+            drawerHeader.setOnClickListener(listener);
+            drawerButton.setImageResource(R.drawable.ic_person_add_white_36dp);
+            drawerUid.setText("");
+            drawerPublicKey.setText("");
+        } else {
+            View.OnClickListener listener = new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Fragment fragment = IdentityFragment.newInstance(identity);
+                    FragmentManager fragmentManager = getFragmentManager();
+                    fragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+                    fragmentManager.beginTransaction()
+                            .setCustomAnimations(
+                                    R.animator.delayed_slide_in_up,
+                                    R.animator.fade_out,
+                                    R.animator.delayed_fade_in,
+                                    R.animator.slide_out_up)
+                            .replace(R.id.frame_content, fragment, fragment.getClass().getSimpleName())
+                            .addToBackStack(fragment.getClass().getSimpleName())
+                            .commit();
+                    // close the drawer
+                    mDrawerLayout.closeDrawer(findViewById(R.id.drawer_panel));
+                }
+            };
+
+
+            drawerHeader.setOnClickListener(listener);
+            drawerButton.setImageResource(R.drawable.ic_person_white_36dp);
+            drawerUid.setText(identity.uid());
+            drawerPublicKey.setText(identity.wallet().publicKey());
+        }
     }
 
     /* -- Internal methods -- */
@@ -333,25 +368,6 @@ public class MainActivity extends ActionBarActivity
         return android.text.format.DateFormat.getLongDateFormat(getApplicationContext());
     }
 
-    public Account loadLastAccountUsed() {
-        AccountManager accountManager = AccountManager.get(this);
-        Account[] accounts = accountManager.getAccountsByType(getString(R.string.ACCOUNT_TYPE));
-
-        for (Account account : accounts) {
-            String account_id = accountManager.getUserData(account, "_id");
-
-            String last_account_id = getSharedPreferences("account", MODE_PRIVATE)
-                    .getString("_id", "");
-
-            if (last_account_id.equals(account_id)) {
-                ((Application) getApplication()).setAccount(account);
-                this.getLoaderManager().initLoader(0, null, this);
-                return account;
-            }
-        }
-        finish();
-        return null;
-    }
 
     /**
      * Display an an arrow in the toolbar to get to the previous fragment
@@ -368,12 +384,32 @@ public class MainActivity extends ActionBarActivity
 
     }
 
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        return new CursorLoader(
+                this,
+                Provider.CURRENCY_URI,
+                null, null, null,
+                Contract.Currency.CURRENCY_NAME + " ASC"
+        );
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        ((DrawerCurrencyCursorAdapter) mDrawerListView.getAdapter()).swapCursor(data);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        ((DrawerCurrencyCursorAdapter) mDrawerListView.getAdapter()).swapCursor(null);
+    }
+
+
     /**
-     * Interface for handling OnBackPressed event in fragments     *
+     * Interface for handling OnBackPressed event in fragments
      */
     public interface OnBackPressed {
         /**
-         *
          * @return true if the events has been handled, false otherwise
          */
         public boolean onBackPressed();
@@ -390,8 +426,11 @@ public class MainActivity extends ActionBarActivity
     public class SearchTask extends AsyncTaskHandleException<Void, Void, List<Identity>> {
 
         private final String mSearchQuery;
+        //todo check on the currency only
+        private final UcoinCurrency mCurrency;
 
-        SearchTask(String mSearchQuery) {
+        SearchTask(UcoinCurrency currency, String mSearchQuery) {
+            this.mCurrency = currency;
             this.mSearchQuery = mSearchQuery;
         }
 
@@ -423,4 +462,77 @@ public class MainActivity extends ActionBarActivity
         }
     }
 
+    public class LoadCurrencyTask extends AsyncTaskHandleException<Bundle, Void, UcoinCurrency> {
+
+        @Override
+        protected UcoinCurrency doInBackgroundHandleException(Bundle... args) throws Exception {
+
+            String host = args[0].getString(("address"));
+            int port = args[0].getInt(("port"));
+
+            //Load Peer
+            URL url = new URL("http", host, port, "/network/peering/");
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setConnectTimeout(5000);
+            InputStream stream = conn.getInputStream();
+            Peer peer = Peer.fromJson(stream);
+
+            // Load currency
+            url = new URL("http", host, port, "/blockchain/parameters");
+            conn = (HttpURLConnection) url.openConnection();
+            conn.setConnectTimeout(5000);
+            stream = conn.getInputStream();
+            BlockchainParameter parameter = BlockchainParameter.fromJson(stream);
+
+            //Load first block
+            url = new URL("http", host, port, "/blockchain/block/0");
+            conn = (HttpURLConnection) url.openConnection();
+            conn.setConnectTimeout(5000);
+            stream = conn.getInputStream();
+            BlockchainBlock firstBlock = BlockchainBlock.fromJson(stream);
+
+            //Load last block
+            url = new URL("http", host, port, "/blockchain/current");
+            conn = (HttpURLConnection) url.openConnection();
+            conn.setConnectTimeout(5000);
+            stream = conn.getInputStream();
+            BlockchainBlock lastBlock = BlockchainBlock.fromJson(stream);
+
+
+            UcoinCurrency currency = ((Application) getApplication()).getCurrencies().newCurrency(
+                    parameter, firstBlock, lastBlock);
+            UcoinPeer node = currency.peers().newPeer(peer);
+            currency.peers().add(node);
+
+            return currency;
+        }
+
+        @Override
+        protected void onSuccess(UcoinCurrency currency) {
+            mDrawerLayout.closeDrawer(Gravity.START);
+            Fragment fragment = CurrencyParametersFragment.newInstance(currency);
+            fragment.setHasOptionsMenu(true);
+            setTitle(R.string.add_currency);
+            FragmentManager fragmentManager = getFragmentManager();
+            fragmentManager.beginTransaction()
+                    .setCustomAnimations(
+                            R.animator.delayed_slide_in_up,
+                            R.animator.fade_out,
+                            R.animator.delayed_fade_in,
+                            R.animator.slide_out_up)
+                    .replace(R.id.frame_content, fragment, fragment.getClass().getSimpleName())
+                    .addToBackStack(fragment.getClass().getSimpleName())
+                    .commit();
+        }
+
+        @Override
+        protected void onFailed(Throwable t) {
+            t.printStackTrace();
+            Log.d("COMMUNITYLISTFRAGMENT", t.getClass().getSimpleName());
+            Toast.makeText(getApplicationContext(),
+                    t.toString(),
+                    Toast.LENGTH_LONG)
+                    .show();
+        }
+    }
 }

@@ -5,8 +5,8 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import io.ucoin.app.model.Identity;
-import io.ucoin.app.model.Wallet;
+import io.ucoin.app.model.oldmodels.Identity;
+import io.ucoin.app.model.oldmodels.Wallet;
 import io.ucoin.app.technical.UCoinTechnicalException;
 import io.ucoin.app.technical.crypto.CryptoUtils;
 import io.ucoin.app.technical.crypto.TestFixtures;
