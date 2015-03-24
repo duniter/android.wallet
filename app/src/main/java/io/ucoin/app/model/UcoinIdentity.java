@@ -9,4 +9,5 @@ public interface UcoinIdentity extends Entity {
     Long timestamp();
 
     UcoinWallet wallet();
+    UcoinCertifications certifications();
 }

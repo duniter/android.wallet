@@ -1,5 +1,6 @@
 package io.ucoin.app.fragment.currency;
 
+import android.app.FragmentManager;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -11,6 +12,7 @@ import android.widget.TextView;
 
 import io.ucoin.app.Fragment;
 import io.ucoin.app.R;
+import io.ucoin.app.activity.MainActivity;
 import io.ucoin.app.model.UcoinCurrency;
 
 public class CurrencyParametersFragment extends Fragment {
@@ -115,12 +117,8 @@ public class CurrencyParametersFragment extends Fragment {
         Bundle args = getArguments();
         UcoinCurrency currency = args.getParcelable(UcoinCurrency.class.getSimpleName());
 
+        ((MainActivity)getActivity()).clearAllFragments();
         currencies().add(currency);
-//refresh the toolbar menu
-        getActivity().invalidateOptionsMenu();
-    }
-
-    public void delete() {
-//todo delete if no or empty wallet, else make inactive
+        ((MainActivity)getActivity()).openDrawer();
     }
 }

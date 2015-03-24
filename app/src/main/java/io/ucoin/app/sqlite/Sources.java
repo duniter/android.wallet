@@ -36,7 +36,7 @@ final public class Sources extends SQLiteEntities
     }
 
     @Override
-    public UcoinSource newSource(Long communityId, Integer number, SourceType type, String fingerprint, Long amount) {
+    public UcoinSource newSource(Integer number, SourceType type, String fingerprint, Long amount) {
         return new Source(mWalletId, number, type, fingerprint, amount);
     }
 

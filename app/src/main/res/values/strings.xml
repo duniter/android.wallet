@@ -49,7 +49,7 @@
     <string name="back">Back</string>
     <string name="copy">Copy</string>
     <string name="add">Add</string>
-    <string name="CANCEL">Cancel</string>
+    <string name="CANCEL">CANCEL</string>
     <string name="ok">OK</string>
     <string name="join">Join</string>
     <string name="delete">Delete</string>
@@ -116,7 +116,7 @@
     <string name="password_cannot_be_empty">Password cannot be empty</string>
     <string name="confirm_password_cannot_be_empty">Confirm password cannot be empty</string>
     <string name="passwords_dont_match">Passwords don\'t match</string>
-    <string name="community_added">Community added</string>
+    <string name="currency_added">Currency added</string>
     <string name="invalid_node_address">Invalid node address</string>
     <string name="invalid_node_port">Invalid node port</string>
     <string name="wallets">Wallets</string>
@@ -158,9 +158,12 @@
     <string name="enter_identity_info">Enter identity info</string>
     <string name="uid_hint">UID</string>
     <string name="certifiers">certifiers</string>
-    <string name="certifiees">certifiees</string>
+    <string name="certified">certified</string>
     <string name="add_identity">Add identity</string>
     <string name="no_member">No member</string>
+    <string name="no_certification">No certification</string>
+    <string name="member">Member</string>
+    <string name="median_time">Median time</string>
 
     <string-array name="drawer_items">
         <item>@string/wallets</item>

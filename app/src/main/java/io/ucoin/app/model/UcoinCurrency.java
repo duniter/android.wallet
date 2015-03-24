@@ -25,9 +25,11 @@ public interface UcoinCurrency extends Entity{
 
     UcoinIdentity identity();
 
-    UcoinIdentities identities();
     UcoinWallets wallets();
     UcoinPeers peers();
+    UcoinMembers members();
 
     void identityId(Long id);
+    public UcoinIdentity newIdentity(Long walletId, String uid);
+    public UcoinIdentity setIdentity(UcoinIdentity identity);
 }

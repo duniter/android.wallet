@@ -5,8 +5,13 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import io.ucoin.app.content.Provider;
+import io.ucoin.app.model.UcoinCertification;
+import io.ucoin.app.model.UcoinCertifications;
 import io.ucoin.app.model.UcoinIdentity;
+import io.ucoin.app.model.UcoinMember;
+import io.ucoin.app.model.UcoinMembers;
 import io.ucoin.app.model.UcoinWallet;
+import io.ucoin.app.model.enums.CertificationType;
 
 public class Identity extends SQLiteEntity
         implements UcoinIdentity {
@@ -17,10 +22,12 @@ public class Identity extends SQLiteEntity
     private String mSelf;
     private Long mTimestamp;
     private UcoinWallet mWallet;
+    private UcoinCertifications mCertifications;
 
-    public Identity(Context context, Long IdentityId) {
-        super(context, Provider.IDENTITY_URI, IdentityId);
+    public Identity(Context context, Long identityId) {
+        super(context, Provider.IDENTITY_URI, identityId);
         mWallet = new Wallet(context, walletId());
+        mCertifications = new Certifications(context, identityId);
     }
 
     public Identity(Long currencyId, Long walletId, String uid) {
@@ -68,6 +75,11 @@ public class Identity extends SQLiteEntity
     }
 
     @Override
+    public UcoinCertifications certifications() {
+        return mCertifications;
+    }
+
+    @Override
     public String toString() {
         String s = "\nIDENTITY id=" + ((id() == null) ? "not in database" : id()) + "\n";
         s += "\ncurrencyId=" + currencyId();
@@ -76,6 +88,10 @@ public class Identity extends SQLiteEntity
         s += "\nself=" + self();
         s += "\ntimestamp=" + timestamp();
         s += "\n\twallet=" + mWallet.toString();
+
+        for(UcoinCertification certification : mCertifications) {
+            certification.toString();
+        }
 
         return s;
     }
@@ -87,6 +103,7 @@ public class Identity extends SQLiteEntity
         mSelf = in.readString();
         mTimestamp = in.readByte() == 0x00 ? null : in.readLong();
         mWallet = (UcoinWallet) in.readValue(UcoinWallet.class.getClassLoader());
+        mCertifications = (UcoinCertifications) in.readValue(UcoinCertifications.class.getClassLoader());
     }
 
     @Override
@@ -117,6 +134,7 @@ public class Identity extends SQLiteEntity
             dest.writeLong(mTimestamp);
         }
         dest.writeValue(mWallet);
+        dest.writeValue(mCertifications);
     }
 
     @SuppressWarnings("unused")

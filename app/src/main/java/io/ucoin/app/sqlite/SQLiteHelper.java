@@ -47,7 +47,7 @@ public class SQLiteHelper extends SQLiteOpenHelper implements Contract {
 
         String CREATE_TABLE_IDENTITY = "CREATE TABLE " + Identity.TABLE_NAME + "(" +
                 Identity._ID + " INTEGER PRIMARY KEY AUTOINCREMENT" + COMMA +
-                Identity.CURRENCY_ID + INTEGER + NOTNULL + COMMA +
+                Identity.CURRENCY_ID + INTEGER + UNIQUE + NOTNULL + COMMA +
                 Identity.WALLET_ID + INTEGER + NOTNULL + COMMA +
                 Identity.UID + TEXT + NOTNULL + COMMA +
                 Identity.SELF + TEXT + COMMA +
@@ -59,9 +59,39 @@ public class SQLiteHelper extends SQLiteOpenHelper implements Contract {
                 ")";
         db.execSQL(CREATE_TABLE_IDENTITY);
 
+        String CREATE_TABLE_MEMBER = "CREATE TABLE " + Member.TABLE_NAME + "(" +
+                Member._ID + " INTEGER PRIMARY KEY AUTOINCREMENT" + COMMA +
+                Member.CURRENCY_ID + INTEGER + NOTNULL + COMMA +
+                Member.UID + TEXT + NOTNULL + COMMA +
+                Member.PUBLIC_KEY + TEXT + NOTNULL + COMMA +
+                Member.IS_MEMBER + TEXT + NOTNULL + COMMA +
+                Member.WAS_MEMBER + TEXT + NOTNULL + COMMA +
+                Member.SELF + TEXT + NOTNULL + COMMA +
+                Member.TIMESTAMP + INTEGER + NOTNULL + COMMA +
+                "FOREIGN KEY (" + Member.CURRENCY_ID + ") REFERENCES " +
+                Currency.TABLE_NAME + "(" + Currency._ID + ")" + COMMA +
+                UNIQUE + "(" + Member.CURRENCY_ID + COMMA + Member.UID + COMMA + Member.PUBLIC_KEY + ")" +
+                ")";
+        db.execSQL(CREATE_TABLE_MEMBER);
+
+        String CREATE_TABLE_CERTIFICATION = "CREATE TABLE " + Certification.TABLE_NAME + "(" +
+                Certification._ID + " INTEGER PRIMARY KEY AUTOINCREMENT" + COMMA +
+                Certification.IDENTITY_ID + INTEGER + NOTNULL + COMMA +
+                Certification.MEMBER_ID + INTEGER + NOTNULL + COMMA +
+                Certification.TYPE + TEXT + NOTNULL + " CHECK (" + Certification.TYPE + " IN (\"OF\", \"BY\"))" + COMMA +
+                Certification.BLOCK + INTEGER + NOTNULL + COMMA +
+                Certification.MEDIAN_TIME + INTEGER + NOTNULL + COMMA +
+                Certification.SIGNATURE + TEXT + UNIQUE + NOTNULL + COMMA +
+                "FOREIGN KEY (" + Certification.IDENTITY_ID + ") REFERENCES " +
+                Identity.TABLE_NAME + "(" + Identity._ID + ")" + COMMA +
+                "FOREIGN KEY (" + Certification.MEMBER_ID + ") REFERENCES " +
+                Member.TABLE_NAME + "(" + Member._ID + ")" +
+                ")";
+        db.execSQL(CREATE_TABLE_CERTIFICATION);
+
         String CREATE_TABLE_WALLET = "CREATE TABLE " + Wallet.TABLE_NAME + "(" +
                 Wallet._ID + " INTEGER PRIMARY KEY AUTOINCREMENT" + COMMA +
-                Wallet.CURRENCY_ID + TEXT + NOTNULL + COMMA +
+                Wallet.CURRENCY_ID + INTEGER + NOTNULL + COMMA +
                 Wallet.SALT + TEXT + NOTNULL + COMMA +
                 Wallet.PUBLIC_KEY + TEXT + NOTNULL + COMMA +
                 Wallet.PRIVATE_KEY + TEXT + COMMA +

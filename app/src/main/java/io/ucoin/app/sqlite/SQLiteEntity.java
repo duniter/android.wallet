@@ -31,7 +31,9 @@ public class SQLiteEntity implements Entity {
         return mId;
     }
 
-    /**** getters ****/
+    /**
+     * * getters ***
+     */
     public String getString(String field) {
         Cursor cursor = getField(field);
         if (cursor == null) {
@@ -49,7 +51,7 @@ public class SQLiteEntity implements Entity {
             return null;
         }
 
-        Long result =  cursor.getLong(cursor.getColumnIndex(field));
+        Long result = cursor.getLong(cursor.getColumnIndex(field));
         cursor.close();
         return result;
     }
@@ -59,29 +61,52 @@ public class SQLiteEntity implements Entity {
         if (cursor == null) {
             return null;
         }
-        Integer result =  cursor.getInt(cursor.getColumnIndex(field));
+        Integer result = cursor.getInt(cursor.getColumnIndex(field));
         cursor.close();
-        return result;    }
+        return result;
+    }
 
     public Float getFloat(String field) {
         Cursor cursor = getField(field);
         if (cursor == null) {
             return null;
         }
-        Float result =  cursor.getFloat(cursor.getColumnIndex(field));
+        Float result = cursor.getFloat(cursor.getColumnIndex(field));
         cursor.close();
-        return result;    }
+        return result;
+    }
 
-    /**** Setters ****/
+    public Boolean getBoolean(String field) {
+        Cursor cursor = getField(field);
+        if (cursor == null) {
+            return null;
+        }
+        String result = cursor.getString(cursor.getColumnIndex(field));
+        cursor.close();
+        return Boolean.valueOf(result);
+    }
+
+    /**
+     * * Setters ***
+     */
     public int setLong(String field, Long value) {
         Uri uri = Uri.withAppendedPath(mUri, mId.toString());
-        ContentValues values= new ContentValues();
+        ContentValues values = new ContentValues();
+        values.put(field, value);
+        return mContext.getContentResolver().update(uri, values, null, null);
+    }
+
+    public int setBoolean(String field, Boolean value) {
+        Uri uri = Uri.withAppendedPath(mUri, mId.toString());
+        ContentValues values = new ContentValues();
         values.put(field, value);
         return mContext.getContentResolver().update(uri, values, null, null);
     }
 
 
-    /**** INTERNAL methods ****/
+    /**
+     * * INTERNAL methods ***
+     */
     private Cursor getField(String field) {
         Uri uri = Uri.withAppendedPath(mUri, mId.toString());
         Cursor cursor = mContext.getContentResolver().query(uri, new String[]{field},

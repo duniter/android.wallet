@@ -8,6 +8,8 @@ import io.ucoin.app.content.Provider;
 import io.ucoin.app.model.UcoinCurrency;
 import io.ucoin.app.model.UcoinIdentities;
 import io.ucoin.app.model.UcoinIdentity;
+import io.ucoin.app.model.UcoinMember;
+import io.ucoin.app.model.UcoinMembers;
 import io.ucoin.app.model.UcoinWallet;
 import io.ucoin.app.model.UcoinWallets;
 import io.ucoin.app.model.UcoinPeer;
@@ -45,6 +47,7 @@ public class Currency extends SQLiteEntity
     private UcoinIdentities mIdentities;
     private UcoinWallets mWallets;
     private UcoinPeers mPeers;
+    private UcoinMembers mMembers;
 
     public Currency(Context context, Long id) {
         super(context, Provider.CURRENCY_URI, id);
@@ -55,6 +58,7 @@ public class Currency extends SQLiteEntity
         mIdentities = new Identities(context, id);
         mWallets = new Wallets(context, id);
         mPeers = new Peers(context, id);
+        mMembers = new Members(context, id);
     }
 
     public Currency(BlockchainParameter parameter, BlockchainBlock firstBlock,
@@ -83,6 +87,7 @@ public class Currency extends SQLiteEntity
         mIdentities = new Identities(mId, null);
         mWallets = new Wallets(mId, null);
         mPeers = new Peers(mId, null);
+        mMembers = new Members(mId, null);
     }
 
     @Override
@@ -181,13 +186,13 @@ public class Currency extends SQLiteEntity
     }
 
     @Override
-    public UcoinIdentities identities() {
-        return mIdentities;
+    public UcoinPeers peers() {
+        return mPeers;
     }
 
     @Override
-    public UcoinPeers peers() {
-        return mPeers;
+    public UcoinMembers members() {
+        return mMembers;
     }
 
     @Override
@@ -199,6 +204,15 @@ public class Currency extends SQLiteEntity
         }
     }
 
+    @Override
+    public UcoinIdentity newIdentity(Long walletId, String uid) {
+        return mIdentities.newIdentity(walletId, uid);
+    }
+
+    @Override
+    public UcoinIdentity setIdentity(UcoinIdentity identity) {
+        return mIdentities.add(identity);
+    }
 
     @Override
     public UcoinWallets wallets() {
@@ -228,16 +242,16 @@ public class Currency extends SQLiteEntity
         s += "\nidentityId=" + identityId();
         s += "\nidentity=" + identity();
 
-        for (UcoinIdentity identity : mIdentities) {
-            s += "\n\t" + identity.toString();
-        }
-
         for (UcoinWallet wallet : mWallets) {
             s += "\n\t" + wallet.toString();
         }
 
-        for (UcoinPeer node : mPeers) {
-            s += "\n\t" + node.toString();
+        for (UcoinPeer peer : mPeers) {
+            s += "\n\t" + peer.toString();
+        }
+
+        for (UcoinMember member : mMembers) {
+            s += "\n\t" + member.toString();
         }
         return s;
     }
@@ -266,6 +280,7 @@ public class Currency extends SQLiteEntity
         mIdentities = (UcoinIdentities) in.readValue(UcoinIdentities.class.getClassLoader());
         mWallets = (UcoinWallets) in.readValue(UcoinWallets.class.getClassLoader());
         mPeers = (UcoinPeers) in.readValue(UcoinPeers.class.getClassLoader());
+        mMembers = (UcoinMembers) in.readValue(UcoinMembers.class.getClassLoader());
     }
 
     @Override
@@ -380,6 +395,7 @@ public class Currency extends SQLiteEntity
         dest.writeValue(mIdentities);
         dest.writeValue(mWallets);
         dest.writeValue(mPeers);
+        dest.writeValue(mMembers);
     }
 
     @SuppressWarnings("unused")

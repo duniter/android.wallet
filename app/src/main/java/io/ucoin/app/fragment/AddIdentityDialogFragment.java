@@ -9,26 +9,38 @@ import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import io.ucoin.app.DialogFragment;
 import io.ucoin.app.R;
-import io.ucoin.app.activity.MainActivity;
 import io.ucoin.app.model.UcoinCurrency;
 import io.ucoin.app.model.UcoinIdentity;
 import io.ucoin.app.model.UcoinWallet;
 import io.ucoin.app.service.CryptoService;
 import io.ucoin.app.service.ServiceLocator;
+import io.ucoin.app.technical.AsyncTaskHandleException;
 import io.ucoin.app.technical.crypto.Base58;
 import io.ucoin.app.technical.crypto.KeyPair;
 
 public class AddIdentityDialogFragment extends DialogFragment {
 
-    public static AddIdentityDialogFragment newInstance(UcoinCurrency currency) {
+    private OnIdentityCreatedListener mListener;
+    private String mUid;
+    private String mSalt;
+    private LinearLayout mFieldLayout;
+    private RelativeLayout mButtonLayout;
+    private ProgressBar mProgressBar;
+
+    public static AddIdentityDialogFragment newInstance(UcoinCurrency currency, OnIdentityCreatedListener listener) {
         Bundle newInstanceArgs = new Bundle();
-        newInstanceArgs.putSerializable(UcoinCurrency.class.getSimpleName(), currency);
+        newInstanceArgs.putParcelable(UcoinCurrency.class.getSimpleName(), currency);
         AddIdentityDialogFragment fragment = new AddIdentityDialogFragment();
         fragment.setArguments(newInstanceArgs);
+        fragment.setOnIdentityCreatedListener(listener);
         return fragment;
     }
 
@@ -40,10 +52,14 @@ public class AddIdentityDialogFragment extends DialogFragment {
 
         final View view = inflater.inflate(R.layout.fragment_add_identity_dialog, null);
 
+        mFieldLayout = (LinearLayout) view.findViewById(R.id.field_layout);
+        mButtonLayout = (RelativeLayout) view.findViewById(R.id.button_layout);
+        mProgressBar = (ProgressBar) view.findViewById(R.id.progress);
+
         final TextView saltHint = (TextView) view.findViewById(R.id.salt_tip);
         final TextView passwordHint = (TextView) view.findViewById(R.id.password_tip);
-        final EditText uid = (EditText) view.findViewById(R.id.uid);
-        final EditText salt = (EditText) view.findViewById(R.id.salt);
+        final TextView uid = (EditText) view.findViewById(R.id.uid);
+        final TextView salt = (EditText) view.findViewById(R.id.salt);
         final EditText password = (EditText) view.findViewById(R.id.password);
         final EditText confirmPassword = (EditText) view.findViewById(R.id.confirm_password);
         final Button posButton = (Button) view.findViewById(R.id.positive_button);
@@ -91,12 +107,13 @@ public class AddIdentityDialogFragment extends DialogFragment {
                     uid.setError(getString(R.string.uid_cannot_be_empty));
                     return;
                 }
+                mUid = uid.getText().toString();
                 //validate salt
                 if (salt.getText().toString().isEmpty()) {
                     salt.setError(getString(R.string.salt_cannot_be_empty));
                     return;
                 }
-
+                mSalt = salt.getText().toString();
                 //validate password
                 if (password.getText().toString().isEmpty()) {
                     password.setError(getString(R.string.password_cannot_be_empty));
@@ -114,30 +131,14 @@ public class AddIdentityDialogFragment extends DialogFragment {
                     return;
                 }
 
-                //generate keys
-                CryptoService service = ServiceLocator.instance().getCryptoService();
-                KeyPair keys = service.getKeyPair(salt.getText().toString(),
-                        password.getText().toString());
-
-                String uidStr = uid.getText().toString();
-
-                Bundle newInstanceArgs = getArguments();
-                UcoinCurrency currency =
-                        (UcoinCurrency) newInstanceArgs.getSerializable(UcoinCurrency.class.getSimpleName());
-
-                UcoinWallet wallet = currency.wallets().newWallet(
-                        salt.getText().toString(),
-                        Base58.encode(keys.getPubKey()),
-                        Base58.encode(keys.getSecKey()),
-                        uidStr);
-                wallet = currency.wallets().add(wallet);
-
-                UcoinIdentity identity = currency.identities().newIdentity(wallet.id(), uidStr);
-                identity = currency.identities().add(identity);
-                currency.identityId(identity.id());
-
-                ((MainActivity)getActivity()).setDrawerIdentity(identity);
-                dismiss();
+                GenerateKeysTask task = new GenerateKeysTask();
+                Bundle args = new Bundle();
+                args.putString("salt", mSalt);
+                mFieldLayout.setVisibility(View.GONE);
+                mButtonLayout.setVisibility(View.GONE);
+                mProgressBar.setVisibility(View.VISIBLE);
+                args.putString("password", password.getText().toString());
+                task.execute(args);
             }
         });
 
@@ -151,6 +152,60 @@ public class AddIdentityDialogFragment extends DialogFragment {
 
         builder.setView(view);
         return builder.create();
+    }
+
+    private void setOnIdentityCreatedListener(OnIdentityCreatedListener listener) {
+        mListener = listener;
+    }
+
+    public interface OnIdentityCreatedListener {
+        public void onIdentityCreated(UcoinIdentity identity);
+    }
+
+    public class GenerateKeysTask extends AsyncTaskHandleException<Bundle, Void, KeyPair> {
+
+        @Override
+        protected KeyPair doInBackgroundHandleException(Bundle... args) throws Exception {
+
+            String salt = args[0].getString(("salt"));
+            String password = args[0].getString(("password"));
+            //generate keys
+
+            CryptoService service = ServiceLocator.instance().getCryptoService();
+            return service.getKeyPair(salt, password);
+        }
+
+        @Override
+        protected void onSuccess(KeyPair keys) {
+            Bundle newInstanceArgs = getArguments();
+            UcoinCurrency currency = newInstanceArgs.getParcelable(UcoinCurrency.class.getSimpleName());
+
+            UcoinWallet wallet = currency.wallets().newWallet(
+                    mSalt,
+                    Base58.encode(keys.getPubKey()),
+                    Base58.encode(keys.getSecKey()),
+                    mUid);
+            wallet = currency.wallets().add(wallet);
+
+            UcoinIdentity identity = currency.newIdentity(wallet.id(), mUid);
+            identity = currency.setIdentity(identity);
+            currency.identityId(identity.id());
+
+            mListener.onIdentityCreated(identity);
+            dismiss();
+        }
+
+        @Override
+        protected void onFailed(Throwable t) {
+            mFieldLayout.setVisibility(View.VISIBLE);
+            mButtonLayout.setVisibility(View.VISIBLE);
+            mProgressBar.setVisibility(View.GONE);
+            t.printStackTrace();
+            Toast.makeText(getActivity().getApplicationContext(),
+                    t.toString(),
+                    Toast.LENGTH_LONG)
+                    .show();
+        }
     }
 }
 

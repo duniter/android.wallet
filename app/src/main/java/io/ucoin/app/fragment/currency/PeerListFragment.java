@@ -78,9 +78,9 @@ public class PeerListFragment extends ListFragment
             case R.id.action_add:
                 Bundle args = getArguments();
 
-                AddPeerDialogFragment.OnClickListener listener = new AddPeerDialogFragment.OnClickListener() {
+                AddPeerDialogFragment.OnPeerAddListener listener = new AddPeerDialogFragment.OnPeerAddListener() {
                     @Override
-                    public void onPositiveClick(Bundle args) {
+                    public void onPeerAdd(Bundle args) {
                         LoadCurrencyTask task = new LoadCurrencyTask();
                         task.execute(args);
                     }

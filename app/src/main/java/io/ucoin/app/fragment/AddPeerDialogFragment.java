@@ -20,18 +20,18 @@ import io.ucoin.app.model.UcoinCurrency;
 
 public class AddPeerDialogFragment extends DialogFragment {
 
-    private OnClickListener mListener;
+    private OnPeerAddListener mListener;
 
-    public static AddPeerDialogFragment newInstance(OnClickListener listener) {
+    public static AddPeerDialogFragment newInstance(OnPeerAddListener listener) {
         AddPeerDialogFragment fragment = new AddPeerDialogFragment();
-        fragment.setOnClickListener(listener);
+        fragment.setOnPeerAddListener(listener);
         return fragment;
     }
 
 
-    public static AddPeerDialogFragment newInstance(OnClickListener listener, UcoinCurrency currency) {
+    public static AddPeerDialogFragment newInstance(OnPeerAddListener listener, UcoinCurrency currency) {
         AddPeerDialogFragment fragment = new AddPeerDialogFragment();
-        fragment.setOnClickListener(listener);
+        fragment.setOnPeerAddListener(listener);
         Bundle newInstanceArgs = new Bundle();
         newInstanceArgs.putParcelable(UcoinCurrency.class.getSimpleName(), currency);
         fragment.setArguments(newInstanceArgs);
@@ -98,7 +98,7 @@ public class AddPeerDialogFragment extends DialogFragment {
                 }
 
                 dismiss();
-                mListener.onPositiveClick(peerArgs);
+                mListener.onPeerAdd(peerArgs);
             }
         });
 
@@ -114,12 +114,12 @@ public class AddPeerDialogFragment extends DialogFragment {
         return builder.create();
     }
 
-    private void setOnClickListener(OnClickListener listener) {
+    private void setOnPeerAddListener(OnPeerAddListener listener) {
         mListener = listener;
     }
 
-    public interface OnClickListener {
-        public void onPositiveClick(Bundle args);
+    public interface OnPeerAddListener {
+        public void onPeerAdd(Bundle args);
     }
 }
 

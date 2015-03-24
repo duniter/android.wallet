@@ -1,4 +1,4 @@
-package io.ucoin.app.fragment.wallet;
+package io.ucoin.app.fragment.common;
 
 import android.app.LoaderManager;
 import android.content.CursorLoader;
@@ -76,7 +76,7 @@ implements LoaderManager.LoaderCallbacks<Cursor>    {
                 getActivity(),
                 Provider.SOURCE_URI,
                 null, selection, selectionArgs,
-                Contract.Wallet._ID +" DESC");
+                Contract.Source._ID +" DESC");
     }
 
     @Override

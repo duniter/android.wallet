@@ -3,7 +3,17 @@
     android:layout_height="wrap_content"
     android:orientation="vertical">
 
+    <ProgressBar
+        android:id="@+id/progress"
+        style="?android:attr/progressBarStyleInverse"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_gravity="center_horizontal|center_vertical"
+        android:visibility="gone" />
+
     <LinearLayout
+        android:id="@+id/field_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingLeft="24dp"
@@ -47,7 +57,7 @@
             android:hint="@string/uid_hint"
             android:imeOptions="actionNext"
             android:inputType="textNoSuggestions"
-            android:singleLine="true" />
+            android:singleLine="true"/>
 
         <EditText
             android:id="@+id/salt"
@@ -56,7 +66,7 @@
             android:hint="@string/salt"
             android:imeOptions="actionNext"
             android:inputType="textNoSuggestions"
-            android:singleLine="true" />
+            android:singleLine="true"/>
 
         <EditText
             android:id="@+id/password"
@@ -65,7 +75,7 @@
             android:hint="@string/password"
             android:imeOptions="actionNext"
             android:inputType="textPassword"
-            android:singleLine="true" />
+            android:singleLine="true"/>
 
         <EditText
             android:id="@+id/confirm_password"
@@ -75,11 +85,12 @@
             android:hint="@string/confirm_password"
             android:imeOptions="actionDone"
             android:inputType="textPassword"
-            android:singleLine="true" />
+            android:singleLine="true"/>
 
     </LinearLayout>
 
     <RelativeLayout
+        android:id="@+id/button_layout"
         android:layout_width="wrap_content"
         android:layout_height="48dp"
         android:layout_marginBottom="8dp">

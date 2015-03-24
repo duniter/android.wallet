@@ -1,11 +1,6 @@
 package io.ucoin.app.fragment;
 
 import android.app.FragmentManager;
-import android.app.LoaderManager;
-import android.content.ContentResolver;
-import android.content.CursorLoader;
-import android.content.Loader;
-import android.database.Cursor;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -25,9 +20,7 @@ import java.net.URL;
 import io.ucoin.app.Fragment;
 import io.ucoin.app.R;
 import io.ucoin.app.activity.MainActivity;
-import io.ucoin.app.content.Provider;
 import io.ucoin.app.model.http_api.Sources;
-import io.ucoin.app.sqlite.Contract;
 import io.ucoin.app.service.CryptoService;
 import io.ucoin.app.service.ServiceLocator;
 import io.ucoin.app.service.WotService;
@@ -50,7 +43,7 @@ public class DevFragment extends Fragment{
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        LoadCommunityTask tast = new LoadCommunityTask();
+        LoadCurrencyTask tast = new LoadCurrencyTask();
         tast.execute("");
     }
 
@@ -259,7 +252,7 @@ public class DevFragment extends Fragment{
         }
     }
 
-    public class LoadCommunityTask extends AsyncTaskHandleException<String, Void, String> {
+    public class LoadCurrencyTask extends AsyncTaskHandleException<String, Void, String> {
 
 
         @Override

@@ -15,10 +15,9 @@ import android.widget.TextView;
 import io.ucoin.app.Fragment;
 import io.ucoin.app.R;
 import io.ucoin.app.activity.MainActivity;
-import io.ucoin.app.fragment.wallet.SourceListFragment;
-import io.ucoin.app.model.UcoinCurrency;
+import io.ucoin.app.fragment.common.SourceListFragment;
 import io.ucoin.app.model.UcoinIdentity;
-import io.ucoin.app.model.UcoinWallet;
+import io.ucoin.app.model.enums.CertificationType;
 import io.ucoin.app.model.enums.SourceType;
 import io.ucoin.app.view.SlidingTabLayout;
 
@@ -115,7 +114,7 @@ public class IdentityFragment extends Fragment {
             else if (position == 2)
                 return getString(R.string.certifiers);
             else
-                return getString(R.string.certifiees);
+                return getString(R.string.certified);
         }
 
         @Override
@@ -131,10 +130,10 @@ public class IdentityFragment extends Fragment {
                 fragment = SourceListFragment.newInstance(identity.wallet(), SourceType.T);
                 fragment.setHasOptionsMenu(false);
             } else if (i == 2) {
-                fragment = SourceListFragment.newInstance(identity.wallet(), SourceType.D);
+                fragment = CertificationListFragment.newInstance(identity, CertificationType.OF);
                 fragment.setHasOptionsMenu(false);
             } else {
-                fragment = SourceListFragment.newInstance(identity.wallet(), SourceType.D);
+                fragment = CertificationListFragment.newInstance(identity, CertificationType.BY);
                 fragment.setHasOptionsMenu(false);
             }
             return fragment;

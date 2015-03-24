@@ -9,4 +9,8 @@
     <string name="balance_uri">balance/</string>
     <string name="source_uri">source/</string>
     <string name="tx_uri">tx/</string>
+    <string name="member_uri">member/</string>
+    <string name="certification_uri">certification/</string>
+    <string name="certification_of_uri">certification-of/</string>
+    <string name="certification_by_uri">certification-by/</string>
 </resources>

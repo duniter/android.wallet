@@ -38,6 +38,27 @@ public interface Contract {
         public static final String TIMESTAMP = "timestamp";
     }
 
+    public static final class Member implements BaseColumns {
+        public static final String TABLE_NAME ="member";
+        public static final String CURRENCY_ID = "currency_id";
+        public static final String UID = "uid";
+        public static final String PUBLIC_KEY = "public_key";
+        public static final String IS_MEMBER = "is_member";
+        public static final String WAS_MEMBER = "was_member";
+        public static final String SELF = "self";
+        public static final String TIMESTAMP = "timestamp";
+    }
+
+    public static final class Certification implements BaseColumns{
+        public static final String TABLE_NAME = "certifiers";
+        public static final String IDENTITY_ID = "identity_id";
+        public static final String MEMBER_ID = "member_id";
+        public static final String TYPE = "type";
+        public static final String BLOCK = "block";
+        public static final String MEDIAN_TIME = "median_time";
+        public static final String SIGNATURE = "signature";
+    }
+
     public static final class Wallet implements BaseColumns {
         public static final String TABLE_NAME = "wallet";
         public static final String CURRENCY_ID = "currency_id";

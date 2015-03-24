@@ -8,6 +8,7 @@ import android.content.Loader;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -121,11 +122,13 @@ implements LoaderManager.LoaderCallbacks<Cursor>    {
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        Log.d("WALLETLISTFRAGMENT", "onLoadFinished");
         ((WalletCursorAdapter)this.getListAdapter()).swapCursor(data);
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
+        Log.d("WALLETLISTFRAGMENT", "onLoaderReset");
         ((WalletCursorAdapter)this.getListAdapter()).swapCursor(null);
     }
 }

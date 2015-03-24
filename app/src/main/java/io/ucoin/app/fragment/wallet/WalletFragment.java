@@ -15,6 +15,7 @@ import android.widget.TextView;
 import io.ucoin.app.Fragment;
 import io.ucoin.app.R;
 import io.ucoin.app.activity.MainActivity;
+import io.ucoin.app.fragment.common.SourceListFragment;
 import io.ucoin.app.model.UcoinCurrency;
 import io.ucoin.app.model.UcoinWallet;
 import io.ucoin.app.model.enums.SourceType;

@@ -11,6 +11,7 @@ import android.net.Uri;
 import android.util.Log;
 
 import io.ucoin.app.R;
+import io.ucoin.app.model.enums.CertificationType;
 import io.ucoin.app.sqlite.Contract;
 import io.ucoin.app.sqlite.SQLiteHelper;
 
@@ -36,6 +37,12 @@ public class Provider extends ContentProvider implements Contract {
     private static final int SOURCE_ID = 61;
     private static final int TX = 70;
     private static final int TX_ID = 71;
+    private static final int MEMBER = 80;
+    private static final int MEMBER_ID = 81;
+    private static final int CERTIFICATION = 90;
+    private static final int CERTIFICATION_ID = 91;
+    private static final int CERTIFICATION_OF = 92;
+    private static final int CERTIFICATION_BY = 93;
 
 
     public static Uri CURRENCY_URI;
@@ -46,6 +53,8 @@ public class Provider extends ContentProvider implements Contract {
     public static Uri BALANCE_URI;
     public static Uri SOURCE_URI;
     public static Uri TX_URI;
+    public static Uri MEMBER_URI;
+    public static Uri CERTIFICATION_URI;
 
     private SQLiteHelper mSQLiteHelper;
 
@@ -70,6 +79,10 @@ public class Provider extends ContentProvider implements Contract {
                 .path(context.getString(R.string.source_uri)).build();
         TX_URI = new Uri.Builder().scheme("content").authority(AUTHORITY)
                 .path(context.getString(R.string.tx_uri)).build();
+        MEMBER_URI = new Uri.Builder().scheme("content").authority(AUTHORITY)
+                .path(context.getString(R.string.member_uri)).build();
+        CERTIFICATION_URI = new Uri.Builder().scheme("content").authority(AUTHORITY)
+                .path(context.getString(R.string.certification_uri)).build();
 
 
         uriMatcher.addURI(AUTHORITY, context.getString(R.string.currency_uri), CURRENCY);
@@ -94,6 +107,12 @@ public class Provider extends ContentProvider implements Contract {
 
         uriMatcher.addURI(AUTHORITY, context.getString(R.string.tx_uri), TX);
         uriMatcher.addURI(AUTHORITY, context.getString(R.string.tx_uri) + "#", TX_ID);
+
+        uriMatcher.addURI(AUTHORITY, context.getString(R.string.member_uri), MEMBER);
+        uriMatcher.addURI(AUTHORITY, context.getString(R.string.member_uri) + "#", MEMBER_ID);
+
+        uriMatcher.addURI(AUTHORITY, context.getString(R.string.certification_uri), CERTIFICATION);
+        uriMatcher.addURI(AUTHORITY, context.getString(R.string.certification_uri) + "#", CERTIFICATION_ID);
     }
 
     @Override
@@ -213,6 +232,34 @@ public class Provider extends ContentProvider implements Contract {
                         new String[]{uri.getLastPathSegment()},
                         null, null, null);
                 break;
+            case MEMBER:
+                queryBuilder.setTables(Member.TABLE_NAME);
+                cursor = queryBuilder.query(db, projection, selection,
+                        selectionArgs, null, null, sortOrder);
+                cursor.setNotificationUri(getContext().getContentResolver(), uri);
+                break;
+            case MEMBER_ID:
+                queryBuilder.setTables(Member.TABLE_NAME);
+                cursor = queryBuilder.query(db, null,
+                        Member._ID + "=?",
+                        new String[]{uri.getLastPathSegment()},
+                        null, null, null);
+                break;
+            case CERTIFICATION:
+                queryBuilder.setTables(Certification.TABLE_NAME + "," + Member.TABLE_NAME + " ON " +
+                        Certification.TABLE_NAME + "." + Certification.MEMBER_ID + "=" +
+                        Member.TABLE_NAME + "." + Member._ID);
+                cursor = queryBuilder.query(db, projection, selection,
+                        selectionArgs, null, null, sortOrder);
+                cursor.setNotificationUri(getContext().getContentResolver(), uri);
+                break;
+            case CERTIFICATION_ID:
+                queryBuilder.setTables(Certification.TABLE_NAME);
+                cursor = queryBuilder.query(db, null,
+                        Certification._ID + "=?",
+                        new String[]{uri.getLastPathSegment()},
+                        null, null, null);
+                break;
             default:
                 Log.d("PROVIDER", "NO MATCH URI=" + uri.getQuery());
                 break;
@@ -256,6 +303,14 @@ public class Provider extends ContentProvider implements Contract {
             case SOURCE:
                 id = db.insert(Source.TABLE_NAME, null, values);
                 uri = Uri.parse(SOURCE_URI + Long.toString(id));
+                break;
+            case MEMBER:
+                id = db.insert(Member.TABLE_NAME, null, values);
+                uri = Uri.parse(MEMBER_URI + Long.toString(id));
+                break;
+            case CERTIFICATION:
+                id = db.insert(Certification.TABLE_NAME, null, values);
+                uri = Uri.parse(CERTIFICATION_URI + Long.toString(id));
                 break;
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
@@ -302,6 +357,16 @@ public class Provider extends ContentProvider implements Contract {
                         Source._ID + "=?",
                         new String[]{uri.getLastPathSegment()});
                 break;
+            case MEMBER_ID:
+                deletedRows = db.delete(Member.TABLE_NAME,
+                        Member._ID + "=?",
+                        new String[]{uri.getLastPathSegment()});
+                break;
+            case CERTIFICATION_ID:
+                deletedRows = db.delete(Certification.TABLE_NAME,
+                        Certification._ID + "=?",
+                        new String[]{uri.getLastPathSegment()});
+                break;
         }
 
         Log.d("PROVIDER", "delete=" + uri.toString() + "deletedRows=" + deletedRows);
@@ -335,6 +400,12 @@ public class Provider extends ContentProvider implements Contract {
                 insertedRows = db.update(Source.TABLE_NAME,
                         values,
                         Source._ID + "=?",
+                        new String[]{uri.getLastPathSegment()});
+                break;
+            case MEMBER_ID:
+                insertedRows = db.update(Member.TABLE_NAME,
+                        values,
+                        Member._ID + "=?",
                         new String[]{uri.getLastPathSegment()});
                 break;
             default:

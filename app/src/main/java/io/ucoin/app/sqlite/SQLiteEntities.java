@@ -47,11 +47,13 @@ public abstract class SQLiteEntities implements Entities {
                 new String[]{BaseColumns._ID},
                 selection,
                 selectionArgs,
-                null);
+                BaseColumns._ID +" ASC LIMIT 1");
         if (c.moveToNext()) {
-            int idIndex = c.getColumnIndex(BaseColumns._ID);
-            return c.getLong(idIndex);
+            Long id = c.getLong(c.getColumnIndex(BaseColumns._ID));
+            c.close();
+            return id;
         } else {
+            c.close();
             return null;
         }
     }
