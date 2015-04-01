@@ -10,7 +10,6 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -33,7 +32,7 @@ public class AddIdentityDialogFragment extends DialogFragment {
     private String mSalt;
     private LinearLayout mFieldLayout;
     private RelativeLayout mButtonLayout;
-    private ProgressBar mProgressBar;
+    private LinearLayout mProgressLayout;
 
     public static AddIdentityDialogFragment newInstance(UcoinCurrency currency, OnIdentityCreatedListener listener) {
         Bundle newInstanceArgs = new Bundle();
@@ -54,7 +53,7 @@ public class AddIdentityDialogFragment extends DialogFragment {
 
         mFieldLayout = (LinearLayout) view.findViewById(R.id.field_layout);
         mButtonLayout = (RelativeLayout) view.findViewById(R.id.button_layout);
-        mProgressBar = (ProgressBar) view.findViewById(R.id.progress);
+        mProgressLayout = (LinearLayout) view.findViewById(R.id.progress_layout);
 
         final TextView saltHint = (TextView) view.findViewById(R.id.salt_tip);
         final TextView passwordHint = (TextView) view.findViewById(R.id.password_tip);
@@ -136,7 +135,7 @@ public class AddIdentityDialogFragment extends DialogFragment {
                 args.putString("salt", mSalt);
                 mFieldLayout.setVisibility(View.GONE);
                 mButtonLayout.setVisibility(View.GONE);
-                mProgressBar.setVisibility(View.VISIBLE);
+                mProgressLayout.setVisibility(View.VISIBLE);
                 args.putString("password", password.getText().toString());
                 task.execute(args);
             }
@@ -199,7 +198,7 @@ public class AddIdentityDialogFragment extends DialogFragment {
         protected void onFailed(Throwable t) {
             mFieldLayout.setVisibility(View.VISIBLE);
             mButtonLayout.setVisibility(View.VISIBLE);
-            mProgressBar.setVisibility(View.GONE);
+            mProgressLayout.setVisibility(View.GONE);
             t.printStackTrace();
             Toast.makeText(getActivity().getApplicationContext(),
                     t.toString(),

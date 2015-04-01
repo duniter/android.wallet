@@ -164,6 +164,7 @@
     <string name="no_certification">No certification</string>
     <string name="member">Member</string>
     <string name="median_time">Median time</string>
+    <string name="generating_keys">Generating keys...</string>
 
     <string-array name="drawer_items">
         <item>@string/wallets</item>
