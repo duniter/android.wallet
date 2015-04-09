@@ -1,3 +1,7 @@
+scrypt/scrypt.iml
+ucoin-android-app.iml
+app/app.iml
+kalium-jni/kalium-jni.iml
 # Built application files
 *.apk
 *.ap_
