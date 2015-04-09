@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.provider.BaseColumns;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -17,88 +18,32 @@ import io.ucoin.app.model.UcoinWallets;
 final public class Wallets extends SQLiteEntities
         implements UcoinWallets {
 
+    @SuppressWarnings("unused")
+    public static final Parcelable.Creator<Wallets> CREATOR = new Parcelable.Creator<Wallets>() {
+        @Override
+        public Wallets createFromParcel(Parcel in) {
+            return new Wallets(in);
+        }
+
+        @Override
+        public Wallets[] newArray(int size) {
+            return new Wallets[size];
+        }
+    };
     private Long mCurrencyId;
     private ArrayList<UcoinWallet> mWalletsArray;
 
     public Wallets(Context context, Long currencyId) {
-        super(context, Provider.WALLET_URI);
+        this(context, currencyId, SQLiteTable.Wallet.CURRENCY_ID + "=?", new String[]{currencyId.toString()});
+    }
+
+    private Wallets(Context context, Long currencyId, String selection, String[] selectionArgs) {
+        this(context, currencyId, selection, selectionArgs, null);
+    }
+
+    private Wallets(Context context, Long currencyId, String selection, String[] selectionArgs, String sortOrder) {
+        super(context, Provider.WALLET_URI, selection, selectionArgs, sortOrder);
         mCurrencyId = currencyId;
-    }
-
-    public Wallets(Long currencyId, ArrayList<UcoinWallet> wallets) {
-        mCurrencyId = currencyId;
-        if (wallets == null) {
-            mWalletsArray = new ArrayList<>();
-        } else {
-            mWalletsArray = wallets;
-        }
-    }
-
-    @Override
-    public UcoinWallet newWallet(String salt, String publicKey, String alias) {
-        return new Wallet(mCurrencyId, salt, publicKey, alias);
-    }
-
-    public UcoinWallet newWallet(String salt, String publicKey, String privateKey,
-                                 String alias) {
-        return new Wallet(mCurrencyId, salt, publicKey, privateKey, alias);
-    }
-
-    @Override
-    public UcoinWallet add(UcoinWallet wallet) {
-        if (mContext != null) {
-            ContentValues values = new ContentValues();
-            values.put(Contract.Wallet.CURRENCY_ID, wallet.currencyId());
-            values.put(Contract.Wallet.SALT, wallet.salt());
-            values.put(Contract.Wallet.PUBLIC_KEY, wallet.publicKey());
-            values.put(Contract.Wallet.PRIVATE_KEY, wallet.privateKey());
-            values.put(Contract.Wallet.ALIAS, wallet.alias());
-
-            Uri uri = mContext.getContentResolver().insert(mUri, values);
-            return getById(Long.parseLong(uri.getLastPathSegment()));
-        }else {
-            mWalletsArray.add(wallet);
-            return wallet;
-        }
-    }
-
-    @Override
-    public UcoinWallet getById(Long id) {
-        return new Wallet(mContext, id);
-    }
-
-    @Override
-    public Iterator<UcoinWallet> iterator() {
-        if (mContext == null) {
-            return mWalletsArray.iterator();
-        }
-        String selection = Contract.Wallet.CURRENCY_ID + "=?";
-        String[] selectionArgs = new String[]{mCurrencyId.toString()};
-        final Cursor walletsCursor = mContext.getContentResolver().query(mUri, null,
-                selection, selectionArgs, null);
-
-        return new Iterator<UcoinWallet>() {
-            @Override
-            public boolean hasNext() {
-                if (walletsCursor.moveToNext())
-                    return true;
-                else {
-                    walletsCursor.close();
-                    return false;
-                }
-            }
-
-            @Override
-            public UcoinWallet next() {
-                Long id = walletsCursor.getLong(walletsCursor.getColumnIndex(Contract.Wallet._ID));
-                return new Wallet(mContext, id);
-            }
-
-            @Override
-            public void remove() {
-                throw new UnsupportedOperationException();
-            }
-        };
     }
 
     protected Wallets(Parcel in) {
@@ -109,6 +54,61 @@ final public class Wallets extends SQLiteEntities
         } else {
             mWalletsArray = null;
         }
+    }
+
+    @Override
+    public UcoinWallet add(String salt, String alias, String publicKey) {
+        return add(salt, alias, publicKey, null);
+    }
+
+    @Override
+    public UcoinWallet add(String salt, String alias, String publicKey, String privateKey) {
+        ContentValues values = new ContentValues();
+        values.put(SQLiteTable.Wallet.CURRENCY_ID, mCurrencyId);
+        values.put(SQLiteTable.Wallet.SALT, salt);
+        values.put(SQLiteTable.Wallet.ALIAS, alias);
+        values.put(SQLiteTable.Wallet.PUBLIC_KEY, publicKey);
+        values.put(SQLiteTable.Wallet.PRIVATE_KEY, privateKey);
+
+        Uri uri = mContext.getContentResolver().insert(mUri, values);
+        if (Long.parseLong(uri.getLastPathSegment()) > 0) {
+            return new Wallet(mContext, Long.parseLong(uri.getLastPathSegment()));
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    public UcoinWallet getById(Long id) {
+        return new Wallet(mContext, id);
+    }
+
+    @Override
+    public UcoinWallet getByPublicKey(String publicKey) {
+        String selection = SQLiteTable.Wallet.CURRENCY_ID + "=? AND " +
+                SQLiteTable.Wallet.PUBLIC_KEY + "=?";
+        String[] selectionArgs = new String[]{
+                mCurrencyId.toString(),
+                publicKey};
+        UcoinWallets wallets = new Wallets(mContext, mCurrencyId, selection, selectionArgs, null);
+        if (wallets.iterator().hasNext()) {
+            return wallets.iterator().next();
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    public Iterator<UcoinWallet> iterator() {
+        Cursor cursor = fetch();
+        ArrayList<UcoinWallet> data = new ArrayList<>();
+        while (cursor.moveToNext()) {
+            Long id = cursor.getLong(cursor.getColumnIndex(BaseColumns._ID));
+            data.add(new Wallet(mContext, id));
+        }
+        cursor.close();
+
+        return data.iterator();
     }
 
     @Override
@@ -131,17 +131,4 @@ final public class Wallets extends SQLiteEntities
             dest.writeList(mWalletsArray);
         }
     }
-
-    @SuppressWarnings("unused")
-    public static final Parcelable.Creator<Wallets> CREATOR = new Parcelable.Creator<Wallets>() {
-        @Override
-        public Wallets createFromParcel(Parcel in) {
-            return new Wallets(in);
-        }
-
-        @Override
-        public Wallets[] newArray(int size) {
-            return new Wallets[size];
-        }
-    };
 }

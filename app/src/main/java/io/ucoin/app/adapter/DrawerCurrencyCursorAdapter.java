@@ -9,7 +9,7 @@ import android.widget.CursorAdapter;
 import android.widget.TextView;
 
 import io.ucoin.app.R;
-import io.ucoin.app.sqlite.Contract;
+import io.ucoin.app.sqlite.SQLiteTable;
 
 
 public class DrawerCurrencyCursorAdapter extends CursorAdapter{
@@ -29,7 +29,7 @@ public class DrawerCurrencyCursorAdapter extends CursorAdapter{
     @Override
     public void bindView(View view, Context context, Cursor cursor) {
         TextView currency = (TextView) view.findViewById(R.id.drawer_list_currency);
-        int currencyIndex = cursor.getColumnIndex(Contract.Currency.CURRENCY_NAME);
+        int currencyIndex = cursor.getColumnIndex(SQLiteTable.Currency.CURRENCY_NAME);
         currency.setText(cursor.getString(currencyIndex));
     }
 }

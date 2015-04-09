@@ -6,9 +6,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.Serializable;
-
-import io.ucoin.app.technical.StandardCharsets;
-import io.ucoin.app.technical.gson.GsonUtils;
+import java.nio.charset.Charset;
 
 /**
  * Blockwhain parameters.
@@ -35,8 +33,8 @@ public class BlockchainParameter implements Serializable {
     public Float percentRot;
 
     public static BlockchainParameter fromJson(InputStream json) {
-        Gson gson = GsonUtils.newBuilder().create();
-        Reader reader = new InputStreamReader(json, StandardCharsets.UTF_8);
+        Gson gson = new Gson();
+        Reader reader = new InputStreamReader(json, Charset.forName("UTF-8"));
         return gson.fromJson(reader, BlockchainParameter.class);
     }
 

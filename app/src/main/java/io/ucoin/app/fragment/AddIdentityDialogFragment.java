@@ -2,7 +2,9 @@ package io.ucoin.app.fragment;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,7 +14,6 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import io.ucoin.app.DialogFragment;
 import io.ucoin.app.R;
@@ -21,7 +22,6 @@ import io.ucoin.app.model.UcoinIdentity;
 import io.ucoin.app.model.UcoinWallet;
 import io.ucoin.app.service.CryptoService;
 import io.ucoin.app.service.ServiceLocator;
-import io.ucoin.app.technical.AsyncTaskHandleException;
 import io.ucoin.app.technical.crypto.Base58;
 import io.ucoin.app.technical.crypto.KeyPair;
 
@@ -161,10 +161,9 @@ public class AddIdentityDialogFragment extends DialogFragment {
         public void onIdentityCreated(UcoinIdentity identity);
     }
 
-    public class GenerateKeysTask extends AsyncTaskHandleException<Bundle, Void, KeyPair> {
-
+    public class GenerateKeysTask extends AsyncTask<Bundle, Void, KeyPair> {
         @Override
-        protected KeyPair doInBackgroundHandleException(Bundle... args) throws Exception {
+        protected KeyPair doInBackground(Bundle... args){
 
             String salt = args[0].getString(("salt"));
             String password = args[0].getString(("password"));
@@ -175,35 +174,29 @@ public class AddIdentityDialogFragment extends DialogFragment {
         }
 
         @Override
-        protected void onSuccess(KeyPair keys) {
+        public void onPostExecute(KeyPair keyPair) {
             Bundle newInstanceArgs = getArguments();
             UcoinCurrency currency = newInstanceArgs.getParcelable(UcoinCurrency.class.getSimpleName());
 
-            UcoinWallet wallet = currency.wallets().newWallet(
+            UcoinWallet wallet = currency.wallets().add(
                     mSalt,
-                    Base58.encode(keys.getPubKey()),
-                    Base58.encode(keys.getSecKey()),
-                    mUid);
-            wallet = currency.wallets().add(wallet);
+                    mUid,
+                    Base58.encode(keyPair.getPubKey()),
+                    Base58.encode(keyPair.getSecKey()));
 
+
+            if (wallet == null) {
+                wallet = currency.wallets().getByPublicKey(Base58.encode(keyPair.getPubKey()));
+            }
             UcoinIdentity identity = currency.newIdentity(wallet.id(), mUid);
+
             identity = currency.setIdentity(identity);
+            Log.d("ADDIDENTITYDIALOG", identity.toString());
+
             currency.identityId(identity.id());
 
             mListener.onIdentityCreated(identity);
             dismiss();
-        }
-
-        @Override
-        protected void onFailed(Throwable t) {
-            mFieldLayout.setVisibility(View.VISIBLE);
-            mButtonLayout.setVisibility(View.VISIBLE);
-            mProgressLayout.setVisibility(View.GONE);
-            t.printStackTrace();
-            Toast.makeText(getActivity().getApplicationContext(),
-                    t.toString(),
-                    Toast.LENGTH_LONG)
-                    .show();
         }
     }
 }

@@ -9,7 +9,7 @@ import android.widget.CursorAdapter;
 import android.widget.TextView;
 
 import io.ucoin.app.R;
-import io.ucoin.app.sqlite.Contract;
+import io.ucoin.app.sqlite.SQLiteTable;
 
 
 public class SourceCursorAdapter extends CursorAdapter{
@@ -32,15 +32,15 @@ public class SourceCursorAdapter extends CursorAdapter{
         String colon = " : ";
 
         TextView amount = (TextView) view.findViewById(R.id.amount);
-        int amountIndex = cursor.getColumnIndex(Contract.Source.AMOUNT);
+        int amountIndex = cursor.getColumnIndex(SQLiteTable.Source.AMOUNT);
         amount.setText(colon + cursor.getString(amountIndex));
 
         TextView number = (TextView) view.findViewById(R.id.number);
-        int numberIndex = cursor.getColumnIndex(Contract.Source.NUMBER);
+        int numberIndex = cursor.getColumnIndex(SQLiteTable.Source.NUMBER);
         number.setText(colon + cursor.getString(numberIndex));
 
         TextView fingerprint = (TextView) view.findViewById(R.id.fingerprint);
-        int fingerprintIndex = cursor.getColumnIndex(Contract.Source.FINGERPRINT);
+        int fingerprintIndex = cursor.getColumnIndex(SQLiteTable.Source.FINGERPRINT);
         fingerprint.setText(cursor.getString(fingerprintIndex));
     }
 }

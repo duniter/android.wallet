@@ -6,16 +6,15 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.Serializable;
-
-import io.ucoin.app.technical.StandardCharsets;
-import io.ucoin.app.technical.gson.GsonUtils;
+import java.nio.charset.Charset;
 
 public class WotLookup implements Serializable {
     public Result[] results;
 
     public static WotLookup fromJson(InputStream json) {
-        Gson gson = GsonUtils.newBuilder().create();
-        Reader reader = new InputStreamReader(json, StandardCharsets.UTF_8);
+
+        Gson gson = new Gson();
+        Reader reader = new InputStreamReader(json, Charset.forName("UTF-8"));
         return gson.fromJson(reader, WotLookup.class);
     }
 

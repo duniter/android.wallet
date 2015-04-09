@@ -55,28 +55,10 @@ public class ServiceLocator implements Closeable {
     public static ServiceLocator instance() {
         return instance;
     }
-    
-    public BlockchainService getBlockchainService() {
-        return getService(BlockchainService.class);
-    }
-
-    public WotService getWotService() {
-        return getService(WotService.class);
-    }
 
     public CryptoService getCryptoService() {
         return getService(CryptoService.class);
     }
-    public DataService getDataService() {
-        return getService(DataService.class);
-    }
-    public DataContext getDataContext() {
-        return getService(DataContext.class);
-    }
-    public TransactionService getTransactionService() {
-        return getService(TransactionService.class);
-    }
-
     /* -- Internal methods -- */
     protected <S extends BaseService> S getService(Class<S> clazz) {
         if (serviceCache.containsKey(clazz)) {

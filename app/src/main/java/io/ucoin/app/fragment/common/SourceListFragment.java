@@ -17,8 +17,8 @@ import io.ucoin.app.R;
 import io.ucoin.app.adapter.SourceCursorAdapter;
 import io.ucoin.app.content.Provider;
 import io.ucoin.app.model.UcoinWallet;
-import io.ucoin.app.model.enums.SourceType;
-import io.ucoin.app.sqlite.Contract;
+import io.ucoin.app.enums.SourceType;
+import io.ucoin.app.sqlite.SQLiteTable;
 
 
 public class SourceListFragment extends ListFragment
@@ -66,7 +66,7 @@ implements LoaderManager.LoaderCallbacks<Cursor>    {
         UcoinWallet wallet = args.getParcelable(UcoinWallet.class.getSimpleName());
         SourceType type = (SourceType) args.getSerializable(SourceType.class.getSimpleName());
 
-        String selection = Contract.Source.WALLET_ID + "=? AND " + Contract.Source.TYPE + "=?";
+        String selection = SQLiteTable.Source.WALLET_ID + "=? AND " + SQLiteTable.Source.TYPE + "=?";
         String selectionArgs[] = new String[]{
                 wallet.id().toString(),
                 type.name()
@@ -76,7 +76,7 @@ implements LoaderManager.LoaderCallbacks<Cursor>    {
                 getActivity(),
                 Provider.SOURCE_URI,
                 null, selection, selectionArgs,
-                Contract.Source._ID +" DESC");
+                SQLiteTable.Source._ID +" DESC");
     }
 
     @Override

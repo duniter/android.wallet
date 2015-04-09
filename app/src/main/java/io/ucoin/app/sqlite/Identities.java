@@ -6,19 +6,31 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.provider.BaseColumns;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 
 import io.ucoin.app.content.Provider;
-import io.ucoin.app.model.UcoinIdentity;
 import io.ucoin.app.model.UcoinIdentities;
+import io.ucoin.app.model.UcoinIdentity;
 
 final public class Identities extends SQLiteEntities
         implements UcoinIdentities, Parcelable {
 
+    @SuppressWarnings("unused")
+    public static final Parcelable.Creator<Identities> CREATOR = new Parcelable.Creator<Identities>() {
+        @Override
+        public Identities createFromParcel(Parcel in) {
+            return new Identities(in);
+        }
+
+        @Override
+        public Identities[] newArray(int size) {
+            return new Identities[size];
+        }
+    };
     private Long mCurrencyId;
-    private ArrayList<UcoinIdentity> mIdentitiesArray;
 
     public Identities(Context context, Long currencyId) {
         super(context, Provider.IDENTITY_URI);
@@ -27,11 +39,15 @@ final public class Identities extends SQLiteEntities
 
     public Identities(Long currencyId, ArrayList<UcoinIdentity> identities) {
         mCurrencyId = currencyId;
-        if (identities == null) {
-            mIdentitiesArray = new ArrayList<>();
-        } else {
-            mIdentitiesArray = identities;
-        }
+    }
+
+    protected Identities(Parcel in) {
+        mCurrencyId = in.readByte() == 0x00 ? null : in.readLong();
+    }
+
+    @Override
+    public UcoinIdentity getById(Long id) {
+        return new Identity(mContext, id);
     }
 
     @Override
@@ -42,63 +58,28 @@ final public class Identities extends SQLiteEntities
     @Override
     public UcoinIdentity add(UcoinIdentity identity) {
         ContentValues values = new ContentValues();
-        values.put(Contract.Identity.CURRENCY_ID, identity.currencyId());
-        values.put(Contract.Identity.WALLET_ID, identity.walletId());
-        values.put(Contract.Identity.UID, identity.uid());
-        values.put(Contract.Identity.SELF, identity.self());
-        values.put(Contract.Identity.TIMESTAMP, identity.timestamp());
+        values.put(SQLiteTable.Identity.CURRENCY_ID, identity.currencyId());
+        values.put(SQLiteTable.Identity.WALLET_ID, identity.walletId());
+        values.put(SQLiteTable.Identity.UID, identity.uid());
+        values.put(SQLiteTable.Identity.SELF, identity.self());
+        values.put(SQLiteTable.Identity.TIMESTAMP, identity.timestamp());
 
         //insert identity
         Uri uri = mContext.getContentResolver().insert(mUri, values);
-        return getById(Long.parseLong(uri.getLastPathSegment()));
-    }
-
-    @Override
-    public UcoinIdentity getById(Long id) {
-        return new Identity(mContext, id);
+        return new Identity(mContext, Long.parseLong(uri.getLastPathSegment()));
     }
 
     @Override
     public Iterator<UcoinIdentity> iterator() {
-        if (mContext == null) {
-            return mIdentitiesArray.iterator();
+        Cursor cursor = fetch();
+        ArrayList<UcoinIdentity> data = new ArrayList<>();
+        while (cursor.moveToNext()) {
+            Long id = cursor.getLong(cursor.getColumnIndex(BaseColumns._ID));
+            data.add(new Identity(mContext, id));
         }
+        cursor.close();
 
-        final Cursor identityCursor = mContext.getContentResolver().query(mUri, null,
-                null, null, null);
-
-        return new Iterator<UcoinIdentity>() {
-            @Override
-            public boolean hasNext() {
-                if (identityCursor.moveToNext())
-                    return true;
-                else {
-                    identityCursor.close();
-                    return false;
-                }
-            }
-
-            @Override
-            public UcoinIdentity next() {
-                Long id = identityCursor.getLong(identityCursor.getColumnIndex(Contract.Identity._ID));
-                return new Identity(mContext, id);
-            }
-
-            @Override
-            public void remove() {
-                throw new UnsupportedOperationException();
-            }
-        };
-    }
-
-    protected Identities(Parcel in) {
-        mCurrencyId = in.readByte() == 0x00 ? null : in.readLong();
-        if (in.readByte() == 0x01) {
-            mIdentitiesArray = new ArrayList<>();
-            in.readList(mIdentitiesArray, UcoinIdentity.class.getClassLoader());
-        } else {
-            mIdentitiesArray = null;
-        }
+        return data.iterator();
     }
 
     @Override
@@ -114,24 +95,5 @@ final public class Identities extends SQLiteEntities
             dest.writeByte((byte) (0x01));
             dest.writeLong(mCurrencyId);
         }
-        if (mIdentitiesArray == null) {
-            dest.writeByte((byte) (0x00));
-        } else {
-            dest.writeByte((byte) (0x01));
-            dest.writeList(mIdentitiesArray);
-        }
     }
-
-    @SuppressWarnings("unused")
-    public static final Parcelable.Creator<Identities> CREATOR = new Parcelable.Creator<Identities>() {
-        @Override
-        public Identities createFromParcel(Parcel in) {
-            return new Identities(in);
-        }
-
-        @Override
-        public Identities[] newArray(int size) {
-            return new Identities[size];
-        }
-    };
 }

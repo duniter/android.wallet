@@ -9,7 +9,7 @@ import android.widget.CursorAdapter;
 import android.widget.TextView;
 
 import io.ucoin.app.R;
-import io.ucoin.app.sqlite.Contract;
+import io.ucoin.app.sqlite.SQLiteView;
 
 
 public class CertificationCursorAdapter extends CursorAdapter{
@@ -32,15 +32,15 @@ public class CertificationCursorAdapter extends CursorAdapter{
         String colon = " : ";
 
         TextView memberUid = (TextView) view.findViewById(R.id.member_uid);
-        int memberUidIndex = cursor.getColumnIndex(Contract.Member.UID);
+        int memberUidIndex = cursor.getColumnIndex(SQLiteView.Certification.UID);
         memberUid.setText(colon + cursor.getString(memberUidIndex));
 
         TextView block = (TextView) view.findViewById(R.id.block);
-        int blockIndex = cursor.getColumnIndex(Contract.Certification.BLOCK);
+        int blockIndex = cursor.getColumnIndex(SQLiteView.Certification.BLOCK);
         block.setText(colon + cursor.getString(blockIndex));
 
         TextView medianTime = (TextView) view.findViewById(R.id.median_time);
-        int medianTimeIndex = cursor.getColumnIndex(Contract.Certification.MEDIAN_TIME);
+        int medianTimeIndex = cursor.getColumnIndex(SQLiteView.Certification.MEDIAN_TIME);
         medianTime.setText(colon + cursor.getString(medianTimeIndex));
     }
 }

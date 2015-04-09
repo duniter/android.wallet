@@ -1,15 +1,10 @@
 package io.ucoin.app.model;
 
 
-import io.ucoin.app.model.enums.SourceType;
+import io.ucoin.app.model.http_api.TxSources;
 
 public interface UcoinSources extends Entities, Iterable<UcoinSource> {
-    public UcoinSource newSource(Integer number,
-                                 SourceType type,
-                                 String fingerprint,
-                                 Long amount);
+    public UcoinSource add(TxSources.Source source);
 
-    public UcoinSource add(UcoinSource source);
     public UcoinSource getById(Long id);
-    public int delete(Long id);
 }

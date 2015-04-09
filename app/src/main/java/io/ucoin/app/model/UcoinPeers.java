@@ -1,8 +1,8 @@
 package io.ucoin.app.model;
 
+import io.ucoin.app.model.http_api.NetworkPeering;
+
 public interface UcoinPeers extends Entities, Iterable<UcoinPeer> {
-    public UcoinPeer newPeer(io.ucoin.app.model.http_api.Peer peer);
-    public UcoinPeer add(UcoinPeer node);
+    public UcoinPeer add(NetworkPeering networkPeering);
     public UcoinPeer getById(Long id);
-    public int delete(Long id);
 }

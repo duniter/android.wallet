@@ -21,8 +21,8 @@ import io.ucoin.app.activity.MainActivity;
 import io.ucoin.app.model.UcoinCurrency;
 
 public class MemberListFragment extends ListFragment
-implements LoaderManager.LoaderCallbacks<Cursor>    {
-//todo fill this class
+        implements LoaderManager.LoaderCallbacks<Cursor> {
+
     static public MemberListFragment newInstance(UcoinCurrency currency) {
         Bundle newInstanceargs = new Bundle();
         newInstanceargs.putParcelable(UcoinCurrency.class.getSimpleName(), currency);

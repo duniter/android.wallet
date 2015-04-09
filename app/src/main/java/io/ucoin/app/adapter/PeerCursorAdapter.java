@@ -9,7 +9,7 @@ import android.widget.CursorAdapter;
 import android.widget.TextView;
 
 import io.ucoin.app.R;
-import io.ucoin.app.sqlite.Contract;
+import io.ucoin.app.sqlite.SQLiteTable;
 
 
 public class PeerCursorAdapter extends CursorAdapter{
@@ -29,11 +29,11 @@ public class PeerCursorAdapter extends CursorAdapter{
     @Override
     public void bindView(View view, Context context, Cursor cursor) {
         TextView publicKey = (TextView) view.findViewById(R.id.public_key);
-        int currencyIndex = cursor.getColumnIndex(Contract.Peer.PUBLIC_KEY);
+        int currencyIndex = cursor.getColumnIndex(SQLiteTable.Peer.PUBLIC_KEY);
         publicKey.setText(cursor.getString(currencyIndex));
 
         TextView signature = (TextView) view.findViewById(R.id.signature);
-        int membersCountIndex = cursor.getColumnIndex(Contract.Peer.SIGNATURE);
+        int membersCountIndex = cursor.getColumnIndex(SQLiteTable.Peer.SIGNATURE);
         signature.setText(cursor.getString(membersCountIndex));
     }
 }

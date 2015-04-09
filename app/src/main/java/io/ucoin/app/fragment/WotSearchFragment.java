@@ -1,8 +1,6 @@
 package io.ucoin.app.fragment;
 
 import android.app.Activity;
-import android.app.Fragment;
-import android.app.FragmentManager;
 import android.app.SearchManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -126,6 +124,7 @@ public class WotSearchFragment extends ListFragment
 
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
+        /*
         Identity identity = (Identity) l.getAdapter().getItem(position);
         Fragment fragment = IdentityFragment.newInstance(identity);
         fragment.setHasOptionsMenu(true);
@@ -139,6 +138,7 @@ public class WotSearchFragment extends ListFragment
                 .replace(R.id.frame_content, fragment, fragment.getClass().getSimpleName())
                 .addToBackStack(fragment.getClass().getSimpleName())
                 .commit();
+                */
     }
 
     @Override

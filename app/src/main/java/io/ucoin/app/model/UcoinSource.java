@@ -1,6 +1,6 @@
 package io.ucoin.app.model;
 
-import io.ucoin.app.model.enums.SourceType;
+import io.ucoin.app.enums.SourceType;
 
 public interface UcoinSource extends Entity {
     Long walletId();

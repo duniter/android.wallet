@@ -1,6 +1,6 @@
 package io.ucoin.app.model;
 
-import io.ucoin.app.model.enums.CertificationType;
+import io.ucoin.app.enums.CertificationType;
 
 public interface UcoinCertification extends Entity {
     Long identityId();

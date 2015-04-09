@@ -1,15 +1,12 @@
 package io.ucoin.app.technical.crypto;
 
 
-import io.ucoin.app.technical.UCoinTechnicalException;
+import com.lambdaworks.codec.Base64;
 
 import java.nio.charset.Charset;
-import java.security.GeneralSecurityException;
 import java.util.Arrays;
 
-
-import com.lambdaworks.codec.Base64;
-import com.lambdaworks.crypto.SCrypt;
+import io.ucoin.app.technical.UCoinTechnicalException;
 
 public class CryptoUtils {
 

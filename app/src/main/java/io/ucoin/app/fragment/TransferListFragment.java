@@ -1,7 +1,5 @@
 package io.ucoin.app.fragment;
 
-import android.app.Fragment;
-import android.app.FragmentManager;
 import android.app.LoaderManager;
 import android.content.CursorLoader;
 import android.content.Loader;
@@ -65,22 +63,6 @@ public class TransferListFragment extends ListFragment
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.action_transfer:
-                Fragment fragment = TransferFragment.newInstance(null);
-                fragment.setHasOptionsMenu(true);
-                FragmentManager fragmentManager = getFragmentManager();
-                fragmentManager.beginTransaction()
-                        .setCustomAnimations(
-                                R.animator.delayed_slide_in_up,
-                                R.animator.fade_out,
-                                R.animator.delayed_fade_in,
-                                R.animator.slide_out_up)
-                        .replace(R.id.frame_content, fragment, fragment.getClass().getSimpleName())
-                        .addToBackStack(fragment.getClass().getSimpleName())
-                        .commit();
-                return true;
-        }
         return super.onOptionsItemSelected(item);
     }
 

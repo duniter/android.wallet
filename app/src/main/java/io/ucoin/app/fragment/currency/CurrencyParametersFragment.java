@@ -1,18 +1,13 @@
 package io.ucoin.app.fragment.currency;
 
-import android.app.FragmentManager;
 import android.os.Bundle;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import io.ucoin.app.Fragment;
 import io.ucoin.app.R;
-import io.ucoin.app.activity.MainActivity;
 import io.ucoin.app.model.UcoinCurrency;
 
 public class CurrencyParametersFragment extends Fragment {
@@ -81,44 +76,5 @@ public class CurrencyParametersFragment extends Fragment {
         mDtDiffEval.setText(colon + currency.dtDiffEval().toString());
         mBlocksRot.setText(colon + currency.blocksRot().toString());
         mPercentRot.setText(colon + currency.percentRot().toString());
-
-        memberCount.setText(colon + currency.membersCount().toString());
-    }
-
-    @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.toolbar_currency_parameters, menu);
-
-        Bundle args = getArguments();
-        UcoinCurrency currency = args.getParcelable(UcoinCurrency.class.getSimpleName());
-
-        currency = currencies().getByFirstBlockSignature(currency.firstBlockSignature());
-
-        if (currency != null) {
-            menu.removeItem(R.id.action_add);
-        } else {
-            menu.removeItem(R.id.action_join);
-        }
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.action_add:
-                add();
-                return true;
-            case R.id.action_join:
-                return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
-    public void add() {
-        Bundle args = getArguments();
-        UcoinCurrency currency = args.getParcelable(UcoinCurrency.class.getSimpleName());
-
-        ((MainActivity)getActivity()).clearAllFragments();
-        currencies().add(currency);
-        ((MainActivity)getActivity()).openDrawer();
     }
 }

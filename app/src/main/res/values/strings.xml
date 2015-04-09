@@ -30,7 +30,7 @@
     <string name="wallet_transmitter">Wallet (transmitter)</string>
     <string name="receiver_uid">Receiver uid</string>
     <string name="amount">Amount</string>
-    <string name="universal_dividend_acronym">UD</string>
+    <string name="UD">UD</string>
     <string name="unit_coins_label">coins</string>
     <string name="wallet">Wallet</string>
     <string name="comment_hint">Comment</string>
@@ -117,8 +117,8 @@
     <string name="confirm_password_cannot_be_empty">Confirm password cannot be empty</string>
     <string name="passwords_dont_match">Passwords don\'t match</string>
     <string name="currency_added">Currency added</string>
-    <string name="invalid_node_address">Invalid node address</string>
-    <string name="invalid_node_port">Invalid node port</string>
+    <string name="invalid_peer_address">Invalid peer address</string>
+    <string name="invalid_peer_port">Invalid perr port</string>
     <string name="wallets">Wallets</string>
     <string name="create_new">Create new</string>
     <string name="add_wallet">Add wallet</string>
@@ -165,6 +165,14 @@
     <string name="member">Member</string>
     <string name="median_time">Median time</string>
     <string name="generating_keys">Generating keys...</string>
+    <string name="empty_wallet">Empty wallet</string>
+    <string name="export_db">Export DB</string>
+    <string name="wallet_already_exists">Wallet already exists</string>
+    <string name="port_cannot_be_empty">Port cannot be empty</string>
+    <string name="comment">Comment</string>
+    <string name="hash">hash</string>
+    <string name="sent">Sent</string>
+    <string name="no_transactions">No transactions</string>
 
     <string-array name="drawer_items">
         <item>@string/wallets</item>

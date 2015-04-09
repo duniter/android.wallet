@@ -6,7 +6,6 @@ import android.os.Parcelable;
 
 import io.ucoin.app.content.Provider;
 import io.ucoin.app.model.UcoinMember;
-import io.ucoin.app.model.enums.CertificationType;
 
 public class Member extends SQLiteEntity
         implements UcoinMember, Parcelable {
@@ -46,37 +45,37 @@ public class Member extends SQLiteEntity
 
     @Override
     public Long currencyId() {
-        return (this.mId == null) ? mCurrencyId : getLong(Contract.Member.CURRENCY_ID);
+        return (this.mId == null) ? mCurrencyId : getLong(SQLiteTable.Member.CURRENCY_ID);
     }
 
     @Override
     public String uid() {
-        return (this.mId == null) ? mUid : getString(Contract.Member.UID);
+        return (this.mId == null) ? mUid : getString(SQLiteTable.Member.UID);
     }
 
     @Override
     public String publicKey() {
-        return (this.mId == null) ? mPublicKey : getString(Contract.Member.PUBLIC_KEY);
+        return (this.mId == null) ? mPublicKey : getString(SQLiteTable.Member.PUBLIC_KEY);
     }
 
     @Override
     public Boolean isMember() {
-        return (this.mId == null) ? mIsMember : getBoolean(Contract.Member.IS_MEMBER);
+        return (this.mId == null) ? mIsMember : getBoolean(SQLiteTable.Member.IS_MEMBER);
     }
 
     @Override
     public Boolean wasMember() {
-        return (this.mId == null) ? mWasMember : getBoolean(Contract.Member.WAS_MEMBER);
+        return (this.mId == null) ? mWasMember : getBoolean(SQLiteTable.Member.WAS_MEMBER);
     }
 
     @Override
     public String self() {
-        return (this.mId == null) ? mSelf : getString(Contract.Member.SELF);
+        return (this.mId == null) ? mSelf : getString(SQLiteTable.Member.SELF);
     }
 
     @Override
     public Long timestamp() {
-        return (this.mId == null) ? mTimestamp : getLong(Contract.Member.TIMESTAMP);
+        return (this.mId == null) ? mTimestamp : getLong(SQLiteTable.Member.TIMESTAMP);
     }
 
     @Override
@@ -84,7 +83,7 @@ public class Member extends SQLiteEntity
         if(this.mId == null) {
             mIsMember = is;
         } else {
-            setBoolean(Contract.Member.IS_MEMBER, is);
+            setBoolean(SQLiteTable.Member.IS_MEMBER, is);
         }
     }
 
@@ -93,7 +92,7 @@ public class Member extends SQLiteEntity
         if(this.mId == null) {
             mWasMember = was;
         } else {
-            setBoolean(Contract.Member.WAS_MEMBER, was);
+            setBoolean(SQLiteTable.Member.WAS_MEMBER, was);
         }
     }
 

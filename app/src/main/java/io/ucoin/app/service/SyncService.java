@@ -4,7 +4,7 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
 
-import io.ucoin.app.adapter.SyncAdapter;
+import io.ucoin.app.content.SyncAdapter;
 
 /**
  * Define a Service that returns an IBinder for the

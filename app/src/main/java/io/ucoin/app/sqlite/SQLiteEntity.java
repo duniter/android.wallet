@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.provider.BaseColumns;
 
 import io.ucoin.app.model.Entity;
 
@@ -14,21 +15,42 @@ public class SQLiteEntity implements Entity {
     protected Long mId;
     protected Context mContext;
     private Uri mUri;
+    protected boolean mIsCached;
 
     public SQLiteEntity() {
-        mContext = null;
-        mId = null;
-        mUri = null;
+        this(null, null, null);
     }
 
     public SQLiteEntity(Context context, Uri uri, Long id) {
+        this(context, uri, id, false);
+    }
+
+    public SQLiteEntity(Context context, Uri uri, Long id, boolean isCached) {
         mContext = context;
         mUri = uri;
         mId = id;
+        mIsCached = isCached;
     }
 
     public Long id() {
         return mId;
+    }
+
+    @Override
+    public int delete() {
+        Uri uri = Uri.withAppendedPath(mUri, mId.toString());
+        return mContext.getContentResolver().delete(uri, null, null);
+    }
+
+    public Cursor fetch() {
+        Cursor c = mContext.getContentResolver().query(
+                mUri,
+                null,
+                BaseColumns._ID,
+                new String[]{mId.toString()},
+                BaseColumns._ID + " ASC LIMIT 1");
+
+        return c;
     }
 
     /**
@@ -122,6 +144,7 @@ public class SQLiteEntity implements Entity {
         mId = in.readByte() == 0x00 ? null : in.readLong();
         mContext = (Context) in.readValue(Context.class.getClassLoader());
         mUri = (Uri) in.readValue(Uri.class.getClassLoader());
+        mIsCached = in.readByte() != 0x00;
     }
 
     @Override
@@ -139,6 +162,7 @@ public class SQLiteEntity implements Entity {
         }
         dest.writeValue(mContext);
         dest.writeValue(mUri);
+        dest.writeByte((byte) (mIsCached ? 0x01 : 0x00));
     }
 
     @SuppressWarnings("unused")

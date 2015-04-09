@@ -11,5 +11,4 @@ public interface UcoinMembers extends Entities, Iterable<UcoinMember> {
     public UcoinMember getById(Long id);
     public UcoinMember getByUid(String uid);
     public UcoinMember getByPublicKey(String publicKey);
-    public int delete(Long id);
 }

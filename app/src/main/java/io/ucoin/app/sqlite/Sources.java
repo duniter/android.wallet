@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.provider.BaseColumns;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -13,51 +14,59 @@ import java.util.Iterator;
 import io.ucoin.app.content.Provider;
 import io.ucoin.app.model.UcoinSource;
 import io.ucoin.app.model.UcoinSources;
-import io.ucoin.app.model.enums.SourceType;
+import io.ucoin.app.model.http_api.TxSources;
 
 final public class Sources extends SQLiteEntities
         implements UcoinSources {
 
+    @SuppressWarnings("unused")
+    public static final Parcelable.Creator<Sources> CREATOR = new Parcelable.Creator<Sources>() {
+        @Override
+        public Sources createFromParcel(Parcel in) {
+            return new Sources(in);
+        }
+
+        @Override
+        public Sources[] newArray(int size) {
+            return new Sources[size];
+        }
+    };
     private Long mWalletId;
-    private ArrayList<UcoinSource> mSourcesArray;
 
     public Sources(Context context, Long walletId) {
-        super(context, Provider.SOURCE_URI);
+        this(context, walletId, SQLiteTable.Source.WALLET_ID + "=?", new String[]{walletId.toString()});
+    }
+
+    private Sources(Context context, Long walletId, String selection, String selectionArgs[]) {
+        this(context, walletId, selection, selectionArgs, null);
+    }
+
+    private Sources(Context context, Long walletId, String selection, String selectionsArgs[], String sortOrder) {
+        super(context, Provider.SOURCE_URI, selection, selectionsArgs, sortOrder);
         mWalletId = walletId;
     }
 
-    public Sources(Long walletId, ArrayList<UcoinSource> sources) {
-        mWalletId = walletId;
-        if (sources == null) {
-            mSourcesArray = new ArrayList<>();
-        } else {
-            mSourcesArray = sources;
-        }
+
+    protected Sources(Parcel in) {
+        mWalletId = in.readByte() == 0x00 ? null : in.readLong();
     }
 
     @Override
-    public UcoinSource newSource(Integer number, SourceType type, String fingerprint, Long amount) {
-        return new Source(mWalletId, number, type, fingerprint, amount);
-    }
+    public UcoinSource add(TxSources.Source source) {
+        ContentValues values = new ContentValues();
+        values.put(SQLiteTable.Source.WALLET_ID, mWalletId);
+        values.put(SQLiteTable.Source.TYPE, source.type.name());
+        values.put(SQLiteTable.Source.FINGERPRINT, source.fingerprint);
+        values.put(SQLiteTable.Source.NUMBER, source.number);
+        values.put(SQLiteTable.Source.AMOUNT, source.amount);
 
-    @Override
-    public UcoinSource add(UcoinSource source) {
-        if (mContext != null) {
-            ContentValues values = new ContentValues();
-            values.put(Contract.Source.WALLET_ID, source.walletId());
-            values.put(Contract.Source.TYPE, source.type().name());
-            values.put(Contract.Source.FINGERPRINT, source.fingerprint());
-            values.put(Contract.Source.NUMBER, source.number());
-            values.put(Contract.Source.AMOUNT, source.amount());
-
-            Uri uri = mContext.getContentResolver().insert(mUri, values);
-            return getById(Long.parseLong(uri.getLastPathSegment()));
+        Uri uri = mContext.getContentResolver().insert(mUri, values);
+        if (Long.parseLong(uri.getLastPathSegment()) > 0) {
+            return new Source(mContext, Long.parseLong(uri.getLastPathSegment()));
         } else {
-            mSourcesArray.add(source);
-            return source;
+            return null;
         }
     }
-
 
     @Override
     public UcoinSource getById(Long id) {
@@ -66,46 +75,15 @@ final public class Sources extends SQLiteEntities
 
     @Override
     public Iterator<UcoinSource> iterator() {
-        if (mContext == null) {
-            return mSourcesArray.iterator();
+        Cursor cursor = fetch();
+        ArrayList<UcoinSource> data = new ArrayList<>();
+        while (cursor.moveToNext()) {
+            Long id = cursor.getLong(cursor.getColumnIndex(BaseColumns._ID));
+            data.add(new Source(mContext, id));
         }
-        String selection = Contract.Source.WALLET_ID + "=?";
-        String[] selectionArgs = new String[]{mWalletId.toString()};
-        final Cursor sourcesCursor = mContext.getContentResolver().query(mUri, null,
-                selection, selectionArgs, null);
+        cursor.close();
 
-        return new Iterator<UcoinSource>() {
-            @Override
-            public boolean hasNext() {
-                if (sourcesCursor.moveToNext())
-                    return true;
-                else {
-                    sourcesCursor.close();
-                    return false;
-                }
-            }
-
-            @Override
-            public UcoinSource next() {
-                Long id = sourcesCursor.getLong(sourcesCursor.getColumnIndex(Contract.Source._ID));
-                return new Source(mContext, id);
-            }
-
-            @Override
-            public void remove() {
-                throw new UnsupportedOperationException();
-            }
-        };
-    }
-
-    protected Sources(Parcel in) {
-        mWalletId = in.readByte() == 0x00 ? null : in.readLong();
-        if (in.readByte() == 0x01) {
-            mSourcesArray = new ArrayList<>();
-            in.readList(mSourcesArray, UcoinSource.class.getClassLoader());
-        } else {
-            mSourcesArray = null;
-        }
+        return data.iterator();
     }
 
     @Override
@@ -121,24 +99,5 @@ final public class Sources extends SQLiteEntities
             dest.writeByte((byte) (0x01));
             dest.writeLong(mWalletId);
         }
-        if (mSourcesArray == null) {
-            dest.writeByte((byte) (0x00));
-        } else {
-            dest.writeByte((byte) (0x01));
-            dest.writeList(mSourcesArray);
-        }
     }
-
-    @SuppressWarnings("unused")
-    public static final Parcelable.Creator<Sources> CREATOR = new Parcelable.Creator<Sources>() {
-        @Override
-        public Sources createFromParcel(Parcel in) {
-            return new Sources(in);
-        }
-
-        @Override
-        public Sources[] newArray(int size) {
-            return new Sources[size];
-        }
-    };
 }

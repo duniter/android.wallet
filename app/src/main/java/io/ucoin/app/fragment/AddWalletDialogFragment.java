@@ -10,13 +10,14 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import io.ucoin.app.DialogFragment;
 import io.ucoin.app.R;
-import io.ucoin.app.service.CryptoService;
-import io.ucoin.app.service.ServiceLocator;
 import io.ucoin.app.model.UcoinCurrency;
 import io.ucoin.app.model.UcoinWallet;
+import io.ucoin.app.service.CryptoService;
+import io.ucoin.app.service.ServiceLocator;
 import io.ucoin.app.technical.crypto.Base58;
 import io.ucoin.app.technical.crypto.KeyPair;
 
@@ -25,7 +26,7 @@ public class AddWalletDialogFragment extends DialogFragment {
     public static AddWalletDialogFragment newInstance(UcoinCurrency currency) {
         Bundle newInstanceArgs = new Bundle();
         newInstanceArgs.putSerializable(UcoinCurrency.class.getSimpleName(), currency);
-        AddWalletDialogFragment fragment =  new AddWalletDialogFragment();
+        AddWalletDialogFragment fragment = new AddWalletDialogFragment();
         fragment.setArguments(newInstanceArgs);
         return fragment;
     }
@@ -49,7 +50,7 @@ public class AddWalletDialogFragment extends DialogFragment {
         salt.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
-                if(hasFocus) {
+                if (hasFocus) {
                     saltHint.setVisibility(View.VISIBLE);
                 } else {
                     saltHint.setVisibility(View.GONE);
@@ -59,7 +60,7 @@ public class AddWalletDialogFragment extends DialogFragment {
         password.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
-                if(hasFocus) {
+                if (hasFocus) {
                     passwordHint.setVisibility(View.VISIBLE);
                 } else {
                     passwordHint.setVisibility(View.GONE);
@@ -116,17 +117,19 @@ public class AddWalletDialogFragment extends DialogFragment {
 
                 Bundle newInstanceArgs = getArguments();
                 UcoinCurrency currency =
-                        (UcoinCurrency)newInstanceArgs.getSerializable(UcoinCurrency.class.getSimpleName());
+                        (UcoinCurrency) newInstanceArgs.getSerializable(UcoinCurrency.class.getSimpleName());
 
-                UcoinWallet wallet = currency.wallets()
-                        .newWallet(
-                                salt.getText().toString(),
-                                Base58.encode(keys.getPubKey()),
-                                Base58.encode(keys.getSecKey()),
-                                aliasStr);
+                UcoinWallet wallet = currency.wallets().add(
+                        salt.getText().toString(),
+                        aliasStr,
+                        Base58.encode(keys.getPubKey()),
+                        Base58.encode(keys.getSecKey()));
 
-                currency.wallets().add(wallet);
-
+                if (wallet == null) {
+                    Toast.makeText(getActivity().getApplicationContext(),
+                            getString(R.string.wallet_already_exists),
+                            Toast.LENGTH_SHORT).show();
+                }
                 dismiss();
             }
         });

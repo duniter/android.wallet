@@ -29,7 +29,7 @@
             android:textSize="@dimen/abc_text_size_title_material" />
 
         <TextView
-            android:id="@+id/quantitativeBalance"
+            android:id="@+id/quantitative_amount"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
@@ -39,11 +39,11 @@
             android:textSize="@dimen/abc_text_size_title_material" />
 
         <TextView
-            android:id="@+id/relativeBalance"
+            android:id="@+id/relative_amount"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
             android:layout_below="@id/public_key"
             android:textColor="@color/textPrimary"
             android:textSize="@dimen/abc_text_size_title_material" />

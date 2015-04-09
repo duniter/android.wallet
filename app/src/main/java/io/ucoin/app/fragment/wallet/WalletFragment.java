@@ -4,6 +4,7 @@ import android.app.FragmentManager;
 import android.os.Bundle;
 import android.support.v13.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -15,20 +16,19 @@ import android.widget.TextView;
 import io.ucoin.app.Fragment;
 import io.ucoin.app.R;
 import io.ucoin.app.activity.MainActivity;
+import io.ucoin.app.enums.SourceType;
+import io.ucoin.app.enums.TxDirection;
 import io.ucoin.app.fragment.common.SourceListFragment;
-import io.ucoin.app.model.UcoinCurrency;
+import io.ucoin.app.fragment.common.TxListFragment;
 import io.ucoin.app.model.UcoinWallet;
-import io.ucoin.app.model.enums.SourceType;
 import io.ucoin.app.view.SlidingTabLayout;
 
 public class WalletFragment extends Fragment {
 
-    private TextView mQuantitativeBalance;
-
     public static WalletFragment newInstance(UcoinWallet wallet) {
         Bundle newInstanceArgs = new Bundle();
         newInstanceArgs.putParcelable(UcoinWallet.class.getSimpleName(), wallet);
-
+Log.d("WALLET", wallet.toString());
         WalletFragment fragment = new WalletFragment();
         fragment.setArguments(newInstanceArgs);
         return fragment;
@@ -66,9 +66,21 @@ public class WalletFragment extends Fragment {
         }
 
         TextView publicKey = (TextView) view.findViewById(R.id.public_key);
+        TextView quantitativeAmount = (TextView) view.findViewById(R.id.quantitative_amount);
+        TextView relativeAmount = (TextView) view.findViewById(R.id.relative_amount);
+
         publicKey.setText(wallet.publicKey());
-        mQuantitativeBalance = (TextView) view.findViewById(R.id.quantitativeBalance);
-        mQuantitativeBalance.setText(wallet.quantitativeBalance().toString());
+        StringBuilder sb = new StringBuilder();
+        sb.append(wallet.quantitativeAmount());
+        sb.append(" ");
+        sb.append(wallet.currencyName());
+        quantitativeAmount.setText(sb.toString());
+
+        sb.setLength(0);
+        sb.append(wallet.relativeAmount());
+        sb.append(" ");
+        sb.append(getString(R.string.UD));
+        relativeAmount.setText(sb.toString());
 
         // Get the ViewPager and set it's PagerAdapter so that it can display items
         ViewPager viewPager;
@@ -93,8 +105,7 @@ public class WalletFragment extends Fragment {
             case R.id.action_delete:
                 Bundle args = getArguments();
                 UcoinWallet wallet = args.getParcelable(UcoinWallet.class.getSimpleName());
-                UcoinCurrency currency = currencies().getById(wallet.currencyId());
-                currency.wallets().delete(wallet.id());
+                wallet.delete();
                 getFragmentManager().popBackStack();
                 return true;
         }
@@ -128,7 +139,7 @@ public class WalletFragment extends Fragment {
             if (position == 0) {
                 return getString(R.string.received);
             } else {
-                return getString(R.string.dividend);
+                return getString(R.string.sent);
             }
         }
 
@@ -138,11 +149,11 @@ public class WalletFragment extends Fragment {
             UcoinWallet wallet = args.getParcelable(UcoinWallet.class.getSimpleName());
 
             android.app.Fragment fragment;
-            if (i == 0) {
-                fragment = SourceListFragment.newInstance(wallet, SourceType.T);
+            if( i == 0) {
+                fragment = TxListFragment.newInstance(wallet, TxDirection.RECEIVED);
                 fragment.setHasOptionsMenu(false);
             } else {
-                fragment = SourceListFragment.newInstance(wallet, SourceType.D);
+                fragment = TxListFragment.newInstance(wallet, TxDirection.SENT);
                 fragment.setHasOptionsMenu(false);
             }
             return fragment;

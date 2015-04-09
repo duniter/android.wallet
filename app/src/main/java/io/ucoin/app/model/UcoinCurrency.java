@@ -20,11 +20,9 @@ public interface UcoinCurrency extends Entity{
     Integer blocksRot();
     Float percentRot();
 
-    Long membersCount();
-    String firstBlockSignature();
-
     UcoinIdentity identity();
-
+    
+    UcoinBlocks blocks();
     UcoinWallets wallets();
     UcoinPeers peers();
     UcoinMembers members();

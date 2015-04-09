@@ -13,51 +13,60 @@
         android:layout_height="140dp"
         android:background="@color/primary"
         android:orientation="vertical"
-        android:paddingTop="16dp"
         android:paddingEnd="16dp"
         android:paddingLeft="16dp"
         android:paddingRight="16dp"
-        android:paddingStart="16dp">
+        android:paddingStart="16dp"
+        android:paddingTop="16dp">
 
         <ImageButton
             android:id="@+id/drawer_button"
             android:layout_width="56dp"
             android:layout_height="56dp"
             android:background="@drawable/shape_circle"
-            android:elevation="4dp"
-            android:clickable="false"/>
+            android:clickable="false"
+            android:elevation="4dp" />
 
         <TextView
             android:id="@+id/drawer_uid"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"
+            android:clickable="false"
             android:gravity="center_vertical"
             android:textColor="@color/textPrimary"
             android:textSize="@dimen/abc_text_size_body_2_material"
-            android:textStyle="bold"
-            android:clickable="false"/>
+            android:textStyle="bold" />
 
         <TextView
             android:id="@+id/drawer_public_key"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"
+            android:clickable="false"
             android:gravity="center_vertical"
             android:textColor="@color/grey200"
             android:textSize="@dimen/abc_text_size_body_2_material"
-            android:textStyle="normal"
-            android:clickable="false"/>
+            android:textStyle="normal" />
     </LinearLayout>
 
     <ListView
         android:id="@+id/drawer_listview"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
         android:choiceMode="singleChoice"
         android:divider="#333"
         android:dividerHeight="0dp"
-        android:layout_marginTop="8dp"/>
+        android:visibility="gone"/>
+
+    <TextView
+        android:id="@+id/drawer_empty_list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="@string/no_currency"
+        android:visibility="gone"/>
 
     <View
         android:layout_width="fill_parent"
@@ -97,6 +106,23 @@
         android:paddingRight="16dp"
         android:paddingStart="16dp"
         android:text="@string/settings"
+        android:textColor="#FF000000"
+        android:textSize="@dimen/abc_text_size_body_2_material" />
+
+    <TextView
+        android:id="@+id/export_db"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:background="@drawable/textview_background_selector"
+        android:drawableLeft="@drawable/ic_settings_grey600_24dp"
+        android:drawablePadding="48dp"
+        android:drawableStart="@drawable/ic_settings_grey600_24dp"
+        android:gravity="center_vertical"
+        android:paddingEnd="16dp"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp"
+        android:paddingStart="16dp"
+        android:text="@string/export_db"
         android:textColor="#FF000000"
         android:textSize="@dimen/abc_text_size_body_2_material" />
 

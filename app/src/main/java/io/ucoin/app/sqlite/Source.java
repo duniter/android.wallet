@@ -3,11 +3,10 @@ package io.ucoin.app.sqlite;
 import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.util.Log;
 
 import io.ucoin.app.content.Provider;
 import io.ucoin.app.model.UcoinSource;
-import io.ucoin.app.model.enums.SourceType;
+import io.ucoin.app.enums.SourceType;
 
 public class Source extends SQLiteEntity
         implements UcoinSource {
@@ -16,51 +15,33 @@ public class Source extends SQLiteEntity
     private Integer mNumber;
     private SourceType mType;
     private String mFingerprint;
-    private Long mAMount;
+    private Long mAmount;
 
     public Source(Context context, Long sourceId) {
         super(context, Provider.SOURCE_URI, sourceId);
     }
 
-    public Source(Long walletId, Integer number, SourceType type,
-                  String fingerprint, Long amount) {
-        mWalletId = walletId;
-        mNumber = number;
-        mType = type;
-        mFingerprint = fingerprint;
-        mAMount = amount;
-    }
-
-
-    public Source(Long walletId, UcoinSource source) {
-        mWalletId = walletId;
-        mNumber = source.number();
-        mType = source.type();
-        mFingerprint = source.fingerprint();
-        mAMount = source.amount();
-    }
-
     @Override
     public Long walletId() {
-        return (this.mId == null) ? mWalletId : getLong(Contract.Source.WALLET_ID);
+        return (this.mId == null) ? mWalletId : getLong(SQLiteTable.Source.WALLET_ID);
     }
 
     @Override
     public Integer number() {
-        return (this.mId == null) ? mNumber : getInt(Contract.Source.NUMBER);
+        return (this.mId == null) ? mNumber : getInt(SQLiteTable.Source.NUMBER);
     }
     @Override
     public SourceType type() {
-        return (this.mId == null) ? mType : SourceType.valueOf(getString(Contract.Source.TYPE));
+        return (this.mId == null) ? mType : SourceType.valueOf(getString(SQLiteTable.Source.TYPE));
     }
 
     @Override
     public String fingerprint() {
-        return (this.mId == null) ? mFingerprint : getString(Contract.Source.FINGERPRINT);
+        return (this.mId == null) ? mFingerprint : getString(SQLiteTable.Source.FINGERPRINT);
     }
     @Override
     public Long amount() {
-        return (this.mId == null) ? mAMount : getLong(Contract.Source.AMOUNT);
+        return (this.mId == null) ? mAmount : getLong(SQLiteTable.Source.AMOUNT);
     }
 
     @Override
@@ -78,7 +59,7 @@ public class Source extends SQLiteEntity
         mNumber = in.readByte() == 0x00 ? null : in.readInt();
         mType = (SourceType) in.readValue(SourceType.class.getClassLoader());
         mFingerprint = in.readString();
-        mAMount = in.readByte() == 0x00 ? null : in.readLong();
+        mAmount = in.readByte() == 0x00 ? null : in.readLong();
     }
 
     @Override
@@ -102,11 +83,11 @@ public class Source extends SQLiteEntity
         }
         dest.writeValue(mType);
         dest.writeString(mFingerprint);
-        if (mAMount == null) {
+        if (mAmount == null) {
             dest.writeByte((byte) (0x00));
         } else {
             dest.writeByte((byte) (0x01));
-            dest.writeLong(mAMount);
+            dest.writeLong(mAmount);
         }
     }
 

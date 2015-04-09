@@ -6,148 +6,85 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.Serializable;
-import java.util.List;
+import java.nio.charset.Charset;
 
-import io.ucoin.app.model.oldmodels.Identity;
-import io.ucoin.app.model.oldmodels.Member;
-import io.ucoin.app.technical.StandardCharsets;
-import io.ucoin.app.technical.gson.GsonUtils;
-
-/**
- * A block from the blockchain.
- *
- * @author Benoit Lavenier <benoit.lavenier@e-is.pro>
- * @since 1.0
- */
 public class BlockchainBlock implements Serializable {
 
-    private static final long serialVersionUID = -5598140972293452669L;
+    public String version;
+    public Integer nonce;
+    public Integer number;
+    public Integer powMin;
+    public Long time;
+    public Long medianTime;
+    public Long membersCount;
+    public Long monetaryMass;
+    public String currency;
+    public String issuer;
+    public String signature;
+    public String hash;
+    public String parameters;
+    public String previousHash;
+    public String previousIssuer;
+    public Long dividend;
+    public String[] membersChanges;
+    public String[] identities;
+    public String[] joiners;
+    public String[] leavers;
+    public String[] excluded;
+    public String[] certifications;
 
-    private String version;
-    private Integer nonce;
-    private Integer number;
-    private Integer date;
-    private Integer confirmedDate;
-    private Integer membersCount;
-    private String currency;
-    private String issuer;
-    private String signature;
-    private String hash;
-    private String parameters;
-    private String previousHash;
-    private String previousIssuer;
-    private Integer dividend;
-    //private int memberChanges;
-    private List<Identity> identities;
-    private List<Member> joiners;
-    //            private int actives": [],
-//            private int leavers": [],
-//            private int excluded": [],
-//            private int certifications": [],
-//            private int transactions": [],
-//            private int raw": "Version: 1\nType: Block\nCurrency: zeta_brouzouf\nNonce: 8233\nNumber: 1\nDate: 1416589860\nConfirmedDate: 1416589860\nIssuer: HnFcSms8jzwngtVomTTnzudZx7SHUQY8sVE1y8yBmULk\nPreviousHash: 00006CD96A01378465318E48310118AC6B2F3625\nPreviousIssuer: HnFcSms8jzwngtVomTTnzudZx7SHUQY8sVE1y8yBmULk\nMembersCount: 4\nIdentities:\nJoiners:\nActives:\nLeavers:\nExcluded:\nCertifications:\nTransactions:\n"
+
+    //todo transactions
+
 
     public static BlockchainBlock fromJson(InputStream json) {
-        Gson gson = GsonUtils.newBuilder().create();
-        Reader reader = new InputStreamReader(json, StandardCharsets.UTF_8);
+        Gson gson = new Gson();
+        Reader reader = new InputStreamReader(json, Charset.forName("UTF-8"));
         return gson.fromJson(reader, BlockchainBlock.class);
     }
 
-    public String getVersion() {
-        return version;
-    }
-    public void setVersion(String version) {
-        this.version = version;
-    }
-    public Integer getNonce() {
-        return nonce;
-    }
-    public void setNonce(Integer nonce) {
-        this.nonce = nonce;
-    }
+    public String toString() {
+        String s = "version=" + version;
+        s += "\nnonce=" + nonce;
+        s += "\nnumber=" + number;
+        s += "\npowMin" + powMin;
+        s += "\ntime=" + time;
+        s += "\nmedianTime=" + medianTime;
+        s += "\nmembersCount=" + membersCount;
+        s += "\nmonetaryMass=" + monetaryMass;
+        s += "\ncurrency=" + currency;
+        s += "\nissuer=" + issuer;
+        s += "\nsignature=" + signature;
+        s += "\nhash=" + hash;
+        s += "\nparameters=" + parameters;
+        s += "\npreviousHash=" + previousHash;
+        s += "\npreviousIssuer=" + previousIssuer;
+        s += "\ndividend=" + dividend;
+        s += "\nmembersChanges:";
+        for(String m : membersChanges) {
+            s += "\n\t" + m;
+        }
+        s += "\nidentities:";
+        for(String i : identities) {
+            s += "\n\t" + i;
+        }
+        s += "\njoiners:";
+        for(String j : joiners) {
+            s += "\n\t" + j;
+        }
+        s += "\nleavers:";
+        for(String l : leavers) {
+            s += "\n\t" + l;
+        }
+        s += "\nexcluded:";
+        for(String e : excluded) {
+            s += "\n\t" + e;
+        }
+        s += "\ncertifications:";
+        for(String c : certifications) {
+            s += "\n\t" + c;
+        }
 
-    public Integer getNumber() {
-        return number;
-    }
-    public void setNumber(Integer number) {
-        this.number = number;
-    }
-    public Integer getDate() {
-        return date;
-    }
-    public void setDate(Integer date) {
-        this.date = date;
-    }
-    public Integer getConfirmedDate() {
-        return confirmedDate;
-    }
-    public void setConfirmedDate(Integer confirmedDate) {
-        this.confirmedDate = confirmedDate;
-    }
-    public Integer getMembersCount() {
-        return membersCount;
-    }
-    public void setMembersCount(Integer membersCount) {
-        this.membersCount = membersCount;
-    }
-    public String getCurrency() {
-        return currency;
-    }
-    public void setCurrency(String currency) {
-        this.currency = currency;
-    }
-    public String getIssuer() {
-        return issuer;
-    }
-    public void setIssuer(String issuer) {
-        this.issuer = issuer;
-    }
-    public String getSignature() {
-        return signature;
-    }
-    public void setSignature(String signature) {
-        this.signature = signature;
-    }
-    public String getHash() {
-        return hash;
-    }
-    public void setHash(String hash) {
-        this.hash = hash;
-    }
-    public String getParameters() {
-        return parameters;
-    }
-    public void setParameters(String parameters) {
-        this.parameters = parameters;
-    }
-    public String getPreviousHash() {
-        return previousHash;
-    }
-    public void setPreviousHash(String previousHash) {
-        this.previousHash = previousHash;
-    }
-    public String getPreviousIssuer() {
-        return previousIssuer;
-    }
-    public void setPreviousIssuer(String previousIssuer) {
-        this.previousIssuer = previousIssuer;
-    }
-    public Integer getDividend() {
-        return dividend;
-    }
-    public void setDividend(Integer dividend) {
-        this.dividend = dividend;
-    }
-    public List<Identity> getIdentities() {
-        return identities;
-    }
-    public void setIdentities(List<Identity> identities) {
-        this.identities = identities;
-    }
-    public List<Member> getJoiners() {
-        return joiners;
-    }
-    public void setJoiners(List<Member> joiners) {
-        this.joiners = joiners;
+        return s;
     }
 }

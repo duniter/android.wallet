@@ -15,10 +15,12 @@ import android.widget.TextView;
 import io.ucoin.app.Fragment;
 import io.ucoin.app.R;
 import io.ucoin.app.activity.MainActivity;
+import io.ucoin.app.enums.CertificationType;
+import io.ucoin.app.enums.SourceType;
+import io.ucoin.app.enums.TxDirection;
 import io.ucoin.app.fragment.common.SourceListFragment;
+import io.ucoin.app.fragment.common.TxListFragment;
 import io.ucoin.app.model.UcoinIdentity;
-import io.ucoin.app.model.enums.CertificationType;
-import io.ucoin.app.model.enums.SourceType;
 import io.ucoin.app.view.SlidingTabLayout;
 
 public class IdentityFragment extends Fragment {
@@ -95,7 +97,7 @@ public class IdentityFragment extends Fragment {
          */
         @Override
         public int getCount() {
-            return 4;
+            return 5;
         }
 
         /**
@@ -112,6 +114,8 @@ public class IdentityFragment extends Fragment {
             else if (position == 1)
                 return getString(R.string.received);
             else if (position == 2)
+                return getString(R.string.sent);
+            else if (position == 3)
                 return getString(R.string.certifiers);
             else
                 return getString(R.string.certified);
@@ -127,9 +131,12 @@ public class IdentityFragment extends Fragment {
                 fragment = SourceListFragment.newInstance(identity.wallet(), SourceType.D);
                 fragment.setHasOptionsMenu(false);
             } else if (i == 1) {
-                fragment = SourceListFragment.newInstance(identity.wallet(), SourceType.T);
+                fragment = TxListFragment.newInstance(identity.wallet(), TxDirection.RECEIVED);
                 fragment.setHasOptionsMenu(false);
             } else if (i == 2) {
+                fragment = TxListFragment.newInstance(identity.wallet(), TxDirection.SENT);
+                fragment.setHasOptionsMenu(false);
+            } else if (i == 3) {
                 fragment = CertificationListFragment.newInstance(identity, CertificationType.OF);
                 fragment.setHasOptionsMenu(false);
             } else {

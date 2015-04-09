@@ -16,25 +16,13 @@ import android.widget.TextView;
 import org.apache.http.conn.util.InetAddressUtils;
 
 import io.ucoin.app.R;
-import io.ucoin.app.model.UcoinCurrency;
+import io.ucoin.app.model.UcoinPendingEndpoints;
+import io.ucoin.app.sqlite.PendingEndpoints;
 
 public class AddPeerDialogFragment extends DialogFragment {
 
-    private OnPeerAddListener mListener;
-
-    public static AddPeerDialogFragment newInstance(OnPeerAddListener listener) {
+    public static AddPeerDialogFragment newInstance() {
         AddPeerDialogFragment fragment = new AddPeerDialogFragment();
-        fragment.setOnPeerAddListener(listener);
-        return fragment;
-    }
-
-
-    public static AddPeerDialogFragment newInstance(OnPeerAddListener listener, UcoinCurrency currency) {
-        AddPeerDialogFragment fragment = new AddPeerDialogFragment();
-        fragment.setOnPeerAddListener(listener);
-        Bundle newInstanceArgs = new Bundle();
-        newInstanceArgs.putParcelable(UcoinCurrency.class.getSimpleName(), currency);
-        fragment.setArguments(newInstanceArgs);
         return fragment;
     }
 
@@ -45,11 +33,11 @@ public class AddPeerDialogFragment extends DialogFragment {
         LayoutInflater inflater = getActivity().getLayoutInflater();
 
         final View view = inflater.inflate(R.layout.fragment_add_peer_dialog, null);
-        final EditText address = (EditText) view.findViewById(R.id.address);
-        final EditText port = (EditText) view.findViewById(R.id.port);
+        final EditText addressView = (EditText) view.findViewById(R.id.address);
+        final EditText portView = (EditText) view.findViewById(R.id.port);
         final Button posButton = (Button) view.findViewById(R.id.positive_button);
 
-        port.setOnEditorActionListener(new EditText.OnEditorActionListener() {
+        portView.setOnEditorActionListener(new EditText.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId,
                                           KeyEvent event) {
@@ -66,39 +54,36 @@ public class AddPeerDialogFragment extends DialogFragment {
             @Override
             public void onClick(View v) {
                 Bundle peerArgs = new Bundle();
+                String address;
+                int port = 0;
 
                 //check address
-                if (!address.getText().toString().trim().isEmpty() &&
-                        (InetAddressUtils.isIPv4Address(address.getText().toString()) ||
-                                InetAddressUtils.isIPv6Address(address.getText().toString()) ||
-                                Patterns.WEB_URL.matcher(address.getText().toString()).matches())) {
-                    peerArgs.putString("address", address.getText().toString());
-                } else {
-                    address.setError(getString(R.string.invalid_node_address));
-                    return;
+                address = addressView.getText().toString().trim();
+                if (!address.isEmpty()) {
+                    if (!InetAddressUtils.isIPv4Address(address) &&
+                            !InetAddressUtils.isIPv6Address(address) &&
+                            !Patterns.WEB_URL.matcher(address).matches()) {
+                        addressView.setError(getString(R.string.invalid_peer_address));
+                        return;
+                    }
                 }
 
                 //check port
-                if (!port.getText().toString().trim().isEmpty() &&
-                        (0 <= Integer.parseInt(port.getText().toString()) ||
-                                Integer.parseInt(port.getText().toString()) <= 65535)) {
-                    peerArgs.putInt("port", Integer.parseInt(port.getText().toString()));
-                } else {
-                    port.setError(getString(R.string.invalid_node_port));
+                if (portView.getText().toString().trim().isEmpty()) {
+                    portView.setError(getString(R.string.port_cannot_be_empty));
                     return;
+                } else if (Integer.parseInt(portView.getText().toString()) <= 0 ||
+                        65535 <= Integer.parseInt(portView.getText().toString())) {
+                    portView.setError(getString(R.string.invalid_peer_port));
+                    return;
+                } else {
+                    port = Integer.parseInt(portView.getText().toString());
                 }
 
-                //this fragment can be used either for adding a new currency or just a node
-                //if a currency has been provided it means we only had a node, thus
-                //the currency must be passed along for further peer creation
-                Bundle args = getArguments();
-                if (args != null) {
-                    UcoinCurrency currency = args.getParcelable(UcoinCurrency.class.getSimpleName());
-                    peerArgs.putParcelable(UcoinCurrency.class.getSimpleName(), currency);
-                }
+                UcoinPendingEndpoints endpoints = new PendingEndpoints(getActivity());
+                endpoints.add(address, port);
 
                 dismiss();
-                mListener.onPeerAdd(peerArgs);
             }
         });
 
@@ -113,15 +98,4 @@ public class AddPeerDialogFragment extends DialogFragment {
         builder.setView(view);
         return builder.create();
     }
-
-    private void setOnPeerAddListener(OnPeerAddListener listener) {
-        mListener = listener;
-    }
-
-    public interface OnPeerAddListener {
-        public void onPeerAdd(Bundle args);
-    }
 }
-
-
-

@@ -8,7 +8,6 @@ import android.content.Loader;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -25,7 +24,7 @@ import io.ucoin.app.fragment.AddWalletDialogFragment;
 import io.ucoin.app.fragment.wallet.WalletFragment;
 import io.ucoin.app.model.UcoinCurrency;
 import io.ucoin.app.model.UcoinWallet;
-import io.ucoin.app.sqlite.Contract;
+import io.ucoin.app.sqlite.SQLiteTable;
 
 public class WalletListFragment extends ListFragment
 implements LoaderManager.LoaderCallbacks<Cursor>    {
@@ -105,8 +104,8 @@ implements LoaderManager.LoaderCallbacks<Cursor>    {
         UcoinCurrency currency = args.getParcelable(UcoinCurrency.class.getSimpleName());
 
         String selection =
-                Contract.Wallet.CURRENCY_ID + "=? AND " +
-                Contract.Wallet._ID + " !=?";
+                SQLiteTable.Wallet.CURRENCY_ID + "=? AND " +
+                SQLiteTable.Wallet._ID + " !=?";
 
         String selectionArgs[] = new String[]{
                 currency.id().toString(),
@@ -117,18 +116,16 @@ implements LoaderManager.LoaderCallbacks<Cursor>    {
                 getActivity(),
                 Provider.WALLET_URI,
                 null, selection, selectionArgs,
-                Contract.Wallet._ID +" ASC");
+                SQLiteTable.Wallet._ID +" ASC");
     }
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        Log.d("WALLETLISTFRAGMENT", "onLoadFinished");
         ((WalletCursorAdapter)this.getListAdapter()).swapCursor(data);
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-        Log.d("WALLETLISTFRAGMENT", "onLoaderReset");
         ((WalletCursorAdapter)this.getListAdapter()).swapCursor(null);
     }
 }

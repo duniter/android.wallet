@@ -8,10 +8,7 @@ import io.ucoin.app.content.Provider;
 import io.ucoin.app.model.UcoinCertification;
 import io.ucoin.app.model.UcoinCertifications;
 import io.ucoin.app.model.UcoinIdentity;
-import io.ucoin.app.model.UcoinMember;
-import io.ucoin.app.model.UcoinMembers;
 import io.ucoin.app.model.UcoinWallet;
-import io.ucoin.app.model.enums.CertificationType;
 
 public class Identity extends SQLiteEntity
         implements UcoinIdentity {
@@ -46,27 +43,27 @@ public class Identity extends SQLiteEntity
 
     @Override
     public Long currencyId() {
-        return (this.mId == null) ? mCurrencyId : getLong(Contract.Identity.CURRENCY_ID);
+        return (this.mId == null) ? mCurrencyId : getLong(SQLiteTable.Identity.CURRENCY_ID);
     }
 
     @Override
     public Long walletId() {
-        return (this.mId == null) ? mWalletId : getLong(Contract.Identity.WALLET_ID);
+        return (this.mId == null) ? mWalletId : getLong(SQLiteTable.Identity.WALLET_ID);
     }
 
     @Override
     public String uid() {
-        return (this.mId == null) ? mUid : getString(Contract.Identity.UID);
+        return (this.mId == null) ? mUid : getString(SQLiteTable.Identity.UID);
     }
 
     @Override
     public String self() {
-        return (this.mId == null) ? mSelf : getString(Contract.Identity.SELF);
+        return (this.mId == null) ? mSelf : getString(SQLiteTable.Identity.SELF);
     }
 
     @Override
     public Long timestamp() {
-        return (this.mId == null) ? mTimestamp : getLong(Contract.Identity.TIMESTAMP);
+        return (this.mId == null) ? mTimestamp : getLong(SQLiteTable.Identity.TIMESTAMP);
     }
 
     @Override

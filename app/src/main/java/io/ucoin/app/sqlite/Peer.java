@@ -14,7 +14,6 @@ public class Peer extends SQLiteEntity
 
     private Long mCurrencyId;
     private String mPublicKey;
-    private String mBlock;
     private String mSignature;
     private UcoinEndpoints mEndpoints;
 
@@ -23,40 +22,19 @@ public class Peer extends SQLiteEntity
         mEndpoints = new Endpoints(context, peerId);
     }
 
-    public Peer(Long currencyId, io.ucoin.app.model.http_api.Peer peer) {
-        mCurrencyId = currencyId;
-        mPublicKey = peer.pubkey;
-        mBlock = peer.block;
-        mSignature = peer.signature;
-        mEndpoints = new Endpoints(mId, peer);
-    }
-
-    public Peer(Long currencyId, UcoinPeer peer) {
-        mCurrencyId = currencyId;
-        mPublicKey = peer.publicKey();
-        mBlock = peer.block();
-        mSignature = peer.signature();
-        mEndpoints = peer.endpoints();
-    }
-
     @Override
     public Long currencyId() {
-        return (this.mId == null) ? mCurrencyId : getLong(Contract.Peer.CURRENCY_ID);
+        return (this.mId == null) ? mCurrencyId : getLong(SQLiteTable.Peer.CURRENCY_ID);
     }
 
     @Override
     public String publicKey() {
-        return (this.mId == null) ? mPublicKey : getString(Contract.Peer.PUBLIC_KEY);
-    }
-
-    @Override
-    public String block() {
-        return (this.mId == null) ? mBlock : getString(Contract.Peer.PUBLIC_KEY);
+        return (this.mId == null) ? mPublicKey : getString(SQLiteTable.Peer.PUBLIC_KEY);
     }
 
     @Override
     public String signature() {
-        return (this.mId == null) ? mSignature : getString(Contract.Peer.SIGNATURE);
+        return (this.mId == null) ? mSignature : getString(SQLiteTable.Peer.SIGNATURE);
     }
 
     @Override
@@ -69,7 +47,6 @@ public class Peer extends SQLiteEntity
         String s = "PEER id=" + ((id() == null) ? "not in database" : id()) + "\n" +
                 "currency_id=" + currencyId() + "\n" +
                 "public_key=" + publicKey() + "\n" +
-                "block=" + block() + "\n" +
                 "signature=" + signature();
 
         for(UcoinEndpoint endpoint : mEndpoints) {
@@ -82,7 +59,6 @@ public class Peer extends SQLiteEntity
     protected Peer(Parcel in) {
         mCurrencyId = in.readByte() == 0x00 ? null : in.readLong();
         mPublicKey = in.readString();
-        mBlock = in.readString();
         mSignature = in.readString();
         mEndpoints = (UcoinEndpoints) in.readValue(UcoinEndpoints.class.getClassLoader());
     }
@@ -101,7 +77,6 @@ public class Peer extends SQLiteEntity
             dest.writeLong(mCurrencyId);
         }
         dest.writeString(mPublicKey);
-        dest.writeString(mBlock);
         dest.writeString(mSignature);
         dest.writeValue(mEndpoints);
     }

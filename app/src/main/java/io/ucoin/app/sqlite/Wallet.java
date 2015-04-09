@@ -1,151 +1,104 @@
 package io.ucoin.app.sqlite;
 
 import android.content.Context;
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import java.util.ArrayList;
-
 import io.ucoin.app.content.Provider;
-import io.ucoin.app.model.UcoinSource;
 import io.ucoin.app.model.UcoinSources;
+import io.ucoin.app.model.UcoinTxs;
 import io.ucoin.app.model.UcoinWallet;
-import io.ucoin.app.model.enums.SourceType;
 
 public class Wallet extends SQLiteEntity
         implements UcoinWallet {
 
     private Long mCurrencyId;
+    private String mCurrencyName;
     private String mSalt;
     private String mPublicKey;
     private String mPrivateKey;
     private String mAlias;
-    private UcoinSources mSources;
+    private Long mQuantitativeAmount;
+    private Float mRelativeAmount;
 
     public Wallet(Context context, Long walletId) {
         super(context, Provider.WALLET_URI, walletId);
-        mSources = new Sources(context, walletId);
-    }
-
-    public Wallet(Long currencyId, String salt, String publicKey, String alias) {
-        mCurrencyId = currencyId;
-        mSalt = salt;
-        mPublicKey = publicKey;
-        mAlias = alias;
-        mSources = new Sources(mId, new ArrayList<UcoinSource>());
-    }
-
-    public Wallet(Long currencyId, String salt, String publicKey, String privateKey,
-                  String alias) {
-        mCurrencyId = currencyId;
-        mSalt = salt;
-        mPublicKey = publicKey;
-        mPrivateKey = privateKey;
-        mAlias = alias;
-        mSources = new Sources(mId, new ArrayList<UcoinSource>());
-    }
-
-    public Wallet(Long currencyId, UcoinWallet wallet) {
-        mCurrencyId = currencyId;
-        mSalt = wallet.salt();
-        mPublicKey = wallet.publicKey();
-        mPrivateKey = wallet.privateKey();
-        mAlias = wallet.alias();
-        mSources = wallet.sources();
     }
 
     @Override
     public Long currencyId() {
-        return (this.mId == null) ? mCurrencyId : getLong(Contract.Peer.CURRENCY_ID);
+        return getLong(SQLiteView.Wallet.CURRENCY_ID);
+    }
+
+    @Override
+    public String currencyName() {
+        return getString(SQLiteView.Wallet.CURRENCY_NAME);
     }
 
     @Override
     public String salt() {
-        return (this.mId == null) ? mSalt : getString(Contract.Wallet.SALT);
+        return getString(SQLiteView.Wallet.SALT);
     }
 
     @Override
     public String publicKey() {
-        return (this.mId == null) ? mPublicKey : getString(Contract.Wallet.PUBLIC_KEY);
+        return getString(SQLiteView.Wallet.PUBLIC_KEY);
     }
 
     @Override
     public String privateKey() {
-        return (this.mId == null) ? mPrivateKey : getString(Contract.Wallet.PRIVATE_KEY);
+        return getString(SQLiteView.Wallet.PRIVATE_KEY);
     }
 
     @Override
     public String alias() {
-        return (this.mId == null) ? mAlias : getString(Contract.Wallet.ALIAS);
-    }
-
-
-
-    @Override
-    public Long relativeBalance() {
-        return (long) 0;
+        return getString(SQLiteView.Wallet.ALIAS);
     }
 
     @Override
-    public Long quantitativeBalance(){
-        if(mId == null)
-            return (long) 0;
+    public Long quantitativeAmount(){
+        return getLong(SQLiteView.Wallet.QUANTITATIVE_AMOUNT);
+    }
 
-        Uri uri = Uri.withAppendedPath(Provider.BALANCE_URI, mId.toString());
-        Cursor cursor = mContext.getContentResolver().query(uri,null,
-                null, null, null);
-
-        if (!cursor.moveToNext())
-            return (long) 0;
-
-        int balanceIndex = cursor.getColumnIndex("balance");
-        Long balance = cursor.getLong(balanceIndex);
-        cursor.close();
-        return balance;
+    @Override
+    public Float relativeAmount() {
+        return getFloat(SQLiteView.Wallet.RELATIVE_AMOUNT);
     }
 
     @Override
     public UcoinSources sources() {
-        return mSources;
+        return new Sources(mContext, mId);
     }
 
     @Override
-    public UcoinSources newSources(io.ucoin.app.model.http_api.Sources sources) {
-        ArrayList<UcoinSource> sourcesArray = new ArrayList<>();
-        for(io.ucoin.app.model.http_api.Sources.Source apiSource : sources.sources) {
-            UcoinSource source = new Source(mId, apiSource.number,
-                    SourceType.valueOf(apiSource.type),
-                    apiSource.fingerprint, apiSource.amount);
-            sourcesArray.add(source);
-        }
-        return new Sources(mId, sourcesArray);
+    public UcoinTxs txs() {
+        return new Txs(mContext, mId);
     }
 
     @Override
     public String toString() {
-        String s = "WALLET id=" + ((id() == null) ? "not in database" : id()) + "\n" ;
+        String s = "WALLET id=" + id() + "\n" ;
         s += "\ncurrencyId=" + currencyId();
+        s += "\ncurrencyName=" + currencyName();
         s += "\nsalt=" + salt();
         s += "\npublicKey=" + publicKey();
         s += "\nprivateKey=" + privateKey();
         s += "\nalias=" + alias();
-
-        for(UcoinSource source : mSources) {
-            s += "\n\t" + source .toString();
-        }
+        s += "\nquantitativeAmount=" + quantitativeAmount();
+        s += "\nrelativeAmount=" + relativeAmount();
 
         return s;
     }
 
     protected Wallet(Parcel in) {
         mCurrencyId = in.readByte() == 0x00 ? null : in.readLong();
+        mCurrencyName = in.readString();
         mSalt = in.readString();
         mPublicKey = in.readString();
         mPrivateKey = in.readString();
         mAlias = in.readString();
-        mSources = (UcoinSources) in.readValue(UcoinSources.class.getClassLoader());
+        mQuantitativeAmount = in.readByte() == 0x00 ? null : in.readLong();
+        mRelativeAmount = in.readByte() == 0x00 ? null : in.readFloat();
     }
 
     @Override
@@ -161,11 +114,23 @@ public class Wallet extends SQLiteEntity
             dest.writeByte((byte) (0x01));
             dest.writeLong(mCurrencyId);
         }
+        dest.writeString(mCurrencyName);
         dest.writeString(mSalt);
         dest.writeString(mPublicKey);
         dest.writeString(mPrivateKey);
         dest.writeString(mAlias);
-        dest.writeValue(mSources);
+        if (mQuantitativeAmount == null) {
+            dest.writeByte((byte) (0x00));
+        } else {
+            dest.writeByte((byte) (0x01));
+            dest.writeLong(mQuantitativeAmount);
+        }
+        if (mRelativeAmount == null) {
+            dest.writeByte((byte) (0x00));
+        } else {
+            dest.writeByte((byte) (0x01));
+            dest.writeFloat(mRelativeAmount);
+        }
     }
 
     @SuppressWarnings("unused")

@@ -7,7 +7,7 @@ import android.os.Parcelable;
 import io.ucoin.app.content.Provider;
 import io.ucoin.app.model.UcoinCertification;
 import io.ucoin.app.model.UcoinMember;
-import io.ucoin.app.model.enums.CertificationType;
+import io.ucoin.app.enums.CertificationType;
 
 public class Certification extends SQLiteEntity
         implements UcoinCertification {
@@ -25,40 +25,29 @@ public class Certification extends SQLiteEntity
         mMember = new Member(context, memberId());
     }
 
-    public Certification(Long identityId, Long  memberId, CertificationType type,
-                         Long block, Long medianTime, String signature) {
-
-        mIdentityId = identityId;
-        mMemberId = memberId;
-        mType =type;
-        mBlock = block;
-        mMedianTime = medianTime;
-        mSignature = signature;
-    }
-
     @Override
     public Long identityId() {
-        return (this.mId == null) ? mIdentityId : getLong(Contract.Certification.IDENTITY_ID);
+        return (this.mId == null) ? mIdentityId : getLong(SQLiteTable.Certification.IDENTITY_ID);
     }
 
     @Override
     public Long memberId() {
-        return (this.mId == null) ? mMemberId : getLong(Contract.Certification.MEMBER_ID);
+        return (this.mId == null) ? mMemberId : getLong(SQLiteTable.Certification.MEMBER_ID);
     }
 
     @Override
     public Long block() {
-        return (this.mId == null) ? mBlock : getLong(Contract.Certification.BLOCK);
+        return (this.mId == null) ? mBlock : getLong(SQLiteTable.Certification.BLOCK);
     }
 
     @Override
     public Long medianTime() {
-        return (this.mId == null) ? mMedianTime : getLong(Contract.Certification.MEDIAN_TIME);
+        return (this.mId == null) ? mMedianTime : getLong(SQLiteTable.Certification.MEDIAN_TIME);
     }
 
     @Override
     public String signature() {
-        return (this.mId == null) ? mSignature : getString(Contract.Certification.SIGNATURE);
+        return (this.mId == null) ? mSignature : getString(SQLiteTable.Certification.SIGNATURE);
     }
 
     @Override
@@ -68,7 +57,7 @@ public class Certification extends SQLiteEntity
 
     @Override
     public CertificationType type() {
-        return (this.mId == null) ? mType : CertificationType.valueOf(getString(Contract.Certification.TYPE));
+        return (this.mId == null) ? mType : CertificationType.valueOf(getString(SQLiteTable.Certification.TYPE));
     }
 
     @Override

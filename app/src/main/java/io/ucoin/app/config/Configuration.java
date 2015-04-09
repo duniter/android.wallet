@@ -5,11 +5,7 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import io.ucoin.app.model.oldmodels.Identity;
-import io.ucoin.app.model.oldmodels.Wallet;
 import io.ucoin.app.technical.UCoinTechnicalException;
-import io.ucoin.app.technical.crypto.CryptoUtils;
-import io.ucoin.app.technical.crypto.TestFixtures;
 
 /**
  * Access to configuration options
@@ -70,32 +66,4 @@ public class Configuration  {
     public int getNodeTimeout() {
         return Integer.parseInt(ConfigurationOption.NODE_TIMEOUT.getDefaultValue());
     }
-
-    private Wallet currentWallet;
-
-    public Wallet getCurrentWallet() {
-        if (currentWallet != null) {
-            return currentWallet;
-        }
-
-        // TODO : replace from a database ?
-        TestFixtures fixtures = new TestFixtures();
-
-        Identity identity = new Identity();
-        identity.setUid(fixtures.getUid());
-        identity.setPubkey(fixtures.getUserPublicKey());
-        identity.setTimestamp(fixtures.getSelfTimestamp());
-        identity.setSignature(fixtures.getSelfSignature());
-        currentWallet = new Wallet(
-                fixtures.getCurrency(),
-                CryptoUtils.decodeBase58(fixtures.getUserPrivateKey()),
-                identity);
-
-        return currentWallet;
-    }
-
-    public void setCurrentWallet(Wallet currentWallet) {
-        this.currentWallet = currentWallet;
-    }
-    
 }
