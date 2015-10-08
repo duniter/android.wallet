@@ -1,7 +1,11 @@
 package io.ucoin.app.model;
 
-public interface UcoinIdentities extends Entities, Iterable<UcoinIdentity> {
-    public UcoinIdentity newIdentity(Long walletId, String uid);
-    public UcoinIdentity add(UcoinIdentity identity);
-    public UcoinIdentity getById(Long id);
+import io.ucoin.app.technical.crypto.AddressFormatException;
+
+public interface UcoinIdentities extends SqlTable, Iterable<UcoinIdentity> {
+    UcoinIdentity add(String uid, UcoinWallet wallet) throws AddressFormatException;
+
+    UcoinIdentity getById(Long id);
+
+    UcoinIdentity getIdentity();
 }

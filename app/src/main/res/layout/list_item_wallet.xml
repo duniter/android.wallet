@@ -1,7 +1,6 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:minHeight="?android:listPreferredItemHeight"
     android:paddingLeft="16dp"
     android:paddingRight="16dp"
     android:orientation="vertical">
@@ -10,7 +9,23 @@
         android:id="@+id/alias"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="@dimen/abc_text_size_body_1_material"
+        android:textSize="@dimen/abc_text_size_caption_material"
+        />
+
+    <TextView
+        android:id="@+id/qt_amount"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="bottom|end"
+        android:textSize="@dimen/abc_text_size_caption_material"
+        />
+
+    <TextView
+        android:id="@+id/relative_amount"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="end"
+        android:textSize="@dimen/abc_text_size_headline_material"
         />
 
     <TextView
@@ -18,19 +33,5 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="@dimen/abc_text_size_caption_material"/>
-
-    <TextView
-        android:id="@+id/quantitative_amount"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textSize="@dimen/abc_text_size_body_1_material"
-        />
-
-    <TextView
-        android:id="@+id/relative_amount"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textSize="@dimen/abc_text_size_body_1_material"
-        />
 
 </LinearLayout>

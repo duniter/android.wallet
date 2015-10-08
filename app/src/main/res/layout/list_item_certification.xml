@@ -1,42 +1,33 @@
-<GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:columnCount="2"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     android:paddingLeft="16dp"
     android:paddingRight="16dp">
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/member"
-        android:textSize="@dimen/abc_text_size_caption_material"/>
     <TextView
         android:id="@+id/member_uid"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="@dimen/abc_text_size_caption_material"/>
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        android:textSize="@dimen/abc_text_size_caption_material" />
 
     <TextView
+        android:id="@+id/day"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/block"
-        android:textSize="@dimen/abc_text_size_caption_material"/>
-    <TextView
-        android:id="@+id/block"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="@dimen/abc_text_size_caption_material"
-        />
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:gravity="end"
+        android:layout_toEndOf="@id/member_uid"
+        android:textSize="@dimen/abc_text_size_caption_material" />
 
     <TextView
+        android:id="@+id/hour"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/median_time"
-        android:textSize="@dimen/abc_text_size_caption_material"/>
-    <TextView
-        android:id="@+id/median_time"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="@dimen/abc_text_size_caption_material"/>
+        android:layout_alignParentEnd="true"
+        android:layout_below="@id/day"
+        android:textSize="@dimen/abc_text_size_caption_material" />
 
-</GridLayout>
+</RelativeLayout>

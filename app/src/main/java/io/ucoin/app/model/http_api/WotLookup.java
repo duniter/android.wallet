@@ -12,14 +12,19 @@ public class WotLookup implements Serializable {
     public Result[] results;
 
     public static WotLookup fromJson(InputStream json) {
-
         Gson gson = new Gson();
         Reader reader = new InputStreamReader(json, Charset.forName("UTF-8"));
         return gson.fromJson(reader, WotLookup.class);
     }
 
+
+    public static WotLookup fromJson(String json) {
+        Gson gson = new Gson();
+        return gson.fromJson(json, WotLookup.class);
+    }
+
     public String toString() {
-        String s = new String();
+        String s = "";
         for (Result result : results) {
             s = "pubkey=" + result.pubkey;
             for (Uid uid : result.uids) {
@@ -34,7 +39,6 @@ public class WotLookup implements Serializable {
     public class Result implements Serializable {
         public String pubkey;
         public Uid[] uids;
-        public String signature;
 
     }
 

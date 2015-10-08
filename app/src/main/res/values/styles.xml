@@ -33,17 +33,11 @@
         <item name="android:paddingRight">8dp</item>
     </style>
 
-    <style name="Header">
-        <item name="android:background">@color/primary</item>
-        <item name="android:paddingLeft">16sp</item>
-        <item name="android:paddingRight">16sp</item>
-    </style>
-
-    <style name="headline">
-        <item name="android:layout_width">wrap_content</item>
+    <style name="dialog_headline">
+        <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:textColor">@color/primary</item>
-        <item name="android:layout_marginTop">8dp</item>
+        <item name="android:layout_marginTop">24dp</item>
         <item name="android:textSize">@dimen/abc_text_size_headline_material</item>
     </style>
 

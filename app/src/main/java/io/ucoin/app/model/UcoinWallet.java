@@ -1,14 +1,25 @@
 package io.ucoin.app.model;
 
-public interface UcoinWallet extends Entity{
+public interface UcoinWallet extends SqlRow {
     Long currencyId();
-    String currencyName();
+
     String salt();
+
     String publicKey();
+
     String privateKey();
+
     String alias();
-    Float relativeAmount();
+
+    Double relativeAmount();
+
     Long quantitativeAmount();
+
     UcoinSources sources();
+
     UcoinTxs txs();
+
+    UcoinUds uds();
+
+    UcoinCurrency currency();
 }

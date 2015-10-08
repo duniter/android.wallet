@@ -12,7 +12,7 @@ public class BlockchainBlock implements Serializable {
 
     public String version;
     public Integer nonce;
-    public Integer number;
+    public Long number;
     public Integer powMin;
     public Long time;
     public Long medianTime;
@@ -33,14 +33,15 @@ public class BlockchainBlock implements Serializable {
     public String[] excluded;
     public String[] certifications;
 
-
-    //todo transactions
-
-
     public static BlockchainBlock fromJson(InputStream json) {
         Gson gson = new Gson();
         Reader reader = new InputStreamReader(json, Charset.forName("UTF-8"));
         return gson.fromJson(reader, BlockchainBlock.class);
+    }
+
+    public static BlockchainBlock fromJson(String json) {
+        Gson gson = new Gson();
+        return gson.fromJson(json, BlockchainBlock.class);
     }
 
     public String toString() {

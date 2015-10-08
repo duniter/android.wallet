@@ -8,8 +8,9 @@ import android.view.ViewGroup;
 import android.widget.CursorAdapter;
 import android.widget.TextView;
 
+import java.text.DecimalFormat;
+
 import io.ucoin.app.R;
-import io.ucoin.app.sqlite.SQLiteTable;
 import io.ucoin.app.sqlite.SQLiteView;
 
 
@@ -29,38 +30,21 @@ public class WalletCursorAdapter extends CursorAdapter {
 
     @Override
     public void bindView(View view, Context context, Cursor cursor) {
-        TextView alias = (TextView) view.findViewById(R.id.alias);
-        int currencyIndex = cursor.getColumnIndex(SQLiteTable.Wallet.ALIAS);
-        String strAlias = cursor.getString(currencyIndex);
-        if (strAlias.isEmpty()) {
-            alias.setVisibility(View.GONE);
-        } else {
-            alias.setText(cursor.getString(currencyIndex));
-        }
-        TextView publicKey = (TextView) view.findViewById(R.id.public_key);
+        int aliasIndex = cursor.getColumnIndex(SQLiteView.Wallet.ALIAS);
         int publicKeyIndex = cursor.getColumnIndex(SQLiteView.Wallet.PUBLIC_KEY);
-        publicKey.setText(cursor.getString(publicKeyIndex));
+        int quantitativeAmountIndex = cursor.getColumnIndex(SQLiteView.Wallet.QUANTITATIVE_AMOUNT);
+        int relativeAmountIndex = cursor.getColumnIndex(SQLiteView.Wallet.RELATIVE_AMOUNT);
+        int currencyNameIndex = cursor.getColumnIndex(SQLiteView.Wallet.CURRENCY_NAME);
 
-        TextView qAmount = (TextView) view.findViewById(R.id.quantitative_amount);
-        int amountIndex = cursor.getColumnIndex(SQLiteView.Wallet.QUANTITATIVE_AMOUNT);
-        String amountString;
-        if(cursor.isNull(amountIndex)) {
-            amountString = context.getString(R.string.empty_wallet);
-        } else {
-            int currencyNameIndex = cursor.getColumnIndex(SQLiteView.Wallet.CURRENCY_NAME);
-            amountString = Long.toString(cursor.getLong(amountIndex));
-            amountString += " " + cursor.getString(currencyNameIndex);
-        }
-        qAmount.setText(amountString);
-
+        TextView alias = (TextView) view.findViewById(R.id.alias);
+        TextView publicKey = (TextView) view.findViewById(R.id.public_key);
+        TextView qAmount = (TextView) view.findViewById(R.id.qt_amount);
         TextView rAmount = (TextView) view.findViewById(R.id.relative_amount);
-        amountIndex = cursor.getColumnIndex(SQLiteView.Wallet.RELATIVE_AMOUNT);
-        if(cursor.isNull(amountIndex)) {
-            amountString = context.getString(R.string.empty_wallet);
-        } else {
-            amountString = Double.toString(cursor.getFloat(amountIndex));
-            amountString += " U.D.";
-        }
-        rAmount.setText(amountString);
+
+        alias.setText(cursor.getString(aliasIndex));
+        publicKey.setText(cursor.getString(publicKeyIndex));
+        DecimalFormat formatter = new DecimalFormat("#,###");
+        qAmount.setText(formatter.format(cursor.getLong(quantitativeAmountIndex)));
+        rAmount.setText(String.format("%.8f", cursor.getDouble(relativeAmountIndex)));
     }
 }

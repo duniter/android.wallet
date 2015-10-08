@@ -17,4 +17,10 @@
     <string name="member_uri">member/</string>
     <string name="certification_uri">certification/</string>
     <string name="block_uri">block/</string>
+    <string name="ud_uri">ud/</string>
+    <string name="membership_uri">membership/</string>
+    <string name="self_certification_uri">self_certification/</string>
+    <string name="contact_uri">contact/</string>
+
+    <string name="lookup_uri">lookup/</string>
 </resources>

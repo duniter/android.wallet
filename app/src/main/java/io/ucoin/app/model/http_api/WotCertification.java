@@ -20,6 +20,11 @@ public class WotCertification implements Serializable {
         return gson.fromJson(reader, WotCertification.class);
     }
 
+    public static WotCertification fromJson(String json) {
+        Gson gson = new Gson();
+        return gson.fromJson(json, WotCertification.class);
+    }
+
     public String toString() {
         String s = "pubkey=" + pubkey;
         s += "\nuid=" + uid;
@@ -28,6 +33,7 @@ public class WotCertification implements Serializable {
             s += "\n\tpubkey=" + certification.pubkey;
             s += "\n\tuid=" + certification.uid;
             s += "\n\tisMember=" + certification.isMember;
+            s += "\n\twasMember=" + certification.wasMember;
             s += "\n\t\tblock=" + certification.cert_time.block;
             s += "\n\t\tmedianTime=" + certification.cert_time.medianTime;
             s += "\n\twritten=" + certification.written.toString();
@@ -37,10 +43,11 @@ public class WotCertification implements Serializable {
         return s;
     }
 
-    public class Certification implements Serializable {
+    public static class Certification implements Serializable {
         public String pubkey;
         public String uid;
         public Boolean isMember;
+        public Boolean wasMember;
         public CertTime cert_time;
         public Boolean written;
         public String signature;

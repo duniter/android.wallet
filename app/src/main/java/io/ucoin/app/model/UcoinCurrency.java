@@ -1,33 +1,52 @@
 package io.ucoin.app.model;
 
-public interface UcoinCurrency extends Entity{
+import io.ucoin.app.technical.crypto.AddressFormatException;
 
-    Long identityId();
+public interface UcoinCurrency extends SqlRow {
 
-    String currencyName();
+    String name();
+
     Float c();
+
     Integer dt();
+
     Integer ud0();
+
     Integer sigDelay();
+
     Integer sigValidity();
+
     Integer sigQty();
+
     Integer sigWoT();
+
     Integer msValidity();
+
     Integer stepMax();
+
     Integer medianTimeBlocks();
+
     Integer avgGenTime();
+
     Integer dtDiffEval();
+
     Integer blocksRot();
+
     Float percentRot();
 
-    UcoinIdentity identity();
-    
-    UcoinBlocks blocks();
-    UcoinWallets wallets();
-    UcoinPeers peers();
-    UcoinMembers members();
+    Long membersCount();
 
-    void identityId(Long id);
-    public UcoinIdentity newIdentity(Long walletId, String uid);
-    public UcoinIdentity setIdentity(UcoinIdentity identity);
+    Long monetaryMass();
+
+    UcoinIdentity identity();
+
+    UcoinBlocks blocks();
+
+    UcoinWallets wallets();
+
+    UcoinPeers peers();
+
+    UcoinContacts contacts();
+
+    UcoinIdentity addIdentity(String uid, UcoinWallet wallet) throws AddressFormatException;
 }

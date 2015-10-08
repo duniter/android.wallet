@@ -1,14 +1,16 @@
 package io.ucoin.app.model;
 
-public interface UcoinMembers extends Entities, Iterable<UcoinMember> {
-    public UcoinMember newMember(String uid,
-                                 String publicKey,
-                                 Boolean isMember,
-                                 Boolean wasMember,
-                                 String self,
-                                 Long timestamp);
-    public UcoinMember add(UcoinMember member);
-    public UcoinMember getById(Long id);
-    public UcoinMember getByUid(String uid);
-    public UcoinMember getByPublicKey(String publicKey);
+import io.ucoin.app.model.http_api.WotCertification;
+import io.ucoin.app.model.http_api.WotLookup;
+
+public interface UcoinMembers extends SqlTable, Iterable<UcoinMember> {
+    UcoinMember add(WotLookup.Result result);
+
+    UcoinMember add(WotCertification.Certification certification);
+
+    UcoinMember getById(Long id);
+
+    UcoinMember getByPublicKey(String publicKey);
+
+    UcoinMember getBySelf(String self);
 }

@@ -8,12 +8,6 @@ import java.io.Reader;
 import java.io.Serializable;
 import java.nio.charset.Charset;
 
-/**
- * Blockwhain parameters.
- * 
- * @author Benoit Lavenier <benoit.lavenier@e-is.pro>
- * @since 1.0
- */
 public class BlockchainParameter implements Serializable {
 
     public String currency;
@@ -36,6 +30,12 @@ public class BlockchainParameter implements Serializable {
         Gson gson = new Gson();
         Reader reader = new InputStreamReader(json, Charset.forName("UTF-8"));
         return gson.fromJson(reader, BlockchainParameter.class);
+    }
+
+
+    public static BlockchainParameter fromJson(String json) {
+        Gson gson = new Gson();
+        return gson.fromJson(json, BlockchainParameter.class);
     }
 
     @Override

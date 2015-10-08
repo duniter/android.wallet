@@ -1,13 +1,16 @@
 package io.ucoin.app.sqlite;
 
-
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
-import io.ucoin.app.enums.CertificationType;
+import io.ucoin.app.BuildConfig;
+import io.ucoin.app.enumeration.CertificationType;
+import io.ucoin.app.enumeration.MembershipType;
+import io.ucoin.app.enumeration.SourceState;
+import io.ucoin.app.enumeration.TxDirection;
 
 public class SQLiteHelper extends SQLiteOpenHelper implements SQLiteTable {
 
@@ -16,7 +19,6 @@ public class SQLiteHelper extends SQLiteOpenHelper implements SQLiteTable {
     private static final String TEXT = " TEXT ";
     private static final String UNIQUE = " UNIQUE ";
     private static final String NOTNULL = " NOT NULL ";
-    private static final String NULL = "  NULL ";
     private static final String COMMA = ", ";
     private static final String AS = " AS ";
     private static final String DOT = ".";
@@ -29,8 +31,7 @@ public class SQLiteHelper extends SQLiteOpenHelper implements SQLiteTable {
     public void onCreate(SQLiteDatabase db) {
         String CREATE_TABLE_CURRENCY = "CREATE TABLE " + Currency.TABLE_NAME + "(" +
                 Currency._ID + " INTEGER PRIMARY KEY AUTOINCREMENT" + COMMA +
-                Currency.IDENTITY_ID + INTEGER + COMMA +
-                Currency.CURRENCY_NAME + TEXT + NOTNULL + UNIQUE + COMMA +
+                Currency.NAME + TEXT + NOTNULL + UNIQUE + COMMA +
                 Currency.C + REAL + NOTNULL + COMMA +
                 Currency.DT + INTEGER + NOTNULL + COMMA +
                 Currency.UD0 + INTEGER + NOTNULL + COMMA +
@@ -44,18 +45,28 @@ public class SQLiteHelper extends SQLiteOpenHelper implements SQLiteTable {
                 Currency.AVGGENTIME + INTEGER + NOTNULL + COMMA +
                 Currency.DTDIFFEVAL + INTEGER + NOTNULL + COMMA +
                 Currency.BLOCKSROT + INTEGER + NOTNULL + COMMA +
-                Currency.PERCENTROT + REAL + NOTNULL + COMMA +
-                "FOREIGN KEY (" + Currency.IDENTITY_ID + ") REFERENCES " +
-                Identity.TABLE_NAME + "(" + Identity._ID + ")" +
+                Currency.PERCENTROT + REAL + NOTNULL +
                 ")";
         db.execSQL(CREATE_TABLE_CURRENCY);
 
         String CREATE_TABLE_BLOCK = "CREATE TABLE " + Block.TABLE_NAME + "(" +
                 Block._ID + " INTEGER PRIMARY KEY AUTOINCREMENT" + COMMA +
                 Block.CURRENCY_ID + INTEGER + NOTNULL + COMMA +
+                Block.NONCE + INTEGER + NOTNULL + COMMA +
+                Block.VERSION + INTEGER + NOTNULL + COMMA +
                 Block.NUMBER + INTEGER + NOTNULL + COMMA +
+                Block.POWMIN + INTEGER + NOTNULL + COMMA +
+                Block.TIME + INTEGER + NOTNULL + COMMA +
+                Block.MEDIAN_TIME + INTEGER + NOTNULL + COMMA +
+                Block.DIVIDEND + INTEGER + COMMA +
                 Block.MONETARY_MASS + INTEGER + NOTNULL + COMMA +
+                Block.ISSUER + TEXT + NOTNULL + COMMA +
+                Block.PREVIOUS_HASH + TEXT + NOTNULL + COMMA +
+                Block.PREVIOUS_ISSUER + TEXT + NOTNULL + COMMA +
+                Block.MEMBERS_COUNT + INTEGER + NOTNULL + COMMA +
+                Block.HASH + INTEGER + NOTNULL + COMMA +
                 Block.SIGNATURE + TEXT + NOTNULL + COMMA +
+                Block.IS_MEMBERSHIP + TEXT + NOTNULL + COMMA +
                 "FOREIGN KEY (" + Block.CURRENCY_ID + ") REFERENCES " +
                 Currency.TABLE_NAME + "(" + Currency._ID + ")" + COMMA +
                 UNIQUE + "(" + Block.CURRENCY_ID + COMMA + Block.NUMBER + ")" +
@@ -66,9 +77,8 @@ public class SQLiteHelper extends SQLiteOpenHelper implements SQLiteTable {
                 Identity._ID + " INTEGER PRIMARY KEY AUTOINCREMENT" + COMMA +
                 Identity.CURRENCY_ID + INTEGER + UNIQUE + NOTNULL + COMMA +
                 Identity.WALLET_ID + INTEGER + NOTNULL + COMMA +
+                Identity.SIG_DATE + INTEGER + COMMA +
                 Identity.UID + TEXT + NOTNULL + COMMA +
-                Identity.SELF + TEXT + COMMA +
-                Identity.TIMESTAMP + INTEGER + COMMA +
                 "FOREIGN KEY (" + Identity.CURRENCY_ID + ") REFERENCES " +
                 Currency.TABLE_NAME + "(" + Currency._ID + ") ON DELETE CASCADE" + COMMA +
                 "FOREIGN KEY (" + Identity.WALLET_ID + ") REFERENCES " +
@@ -78,16 +88,14 @@ public class SQLiteHelper extends SQLiteOpenHelper implements SQLiteTable {
 
         String CREATE_TABLE_MEMBER = "CREATE TABLE " + Member.TABLE_NAME + "(" +
                 Member._ID + " INTEGER PRIMARY KEY AUTOINCREMENT" + COMMA +
-                Member.CURRENCY_ID + INTEGER + NOTNULL + COMMA +
+                Member.IDENTITY_ID + INTEGER + NOTNULL + COMMA +
                 Member.UID + TEXT + NOTNULL + COMMA +
                 Member.PUBLIC_KEY + TEXT + NOTNULL + COMMA +
-                Member.IS_MEMBER + TEXT + NOTNULL + COMMA +
-                Member.WAS_MEMBER + TEXT + NOTNULL + COMMA +
-                Member.SELF + TEXT + NOTNULL + COMMA +
-                Member.TIMESTAMP + INTEGER + NOTNULL + COMMA +
-                "FOREIGN KEY (" + Member.CURRENCY_ID + ") REFERENCES " +
-                Currency.TABLE_NAME + "(" + Currency._ID + ") ON DELETE CASCADE" + COMMA +
-                UNIQUE + "(" + Member.CURRENCY_ID + COMMA + Member.UID + COMMA + Member.PUBLIC_KEY + ")" +
+                Member.SELF + TEXT + COMMA +
+                Member.TIMESTAMP + INTEGER + COMMA +
+                "FOREIGN KEY (" + Member.IDENTITY_ID + ") REFERENCES " +
+                Identity.TABLE_NAME + "(" + Identity._ID + ") ON DELETE CASCADE" + COMMA +
+                UNIQUE + "(" + Member.IDENTITY_ID + COMMA + Member.UID + COMMA + Member.PUBLIC_KEY + ")" +
                 ")";
         db.execSQL(CREATE_TABLE_MEMBER);
 
@@ -102,6 +110,7 @@ public class SQLiteHelper extends SQLiteOpenHelper implements SQLiteTable {
                 Certification.BLOCK + INTEGER + NOTNULL + COMMA +
                 Certification.MEDIAN_TIME + INTEGER + NOTNULL + COMMA +
                 Certification.SIGNATURE + TEXT + UNIQUE + NOTNULL + COMMA +
+                Certification.STATE + TEXT + NOTNULL + COMMA +
                 "FOREIGN KEY (" + Certification.IDENTITY_ID + ") REFERENCES " +
                 Identity.TABLE_NAME + "(" + Identity._ID + ") ON DELETE CASCADE" + COMMA +
                 "FOREIGN KEY (" + Certification.MEMBER_ID + ") REFERENCES " +
@@ -143,16 +152,9 @@ public class SQLiteHelper extends SQLiteOpenHelper implements SQLiteTable {
                 "FOREIGN KEY (" + Endpoint.PEER_ID + ") REFERENCES " +
                 Peer.TABLE_NAME + "(" + Peer._ID + ") ON DELETE CASCADE " + COMMA +
                 " UNIQUE (" + Endpoint.PROTOCOL + COMMA + Endpoint.URL + COMMA + Endpoint.IPV4 + COMMA +
-                Endpoint.IPV6 + COMMA + Endpoint.PORT +")" +
+                Endpoint.IPV6 + COMMA + Endpoint.PORT + ")" +
                 ")";
         db.execSQL(CREATE_TABLE_ENDPOINT);
-
-        String CREATE_TABLE_PENDING_ENDPOINT = "CREATE TABLE " + PendingEndpoint.TABLE_NAME + "(" +
-                PendingEndpoint._ID + " INTEGER PRIMARY KEY AUTOINCREMENT" + COMMA +
-                PendingEndpoint.ADDRESS + TEXT + NOTNULL +COMMA +
-                PendingEndpoint.PORT + INTEGER + NOTNULL +
-                ")";
-        db.execSQL(CREATE_TABLE_PENDING_ENDPOINT);
 
         String CREATE_TABLE_SOURCE = "CREATE TABLE " + Source.TABLE_NAME + "(" +
                 Source._ID + " INTEGER PRIMARY KEY AUTOINCREMENT" + COMMA +
@@ -161,20 +163,47 @@ public class SQLiteHelper extends SQLiteOpenHelper implements SQLiteTable {
                 Source.TYPE + TEXT + NOTNULL + COMMA +
                 Source.AMOUNT + INTEGER + NOTNULL + COMMA +
                 Source.NUMBER + INTEGER + NOTNULL + COMMA +
-                UNIQUE + "(" + Source.FINGERPRINT + ")" + COMMA +
+                Source.STATE + TEXT + NOTNULL + COMMA +
+                UNIQUE + "(" + Source.WALLET_ID + "," + Source.FINGERPRINT + ")" + COMMA +
                 "FOREIGN KEY (" + Source.WALLET_ID + ") REFERENCES " +
                 Wallet.TABLE_NAME + "(" + Wallet._ID + ") ON DELETE CASCADE" +
                 ")";
         db.execSQL(CREATE_TABLE_SOURCE);
 
+        String CREATE_TABLE_UD = "CREATE TABLE " + Ud.TABLE_NAME + "(" +
+                Ud._ID + " INTEGER PRIMARY KEY AUTOINCREMENT" + COMMA +
+                Ud.WALLET_ID + INTEGER + NOTNULL + COMMA +
+                Ud.BLOCK + INTEGER + NOTNULL + COMMA +
+                Ud.CONSUMED + TEXT + NOTNULL + COMMA +
+                Ud.TIME + INTEGER + NOTNULL + COMMA +
+                Ud.QUANTITATIVE_AMOUNT + INTEGER + NOTNULL + COMMA +
+                "FOREIGN KEY (" + Ud.WALLET_ID + ") REFERENCES " +
+                Wallet.TABLE_NAME + "(" + Wallet._ID + ") ON DELETE CASCADE" + COMMA +
+                UNIQUE + "(" + Ud.WALLET_ID + COMMA + Ud.BLOCK + ")" +
+                ")";
+        db.execSQL(CREATE_TABLE_UD);
+
+        String CREATE_TABLE_CONTACT = "CREATE TABLE " + Contact.TABLE_NAME + "(" +
+                Contact._ID + " INTEGER PRIMARY KEY AUTOINCREMENT" + COMMA +
+                Contact.CURRENCY_ID + INTEGER + NOTNULL + COMMA +
+                Contact.NAME + TEXT + NOTNULL + COMMA +
+                Contact.PUBLIC_KEY + TEXT + NOTNULL + COMMA +
+                "FOREIGN KEY (" + Contact.CURRENCY_ID + ") REFERENCES " +
+                Currency.TABLE_NAME + "(" + Currency._ID + ") ON DELETE CASCADE" + COMMA +
+                UNIQUE + "(" + Contact.CURRENCY_ID + COMMA + Contact.NAME + ")" +
+                ")";
+        db.execSQL(CREATE_TABLE_CONTACT);
+
         String CREATE_TABLE_TX = "CREATE TABLE " + Tx.TABLE_NAME + "(" +
                 Tx._ID + " INTEGER PRIMARY KEY AUTOINCREMENT" + COMMA +
                 Tx.WALLET_ID + INTEGER + NOTNULL + COMMA +
+                Tx.VERSION + INTEGER + NOTNULL + COMMA +
                 Tx.COMMENT + TEXT + NOTNULL + COMMA +
-                Tx.HASH + TEXT + NOTNULL + COMMA +
-                Tx.BLOCK + INTEGER + NOTNULL + COMMA +
-                Tx.TIME + INTEGER + NOTNULL + COMMA +
                 Tx.DIRECTION + TEXT + NOTNULL + COMMA +
+                Tx.HASH + TEXT + COMMA +
+                Tx.BLOCK + INTEGER + COMMA +
+                Tx.TIME + INTEGER + COMMA +
+                Tx.STATE + TEXT + NOTNULL + COMMA +
                 "FOREIGN KEY (" + Tx.WALLET_ID + ") REFERENCES " +
                 Wallet.TABLE_NAME + "(" + Wallet._ID + ") ON DELETE CASCADE" + COMMA +
                 UNIQUE + "(" + Tx.WALLET_ID + COMMA + Tx.HASH + ")" +
@@ -201,7 +230,8 @@ public class SQLiteHelper extends SQLiteOpenHelper implements SQLiteTable {
                 TxSignature.ISSUER_ORDER + INTEGER + NOTNULL + COMMA +
                 "FOREIGN KEY (" + TxSignature.TX_ID + ") REFERENCES " +
                 Tx.TABLE_NAME + "(" + Tx._ID + ") ON DELETE CASCADE" + COMMA +
-                UNIQUE + "(" + TxSignature.TX_ID + COMMA + TxSignature.VALUE + ")" +
+                UNIQUE + "(" + TxSignature.TX_ID + COMMA + TxSignature.VALUE + ")" + COMMA +
+                UNIQUE + "(" + TxSignature.TX_ID + COMMA + TxSignature.ISSUER_ORDER + ")" +
                 ")";
         db.execSQL(CREATE_TABLE_TX_SIGNATURE);
 
@@ -224,11 +254,35 @@ public class SQLiteHelper extends SQLiteOpenHelper implements SQLiteTable {
                 TxOutput.PUBLIC_KEY + TEXT + NOTNULL + COMMA +
                 TxOutput.AMOUNT + INTEGER + NOTNULL + COMMA +
                 "FOREIGN KEY (" + TxOutput.TX_ID + ") REFERENCES " +
-                Tx.TABLE_NAME + "(" + Tx._ID + ") ON DELETE CASCADE" +
+                Tx.TABLE_NAME + "(" + Tx._ID + ") ON DELETE CASCADE" + COMMA +
+                UNIQUE + "(" + TxOutput.TX_ID + COMMA + TxOutput.PUBLIC_KEY + ")" +
                 ")";
         db.execSQL(CREATE_TABLE_TX_OUTPUT);
 
+        String CREATE_TABLE_MEMBERSHIP = "CREATE TABLE " + Membership.TABLE_NAME + "(" +
+                Membership._ID + " INTEGER PRIMARY KEY AUTOINCREMENT" + COMMA +
+                Membership.IDENTITY_ID + INTEGER + NOTNULL + COMMA +
+                Membership.VERSION + INTEGER + NOTNULL + COMMA +
+                Membership.TYPE + TEXT + NOTNULL + COMMA +
+                Membership.BLOCK_NUMBER + INTEGER + NOTNULL + COMMA +
+                Membership.BLOCK_HASH + TEXT + NOTNULL + COMMA +
+                Membership.STATE + TEXT + NOTNULL + COMMA +
+                " FOREIGN KEY (" + Membership.IDENTITY_ID + ") REFERENCES " +
+                Identity.TABLE_NAME + "(" + Identity._ID + ") ON DELETE CASCADE" + COMMA +
+                UNIQUE + "(" + Membership.IDENTITY_ID + COMMA + Membership.BLOCK_NUMBER + ")" +
+                ")";
+        db.execSQL(CREATE_TABLE_MEMBERSHIP);
 
+        String CREATE_TABLE_SELF_CERTIFICATION = "CREATE TABLE " + SelfCertification.TABLE_NAME + "(" +
+                SelfCertification._ID + " INTEGER PRIMARY KEY AUTOINCREMENT" + COMMA +
+                SelfCertification.IDENTITY_ID + INTEGER + NOTNULL + COMMA +
+                SelfCertification.TIMESTAMP + INTEGER + NOTNULL + COMMA +
+                SelfCertification.SELF + TEXT + UNIQUE + NOTNULL + COMMA +
+                SelfCertification.STATE + TEXT + NOTNULL + COMMA +
+                " FOREIGN KEY (" + SelfCertification.IDENTITY_ID + ") REFERENCES " +
+                Identity.TABLE_NAME + "(" + Identity._ID + ") ON DELETE CASCADE" +
+                ")";
+        db.execSQL(CREATE_TABLE_SELF_CERTIFICATION);
     }
 
     @Override
@@ -243,36 +297,137 @@ public class SQLiteHelper extends SQLiteOpenHelper implements SQLiteTable {
             //enable FOREIGN KEY constraint
             db.execSQL("PRAGMA foreign_keys=ON");
             try {
-                db.execSQL("DROP VIEW " + SQLiteView.Wallet.VIEW_NAME);
-                db.execSQL("DROP VIEW " + SQLiteView.Certification.VIEW_NAME);
+                db.execSQL("DROP VIEW IF EXISTS " + SQLiteView.Currency.VIEW_NAME);
+                db.execSQL("DROP VIEW IF EXISTS " + SQLiteView.Wallet.VIEW_NAME);
+                db.execSQL("DROP VIEW IF EXISTS " + SQLiteView.Member.VIEW_NAME);
+                db.execSQL("DROP VIEW IF EXISTS " + SQLiteView.Certification.VIEW_NAME);
+                db.execSQL("DROP VIEW IF EXISTS " + SQLiteView.Tx.VIEW_NAME);
+                db.execSQL("DROP VIEW IF EXISTS " + SQLiteView.Ud.VIEW_NAME);
+                db.execSQL("DROP VIEW IF EXISTS " + SQLiteView.Membership.VIEW_NAME);
+                db.execSQL("DROP VIEW IF EXISTS " + SQLiteView.Identity.VIEW_NAME);
             } catch (SQLiteException e) {
-                Log.d("SQLITEHELPER", e.getMessage());
+                if (BuildConfig.DEBUG) Log.d("SQLITEHELPER", e.getMessage());
             }
+
+            String CREATE_VIEW_CURRENCY = "CREATE VIEW " + SQLiteView.Currency.VIEW_NAME +
+                    " AS SELECT " +
+                    Currency.TABLE_NAME + DOT + Currency._ID + AS + SQLiteView.Currency._ID + COMMA +
+                    Currency.TABLE_NAME + DOT + Currency.NAME + AS + SQLiteView.Currency.NAME + COMMA +
+                    Currency.TABLE_NAME + DOT + Currency.C + AS + SQLiteView.Currency.C + COMMA +
+                    Currency.TABLE_NAME + DOT + Currency.DT + AS + SQLiteView.Currency.DT + COMMA +
+                    Currency.TABLE_NAME + DOT + Currency.UD0 + AS + SQLiteView.Currency.UD0 + COMMA +
+                    Currency.TABLE_NAME + DOT + Currency.SIGDELAY + AS + SQLiteView.Currency.SIGDELAY + COMMA +
+                    Currency.TABLE_NAME + DOT + Currency.SIGVALIDITY + AS + SQLiteView.Currency.SIGVALIDITY + COMMA +
+                    Currency.TABLE_NAME + DOT + Currency.SIGQTY + AS + SQLiteView.Currency.SIGQTY + COMMA +
+                    Currency.TABLE_NAME + DOT + Currency.SIGWOT + AS + SQLiteView.Currency.SIGWOT + COMMA +
+                    Currency.TABLE_NAME + DOT + Currency.MSVALIDITY + AS + SQLiteView.Currency.MSVALIDITY + COMMA +
+                    Currency.TABLE_NAME + DOT + Currency.STEPMAX + AS + SQLiteView.Currency.STEPMAX + COMMA +
+                    Currency.TABLE_NAME + DOT + Currency.MEDIANTIMEBLOCKS + AS + SQLiteView.Currency.MEDIANTIMEBLOCKS + COMMA +
+                    Currency.TABLE_NAME + DOT + Currency.AVGGENTIME + AS + SQLiteView.Currency.AVGGENTIME + COMMA +
+                    Currency.TABLE_NAME + DOT + Currency.DTDIFFEVAL + AS + SQLiteView.Currency.DTDIFFEVAL + COMMA +
+                    Currency.TABLE_NAME + DOT + Currency.BLOCKSROT + AS + SQLiteView.Currency.BLOCKSROT + COMMA +
+                    Currency.TABLE_NAME + DOT + Currency.PERCENTROT + AS + SQLiteView.Currency.PERCENTROT + COMMA +
+                    "last_ud_block." + Block.DIVIDEND + AS + SQLiteView.Currency.QUANTITATIVE_UD + COMMA +
+                    "current_block." + Block.MONETARY_MASS + AS + SQLiteView.Currency.MONETARY_MASS + COMMA +
+                    "current_block." + Block.MEMBERS_COUNT + AS + SQLiteView.Currency.MEMBERS_COUNT + COMMA +
+                    "current_block." + Block.NUMBER + AS + SQLiteView.Currency.CURRENT_BLOCK + COMMA +
+
+                    "strftime('%Y', datetime(" + "current_block." + Block.TIME + ", 'unixepoch', 'localtime'))" + AS + SQLiteView.Currency.BLOCK_YEAR + COMMA +
+                    "strftime('%m', datetime(" + "current_block." + Block.TIME + ", 'unixepoch', 'localtime'))" + AS + SQLiteView.Currency.BLOCK_MONTH + COMMA +
+                    "strftime('%d', datetime(" + "current_block." + Block.TIME + ", 'unixepoch', 'localtime'))" + AS + SQLiteView.Currency.BLOCK_DAY + COMMA +
+                    "strftime('%w', datetime(" + "current_block." + Block.TIME + ", 'unixepoch', 'localtime'))" + AS + SQLiteView.Currency.BLOCK_DAY_OF_WEEK + COMMA +
+                    "strftime('%H:%M:%S', datetime(" + "current_block." + Block.TIME + ", 'unixepoch', 'localtime'))" + AS + SQLiteView.Currency.BLOCK_HOUR + COMMA +
+
+
+                    "total.total_amount" + AS + SQLiteView.Currency.QUANT_BALANCE +
+
+                    " FROM " + Currency.TABLE_NAME +
+                    " LEFT JOIN (SELECT " + Block.CURRENCY_ID + COMMA + "MAX(" + Block.NUMBER + ") AS " + Block.NUMBER + COMMA + Block.MONETARY_MASS + COMMA + Block.MEMBERS_COUNT + COMMA + Block.TIME +
+                    " FROM " + Block.TABLE_NAME +
+                    " GROUP BY " + Block.CURRENCY_ID + ") AS current_block" +
+                    " ON " + Currency.TABLE_NAME + DOT + Currency._ID + "= current_block." + Block.CURRENCY_ID +
+
+                    " LEFT JOIN (SELECT " + Block.CURRENCY_ID + COMMA + "MAX(" + Block.DIVIDEND + ") AS " + Block.DIVIDEND +
+                    " FROM " + Block.TABLE_NAME +
+                    " WHERE " + Block.DIVIDEND + " IS NOT NULL" +
+                    " GROUP BY " + Block.CURRENCY_ID + ") AS last_ud_block" +
+                    " ON " + Currency.TABLE_NAME + DOT + Currency._ID + "= last_ud_block." + Block.CURRENCY_ID +
+
+                    " LEFT JOIN (SELECT " + Wallet.CURRENCY_ID + COMMA + "SUM(" + Source.AMOUNT + ") AS total_amount" +
+                    " FROM " + Wallet.TABLE_NAME + COMMA + Source.TABLE_NAME +
+                    " WHERE " + Wallet.TABLE_NAME + DOT + Wallet._ID + "=" + Source.TABLE_NAME + DOT + Source.WALLET_ID +
+                    " GROUP BY " + Wallet.CURRENCY_ID + ") AS total" +
+                    " ON " + Currency.TABLE_NAME + DOT + Currency._ID + "= total." + Wallet.CURRENCY_ID;
+            db.execSQL(CREATE_VIEW_CURRENCY);
+
             String CREATE_VIEW_WALLET = "CREATE VIEW " + SQLiteView.Wallet.VIEW_NAME +
                     " AS SELECT " +
                     Wallet.TABLE_NAME + DOT + Wallet._ID + AS + SQLiteView.Wallet._ID + COMMA +
                     Wallet.TABLE_NAME + DOT + Wallet.CURRENCY_ID + AS + SQLiteView.Wallet.CURRENCY_ID + COMMA +
-                    Currency.CURRENCY_NAME + AS + SQLiteView.Wallet.CURRENCY_NAME + COMMA +
+                    Currency.TABLE_NAME + DOT + Currency.NAME + AS + SQLiteView.Wallet.CURRENCY_NAME + COMMA +
                     Wallet.TABLE_NAME + DOT + Wallet.SALT + AS + SQLiteView.Wallet.SALT + COMMA +
                     Wallet.TABLE_NAME + DOT + Wallet.PUBLIC_KEY + AS + SQLiteView.Wallet.PUBLIC_KEY + COMMA +
                     Wallet.TABLE_NAME + DOT + Wallet.PRIVATE_KEY + AS + SQLiteView.Wallet.PRIVATE_KEY + COMMA +
                     Wallet.TABLE_NAME + DOT + Wallet.ALIAS + AS + SQLiteView.Wallet.ALIAS + COMMA +
-                    " SUM (" + Source.TABLE_NAME + DOT + Source.AMOUNT + ")" + AS + SQLiteView.Wallet.QUANTITATIVE_AMOUNT + COMMA +
-                    " ROUND ( CAST (" + Block.TABLE_NAME + DOT + Block.MONETARY_MASS + " AS REAL(5,2)) / SUM (" + Source.TABLE_NAME + DOT + Source.AMOUNT + "), 2)" + AS + SQLiteView.Wallet.RELATIVE_AMOUNT +
+                    Block.TABLE_NAME + DOT + Block.DIVIDEND + AS + SQLiteView.Wallet.UD_VALUE + COMMA +
+                    " IFNULL(SUM (" + Source.TABLE_NAME + DOT + Source.AMOUNT + "), 0)" + AS + SQLiteView.Wallet.QUANTITATIVE_AMOUNT + COMMA +
+                    " ROUND ( CAST (IFNULL(SUM (" + Source.TABLE_NAME + DOT + Source.AMOUNT + "), 0) AS REAL) / " + Block.TABLE_NAME + DOT + Block.DIVIDEND + ", 8)" + AS + SQLiteView.Wallet.RELATIVE_AMOUNT +
                     " FROM " + Wallet.TABLE_NAME +
-                    " JOIN " + Currency.TABLE_NAME +
+
+                    " LEFT JOIN " + Currency.TABLE_NAME +
                     " ON " + Currency.TABLE_NAME + DOT + Currency._ID + "=" + Wallet.TABLE_NAME + DOT + Wallet.CURRENCY_ID +
+
+                    " LEFT JOIN (SELECT " + Block.CURRENCY_ID + COMMA + "MAX(" + Block.NUMBER + ") AS " + Block.NUMBER +
+                    " FROM " + Block.TABLE_NAME +
+                    " WHERE " + Block.TABLE_NAME + DOT + Block.DIVIDEND + " IS NOT NULL " +
+                    " GROUP BY " + Block.CURRENCY_ID + ") AS ud_block" +
+                    " ON " + "ud_block." + Block.CURRENCY_ID + "=" + Block.TABLE_NAME + DOT + Block.CURRENCY_ID +
+
                     " LEFT JOIN " + Block.TABLE_NAME +
                     " ON " + Currency.TABLE_NAME + DOT + Currency._ID + "=" + Block.TABLE_NAME + DOT + Block.CURRENCY_ID +
-                    " LEFT JOIN (SELECT " + Block.CURRENCY_ID + COMMA + "MAX(" + Block.NUMBER + ") AS bNumber " +
-                    " FROM " + Block.TABLE_NAME + " GROUP BY " + Block.CURRENCY_ID + ") AS B" +
-                    " ON " + Block.TABLE_NAME + DOT + Block.CURRENCY_ID + "= B." + Block.CURRENCY_ID +
-                    " AND " + Block.TABLE_NAME + DOT + Block.NUMBER + "= B.bNumber" +
+                    " AND " + Block.TABLE_NAME + DOT + Block.NUMBER + "= ud_block." + Block.NUMBER +
+
                     " LEFT JOIN " + Source.TABLE_NAME +
                     " ON " + Wallet.TABLE_NAME + DOT + Wallet._ID + "=" + Source.TABLE_NAME + DOT + Source.WALLET_ID +
+                    " AND " + Source.TABLE_NAME + DOT + Source.STATE + "='" + SourceState.AVAILABLE.name() + "'" +
                     " GROUP BY " + Wallet.TABLE_NAME + DOT + Wallet._ID;
-
             db.execSQL(CREATE_VIEW_WALLET);
+
+            String CREATE_TABLE_MEMBER = "CREATE VIEW " + SQLiteView.Member.VIEW_NAME +
+                    " AS SELECT " +
+                    Member.TABLE_NAME + DOT + SQLiteView.Member._ID + AS + SQLiteView.Member._ID + COMMA +
+                    Member.TABLE_NAME + DOT + SQLiteView.Member.IDENTITY_ID + AS + SQLiteView.Member.IDENTITY_ID + COMMA +
+                    Member.TABLE_NAME + DOT + SQLiteView.Member.UID + AS + SQLiteView.Member.UID + COMMA +
+                    Member.TABLE_NAME + DOT + SQLiteView.Member.PUBLIC_KEY + AS + SQLiteView.Member.PUBLIC_KEY + COMMA +
+                    Member.TABLE_NAME + DOT + SQLiteView.Member.SELF + AS + SQLiteView.Member.SELF + COMMA +
+                    Member.TABLE_NAME + DOT + SQLiteView.Member.TIMESTAMP + AS + SQLiteView.Member.TIMESTAMP + COMMA +
+                    "strftime('%Y', datetime(certBy." + Certification.MEDIAN_TIME + ", 'unixepoch', 'localtime'))" + AS + SQLiteView.Member.CERT_BY_YEAR + COMMA +
+                    "strftime('%m', datetime(certBy." + Certification.MEDIAN_TIME + ", 'unixepoch', 'localtime'))" + AS + SQLiteView.Member.CERT_BY_MONTH + COMMA +
+                    "strftime('%d', datetime(certBy." + Certification.MEDIAN_TIME + ", 'unixepoch', 'localtime'))" + AS + SQLiteView.Member.CERT_BY_DAY + COMMA +
+                    "strftime('%w', datetime(certBy." + Certification.MEDIAN_TIME + ", 'unixepoch', 'localtime'))" + AS + SQLiteView.Member.CERT_BY_DAY_OF_WEEK + COMMA +
+                    "strftime('%H:%M:%S', datetime(certBy." + Certification.MEDIAN_TIME + ", 'unixepoch', 'localtime'))" + AS + SQLiteView.Member.CERT_BY_HOUR + COMMA +
+
+                    "strftime('%Y', datetime(certOf." + Certification.MEDIAN_TIME + ", 'unixepoch', 'localtime'))" + AS + SQLiteView.Member.CERT_OF_YEAR + COMMA +
+                    "strftime('%m', datetime(certOf." + Certification.MEDIAN_TIME + ", 'unixepoch', 'localtime'))" + AS + SQLiteView.Member.CERT_OF_MONTH + COMMA +
+                    "strftime('%d', datetime(certOf." + Certification.MEDIAN_TIME + ", 'unixepoch', 'localtime'))" + AS + SQLiteView.Member.CERT_OF_DAY + COMMA +
+                    "strftime('%w', datetime(certOf." + Certification.MEDIAN_TIME + ", 'unixepoch', 'localtime'))" + AS + SQLiteView.Member.CERT_OF_DAY_OF_WEEK + COMMA +
+                    "strftime('%H:%M:%S', datetime(certOf." + Certification.MEDIAN_TIME + ", 'unixepoch', 'localtime'))" + AS + SQLiteView.Member.CERT_OF_HOUR +
+
+                    " FROM " + Member.TABLE_NAME +
+                    " LEFT JOIN (SELECT " + Certification.MEMBER_ID + COMMA + "MAX(" + Certification.MEDIAN_TIME + ") AS " + Certification.MEDIAN_TIME +
+                    " FROM " + Certification.TABLE_NAME +
+                    " WHERE " + Certification.TYPE + "=\"" + CertificationType.BY.name() + "\"" +
+                    " GROUP BY " + Certification.MEMBER_ID + ") AS certBy" +
+                    " ON certBy." + Certification.MEMBER_ID + "=" + Member.TABLE_NAME + DOT + Member._ID +
+
+
+                    " LEFT JOIN (SELECT " + Certification.MEMBER_ID + COMMA + "MAX(" + Certification.MEDIAN_TIME + ") AS " + Certification.MEDIAN_TIME +
+                    " FROM " + Certification.TABLE_NAME +
+                    " WHERE " + Certification.TYPE + "=\"" + CertificationType.OF.name() + "\"" +
+                    " GROUP BY " + Certification.MEMBER_ID + ") AS certOf" +
+                    " ON certOf." + Certification.MEMBER_ID + "=" + Member.TABLE_NAME + DOT + Member._ID;
+
+            db.execSQL(CREATE_TABLE_MEMBER);
 
             String CREATE_VIEW_CERTIFICATION = "CREATE VIEW " + SQLiteView.Certification.VIEW_NAME +
                     " AS SELECT " +
@@ -282,14 +437,253 @@ public class SQLiteHelper extends SQLiteOpenHelper implements SQLiteTable {
                     Certification.TABLE_NAME + DOT + Certification.TYPE + AS + SQLiteView.Certification.TYPE + COMMA +
                     Certification.TABLE_NAME + DOT + Certification.BLOCK + AS + SQLiteView.Certification.BLOCK + COMMA +
                     Certification.TABLE_NAME + DOT + Certification.MEDIAN_TIME + AS + SQLiteView.Certification.MEDIAN_TIME + COMMA +
+                    Certification.TABLE_NAME + DOT + Certification.STATE + AS + SQLiteView.Certification.STATE + COMMA +
+                    "strftime('%Y', datetime(" + Certification.TABLE_NAME + DOT + Certification.MEDIAN_TIME + ", 'unixepoch', 'localtime'))" + AS + SQLiteView.Certification.YEAR + COMMA +
+                    "strftime('%m', datetime(" + Certification.TABLE_NAME + DOT + Certification.MEDIAN_TIME + ", 'unixepoch', 'localtime'))" + AS + SQLiteView.Certification.MONTH + COMMA +
+                    "strftime('%d', datetime(" + Certification.TABLE_NAME + DOT + Certification.MEDIAN_TIME + ", 'unixepoch', 'localtime'))" + AS + SQLiteView.Certification.DAY + COMMA +
+                    "strftime('%w', datetime(" + Certification.TABLE_NAME + DOT + Certification.MEDIAN_TIME + ", 'unixepoch', 'localtime'))" + AS + SQLiteView.Certification.DAY_OF_WEEK + COMMA +
+                    "strftime('%H:%M:%S', datetime(" + Certification.TABLE_NAME + DOT + Certification.MEDIAN_TIME + ", 'unixepoch', 'localtime'))" + AS + SQLiteView.Certification.HOUR + COMMA +
+
                     Certification.TABLE_NAME + DOT + Certification.SIGNATURE + AS + SQLiteView.Certification.SIGNATURE + COMMA +
                     Member.TABLE_NAME + DOT + Member.UID + AS + SQLiteView.Certification.UID +
                     " FROM " + Certification.TABLE_NAME +
-                    " JOIN " + Member.TABLE_NAME +
+                    " LEFT JOIN " + Member.TABLE_NAME +
                     " ON " + Certification.TABLE_NAME + DOT + Certification.MEMBER_ID + "=" + Member.TABLE_NAME + DOT + Member._ID;
             db.execSQL(CREATE_VIEW_CERTIFICATION);
 
+            String CREATE_VIEW_TX = "CREATE VIEW " + SQLiteView.Tx.VIEW_NAME +
+                    " AS SELECT " +
+                    Tx.TABLE_NAME + DOT + Tx._ID + AS + SQLiteView.Tx._ID + COMMA +
+                    Tx.TABLE_NAME + DOT + Tx.WALLET_ID + AS + SQLiteView.Tx.WALLET_ID + COMMA +
+                    Tx.TABLE_NAME + DOT + Tx.COMMENT + AS + SQLiteView.Tx.COMMENT + COMMA +
+                    Tx.TABLE_NAME + DOT + Tx.BLOCK + AS + SQLiteView.Tx.BLOCK + COMMA +
+                    Tx.TABLE_NAME + DOT + Tx.HASH + AS + SQLiteView.Tx.HASH + COMMA +
+                    Tx.TABLE_NAME + DOT + Tx.VERSION + AS + SQLiteView.Tx.VERSION + COMMA +
+                    Tx.TABLE_NAME + DOT + Tx.TIME + AS + SQLiteView.Tx.TIME + COMMA +
+                    Tx.TABLE_NAME + DOT + Tx.DIRECTION + AS + SQLiteView.Tx.DIRECTION + COMMA +
+                    Tx.TABLE_NAME + DOT + Tx.STATE + AS + SQLiteView.Tx.STATE + COMMA +
+                    Currency.TABLE_NAME + DOT + Currency.NAME + AS + SQLiteView.Tx.CURRENCY_NAME + COMMA +
+                    "strftime('%Y', datetime(" + Tx.TABLE_NAME + DOT + Tx.TIME + ", 'unixepoch', 'localtime'))" + AS + SQLiteView.Tx.YEAR + COMMA +
+                    "strftime('%m', datetime(" + Tx.TABLE_NAME + DOT + Tx.TIME + ", 'unixepoch', 'localtime'))" + AS + SQLiteView.Tx.MONTH + COMMA +
+                    "strftime('%d', datetime(" + Tx.TABLE_NAME + DOT + Tx.TIME + ", 'unixepoch', 'localtime'))" + AS + SQLiteView.Tx.DAY + COMMA +
+                    "strftime('%w', datetime(" + Tx.TABLE_NAME + DOT + Tx.TIME + ", 'unixepoch', 'localtime'))" + AS + SQLiteView.Tx.DAY_OF_WEEK + COMMA +
+                    "strftime('%H:%M:%S', datetime(" + Tx.TABLE_NAME + DOT + Tx.TIME + ", 'unixepoch', 'localtime'))" + AS + SQLiteView.Tx.HOUR + COMMA +
+
+                    " CASE " + Tx.TABLE_NAME + DOT + Tx.DIRECTION +
+                    " WHEN \"" + TxDirection.IN.name() + "\"" +
+                    " THEN " + TxOutput.TABLE_NAME + DOT + TxOutput.AMOUNT +
+                    " WHEN \"" + TxDirection.OUT.name() + "\"" +
+                    " THEN grouped_inputs.sum_amount - IFNULL(" + TxOutput.TABLE_NAME + DOT + TxOutput.AMOUNT + ", 0)" +
+                    " END " + AS + SQLiteView.Tx.QUANTITATIVE_AMOUNT + COMMA +
+
+                    " CASE " + Tx.TABLE_NAME + DOT + Tx.DIRECTION +
+                    " WHEN \"" + TxDirection.IN.name() + "\"" +
+                    " THEN ROUND (CAST (" + TxOutput.TABLE_NAME + DOT + TxOutput.AMOUNT + " AS REAL ) / " + "ud_block_then." + Block.DIVIDEND + ", 8)" +
+                    " WHEN \"" + TxDirection.OUT.name() + "\"" +
+                    " THEN ROUND (CAST ((grouped_inputs.sum_amount - IFNULL(" + TxOutput.TABLE_NAME + DOT + TxOutput.AMOUNT + ", 0)) AS REAL ) / " + "ud_block_then." + Block.DIVIDEND + ", 8)" +
+                    " END " + AS + SQLiteView.Tx.RELATIVE_AMOUNT_THEN + COMMA +
+
+                    " CASE " + Tx.TABLE_NAME + DOT + Tx.DIRECTION +
+                    " WHEN \"" + TxDirection.IN.name() + "\"" +
+                    " THEN ROUND (CAST (" + TxOutput.TABLE_NAME + DOT + TxOutput.AMOUNT + " AS REAL ) / " + Block.TABLE_NAME + DOT + Block.DIVIDEND + ", 8)" +
+                    " WHEN \"" + TxDirection.OUT.name() + "\"" +
+                    " THEN ROUND (CAST ((grouped_inputs.sum_amount - IFNULL(" + TxOutput.TABLE_NAME + DOT + TxOutput.AMOUNT + ", 0)) AS REAL ) / " + Block.TABLE_NAME + DOT + Block.DIVIDEND + ", 8)" +
+                    " END " + AS + SQLiteView.Tx.RELATIVE_AMOUNT_NOW +
+
+                    " FROM " + Tx.TABLE_NAME +
+                    " LEFT JOIN " + Wallet.TABLE_NAME +
+                    " ON " + Wallet.TABLE_NAME + DOT + Wallet._ID + "=" + Tx.TABLE_NAME + DOT + Tx.WALLET_ID +
+
+                    " LEFT JOIN " + Currency.TABLE_NAME +
+                    " ON " + Currency.TABLE_NAME + DOT + Currency._ID + "=" + Wallet.TABLE_NAME + DOT + Wallet.CURRENCY_ID +
+
+                    " LEFT JOIN " + TxIssuer.TABLE_NAME +
+                    " ON " + Tx.TABLE_NAME + DOT + Tx._ID + "=" + TxIssuer.TABLE_NAME + DOT + TxIssuer.TX_ID +
+                    " AND " + Wallet.TABLE_NAME + DOT + Wallet.PUBLIC_KEY + "=" + TxIssuer.TABLE_NAME + DOT + TxIssuer.PUBLIC_KEY +
+
+                    " LEFT JOIN (SELECT " + TxInput.TX_ID + COMMA + TxInput.ISSUER_INDEX + COMMA + "SUM(" + TxInput.AMOUNT + ") AS sum_amount" +
+                    " FROM " + TxInput.TABLE_NAME +
+                    " GROUP BY " + TxInput.TX_ID + COMMA + TxInput.ISSUER_INDEX + ") AS grouped_inputs" +
+                    " ON grouped_inputs" + DOT + TxInput.TX_ID + "=" + Tx.TABLE_NAME + DOT + Tx._ID +
+                    " AND grouped_inputs" + DOT + TxInput.ISSUER_INDEX + "=" + TxIssuer.ISSUER_ORDER +
+
+                    " LEFT JOIN " + TxOutput.TABLE_NAME +
+                    " ON " + Tx.TABLE_NAME + DOT + Tx._ID + "=" + TxOutput.TABLE_NAME + DOT + TxOutput.TX_ID +
+                    " AND " + TxOutput.TABLE_NAME + DOT + TxOutput.PUBLIC_KEY + "=" + Wallet.TABLE_NAME + DOT + Wallet.PUBLIC_KEY +
+
+                    " LEFT JOIN (SELECT " + Tx.TABLE_NAME + DOT + Tx._ID + COMMA + " MAX(" + Block.TABLE_NAME + DOT + Block.DIVIDEND + ") AS " + Block.DIVIDEND +
+                    " FROM " + Tx.TABLE_NAME + "," + Block.TABLE_NAME +
+                    " WHERE " + Block.TABLE_NAME + DOT + Block.DIVIDEND + " IS NOT NULL " +
+                    " AND " + Block.TABLE_NAME + DOT + Block.NUMBER + "<=" + Tx.TABLE_NAME + DOT + Tx.BLOCK +
+                    " GROUP BY " + Tx.TABLE_NAME + DOT + Tx._ID + ") AS ud_block_then " +
+                    " ON ud_block_then._ID=" + Tx.TABLE_NAME + DOT + Tx._ID +
+
+                    " LEFT JOIN (SELECT " + Block.CURRENCY_ID + COMMA + "MAX(" + Block.NUMBER + ") AS " + Block.NUMBER +
+                    " FROM " + Block.TABLE_NAME +
+                    " WHERE " + Block.TABLE_NAME + DOT + Block.DIVIDEND + " IS NOT NULL " +
+                    " GROUP BY " + Block.CURRENCY_ID + ") AS ud_block" +
+                    " ON ud_block." + Block.CURRENCY_ID + "=" + Currency.TABLE_NAME + DOT + Currency._ID +
+
+                    " LEFT JOIN " + Block.TABLE_NAME +
+                    " ON " + Currency.TABLE_NAME + DOT + Currency._ID + "=" + Block.TABLE_NAME + DOT + Block.CURRENCY_ID +
+                    " AND " + Block.TABLE_NAME + DOT + Block.NUMBER + "= ud_block.number";
+            db.execSQL(CREATE_VIEW_TX);
+
+            String CREATE_VIEW_UD = "CREATE VIEW " + SQLiteView.Ud.VIEW_NAME +
+                    " AS SELECT " +
+                    Ud.TABLE_NAME + DOT + Ud._ID + AS + SQLiteView.Ud._ID + COMMA +
+                    Ud.TABLE_NAME + DOT + Ud.WALLET_ID + AS + SQLiteView.Ud.WALLET_ID + COMMA +
+                    Ud.TABLE_NAME + DOT + Ud.BLOCK + AS + SQLiteView.Ud.BLOCK + COMMA +
+                    Ud.TABLE_NAME + DOT + Ud.CONSUMED + AS + SQLiteView.Ud.CONSUMED + COMMA +
+                    Ud.TABLE_NAME + DOT + Ud.TIME + AS + SQLiteView.Ud.TIME + COMMA +
+                    Ud.TABLE_NAME + DOT + Ud.QUANTITATIVE_AMOUNT + AS + SQLiteView.Ud.QUANTITATIVE_AMOUNT + COMMA +
+                    Currency.TABLE_NAME + DOT + Currency.NAME + AS + SQLiteView.Ud.CURRENCY_NAME + COMMA +
+                    "strftime('%Y', datetime(" + Ud.TABLE_NAME + DOT + Ud.TIME + ", 'unixepoch', 'localtime'))" + AS + SQLiteView.Ud.YEAR + COMMA +
+                    "strftime('%m', datetime(" + Ud.TABLE_NAME + DOT + Ud.TIME + ", 'unixepoch', 'localtime'))" + AS + SQLiteView.Ud.MONTH + COMMA +
+                    "strftime('%d', datetime(" + Ud.TABLE_NAME + DOT + Ud.TIME + ", 'unixepoch', 'localtime'))" + AS + SQLiteView.Ud.DAY + COMMA +
+                    "strftime('%w', datetime(" + Ud.TABLE_NAME + DOT + Ud.TIME + ", 'unixepoch', 'localtime'))" + AS + SQLiteView.Ud.DAY_OF_WEEK + COMMA +
+                    "strftime('%H:%M:%S', datetime(" + Ud.TABLE_NAME + DOT + Ud.TIME + ", 'unixepoch', 'localtime'))" + AS + SQLiteView.Ud.HOUR + COMMA +
+                    "ROUND (CAST ( " + Ud.TABLE_NAME + DOT + Ud.QUANTITATIVE_AMOUNT + " AS REAL ) / " + Block.TABLE_NAME + DOT + Block.DIVIDEND + ", 8)" + AS + SQLiteView.Tx.RELATIVE_AMOUNT_NOW +
+
+                    " FROM " + Ud.TABLE_NAME +
+                    " LEFT JOIN " + Wallet.TABLE_NAME +
+                    " ON " + Ud.TABLE_NAME + DOT + Ud.WALLET_ID + "=" + Wallet.TABLE_NAME + DOT + Wallet._ID +
+
+                    " LEFT JOIN " + Currency.TABLE_NAME +
+                    " ON " + Currency.TABLE_NAME + DOT + Currency._ID + "=" + Wallet.TABLE_NAME + DOT + Wallet.CURRENCY_ID +
+
+                    " LEFT JOIN (SELECT " + Block.CURRENCY_ID + COMMA + "MAX(" + Block.NUMBER + ") AS " + Block.NUMBER +
+                    " FROM " + Block.TABLE_NAME +
+                    " WHERE " + Block.TABLE_NAME + DOT + Block.DIVIDEND + " IS NOT NULL " +
+                    " GROUP BY " + Block.CURRENCY_ID + ") AS ud_block" +
+                    " ON ud_block." + Block.CURRENCY_ID + "=" + Currency.TABLE_NAME + DOT + Currency._ID +
+
+                    " LEFT JOIN " + Block.TABLE_NAME +
+                    " ON " + Block.TABLE_NAME + DOT + Block.CURRENCY_ID + "=" + Currency.TABLE_NAME + DOT + Currency._ID +
+                    " AND " + Block.TABLE_NAME + DOT + Block.NUMBER + "= ud_block." + Block.NUMBER;
+
+            db.execSQL(CREATE_VIEW_UD);
+
+            String CREATE_VIEW_MEMBERSHIP = "CREATE VIEW " + SQLiteView.Membership.VIEW_NAME +
+                    " AS SELECT " +
+                    Membership.TABLE_NAME + DOT + Membership._ID + AS + SQLiteView.Membership._ID + COMMA +
+                    Membership.TABLE_NAME + DOT + Membership.IDENTITY_ID + AS + SQLiteView.Membership.IDENTITY_ID + COMMA +
+                    Membership.TABLE_NAME + DOT + Membership.VERSION + AS + SQLiteView.Membership.VERSION + COMMA +
+                    Membership.TABLE_NAME + DOT + Membership.TYPE + AS + SQLiteView.Membership.TYPE + COMMA +
+                    Membership.TABLE_NAME + DOT + Membership.BLOCK_NUMBER + AS + SQLiteView.Membership.BLOCK_NUMBER + COMMA +
+                    Membership.TABLE_NAME + DOT + Membership.BLOCK_HASH + AS + SQLiteView.Membership.BLOCK_HASH + COMMA +
+                    Membership.TABLE_NAME + DOT + Membership.STATE + AS + SQLiteView.Membership.STATE + COMMA +
+                    Block.TABLE_NAME + DOT + Block.TIME + AS + SQLiteView.Membership.TIME + COMMA +
+                    Block.TABLE_NAME + DOT + Block.TIME + "+" + Currency.TABLE_NAME + DOT + Currency.MSVALIDITY + AS + SQLiteView.Membership.EXPIRATION_TIME + COMMA +
+
+                    " CASE WHEN " + Block.TABLE_NAME + DOT + Block.TIME + "+" + Currency.TABLE_NAME + DOT + Currency.MSVALIDITY + "  - strftime('%s', 'now') < 0" +
+                    " THEN " + "'" + Boolean.TRUE.toString() + "'" +
+                    " ELSE " + "'" + Boolean.FALSE.toString() + "'" + " END " + AS + SQLiteView.Membership.EXPIRED + COMMA +
+
+                    "strftime('%Y', datetime(" + Block.TABLE_NAME + DOT + Block.TIME + ", 'unixepoch', 'localtime'))" + AS + SQLiteView.Membership.YEAR + COMMA +
+                    "strftime('%m', datetime(" + Block.TABLE_NAME + DOT + Block.TIME + ", 'unixepoch', 'localtime'))" + AS + SQLiteView.Membership.MONTH + COMMA +
+                    "strftime('%d', datetime(" + Block.TABLE_NAME + DOT + Block.TIME + ", 'unixepoch', 'localtime'))" + AS + SQLiteView.Membership.DAY + COMMA +
+                    "strftime('%w', datetime(" + Block.TABLE_NAME + DOT + Block.TIME + ", 'unixepoch', 'localtime'))" + AS + SQLiteView.Membership.DAY_OF_WEEK + COMMA +
+                    "strftime('%H:%M:%S', datetime(" + Block.TABLE_NAME + DOT + Block.TIME + ", 'unixepoch', 'localtime'))" + AS + SQLiteView.Membership.HOUR + COMMA +
+
+                    " CASE WHEN " + Membership.TABLE_NAME + DOT + Membership.TYPE + " = " + "'" + MembershipType.IN.name() + "'" +
+                    " THEN " +
+                    "strftime('%Y', datetime(" + Block.TABLE_NAME + DOT + Block.TIME + "+" + Currency.TABLE_NAME + DOT + Currency.MSVALIDITY + ", 'unixepoch', 'localtime'))" +
+                    " END " + AS + SQLiteView.Membership.EXPIRATION_YEAR + COMMA +
+
+                    " CASE WHEN " + Membership.TABLE_NAME + DOT + Membership.TYPE + " = " + "'" + MembershipType.IN.name() + "'" +
+                    " THEN " +
+                    "strftime('%m', datetime(" + Block.TABLE_NAME + DOT + Block.TIME + "+" + Currency.TABLE_NAME + DOT + Currency.MSVALIDITY + ", 'unixepoch', 'localtime'))" +
+                    " END " + AS + SQLiteView.Membership.EXPIRATION_MONTH + COMMA +
+
+                    " CASE WHEN " + Membership.TABLE_NAME + DOT + Membership.TYPE + " = " + "'" + MembershipType.IN.name() + "'" +
+                    " THEN " +
+                    "strftime('%d', datetime(" + Block.TABLE_NAME + DOT + Block.TIME + "+" + Currency.TABLE_NAME + DOT + Currency.MSVALIDITY + ", 'unixepoch', 'localtime'))" +
+                    " END " + AS + SQLiteView.Membership.EXPIRATION_DAY + COMMA +
+
+                    " CASE WHEN " + Membership.TABLE_NAME + DOT + Membership.TYPE + " = " + "'" + MembershipType.IN.name() + "'" +
+                    " THEN " +
+                    "strftime('%w', datetime(" + Block.TABLE_NAME + DOT + Block.TIME + "+" + Currency.TABLE_NAME + DOT + Currency.MSVALIDITY + ", 'unixepoch', 'localtime'))" +
+                    " END " + AS + SQLiteView.Membership.EXPIRATION_DAY_OF_WEEK + COMMA +
+
+                    " CASE WHEN " + Membership.TABLE_NAME + DOT + Membership.TYPE + " = " + "'" + MembershipType.IN.name() + "'" +
+                    " THEN " +
+                    "strftime('%H:%M:%S', datetime(" + Block.TABLE_NAME + DOT + Block.TIME + "+" + Currency.TABLE_NAME + DOT + Currency.MSVALIDITY + ", 'unixepoch', 'localtime'))" +
+                    " END " + AS + SQLiteView.Membership.EXPIRATION_HOUR +
+
+
+                    " FROM " + Membership.TABLE_NAME +
+                    " LEFT JOIN " + Identity.TABLE_NAME +
+                    " ON " + Membership.TABLE_NAME + DOT + Membership.IDENTITY_ID + "=" + Identity.TABLE_NAME + DOT + Identity._ID +
+
+                    " LEFT JOIN " + Currency.TABLE_NAME +
+                    " ON " + Currency.TABLE_NAME + DOT + Currency._ID + "=" + Identity.TABLE_NAME + DOT + Identity.CURRENCY_ID +
+
+                    " LEFT JOIN " + Block.TABLE_NAME +
+                    " ON " + Block.TABLE_NAME + DOT + Block.CURRENCY_ID + "=" + Currency.TABLE_NAME + DOT + Currency._ID +
+                    " AND " + Block.TABLE_NAME + DOT + Block.NUMBER + "=" + Membership.TABLE_NAME + DOT + Membership.BLOCK_NUMBER;
+            db.execSQL(CREATE_VIEW_MEMBERSHIP);
+
+
+            String CREATE_VIEW_IDENTITY = "CREATE VIEW " + SQLiteView.Identity.VIEW_NAME +
+                    " AS SELECT " +
+                    Identity.TABLE_NAME + DOT + Identity._ID + AS + SQLiteView.Identity._ID + COMMA +
+                    Identity.TABLE_NAME + DOT + Identity.CURRENCY_ID + AS + SQLiteView.Identity.CURRENCY_ID + COMMA +
+                    Identity.TABLE_NAME + DOT + Identity.WALLET_ID + AS + SQLiteView.Identity.WALLET_ID + COMMA +
+                    Identity.TABLE_NAME + DOT + Identity.UID + AS + SQLiteView.Identity.UID + COMMA +
+                    Identity.TABLE_NAME + DOT + Identity.SIG_DATE + AS + SQLiteView.Identity.SIG_DATE + COMMA +
+                    Membership.TABLE_NAME + DOT + Membership.TYPE + AS + SQLiteView.Identity.LAST_MEMBERSHIP + COMMA +
+                    Block.TABLE_NAME + DOT + Block.TIME + "+" + Currency.TABLE_NAME + DOT + Currency.MSVALIDITY + AS + SQLiteView.Identity.EXPIRATION_TIME + COMMA +
+                    "strftime('%Y', datetime(" + Block.TABLE_NAME + DOT + Block.TIME + "+" + Currency.TABLE_NAME + DOT + Currency.MSVALIDITY + ", 'unixepoch', 'localtime'))" + AS + SQLiteView.Identity.EXPIRATION_YEAR + COMMA +
+                    "strftime('%m', datetime(" + Block.TABLE_NAME + DOT + Block.TIME + "+" + Currency.TABLE_NAME + DOT + Currency.MSVALIDITY + ", 'unixepoch', 'localtime'))" + AS + SQLiteView.Identity.EXPIRATION_MONTH + COMMA +
+                    "strftime('%d', datetime(" + Block.TABLE_NAME + DOT + Block.TIME + "+" + Currency.TABLE_NAME + DOT + Currency.MSVALIDITY + ", 'unixepoch', 'localtime'))" + AS + SQLiteView.Identity.EXPIRATION_DAY + COMMA +
+                    "strftime('%w', datetime(" + Block.TABLE_NAME + DOT + Block.TIME + "+" + Currency.TABLE_NAME + DOT + Currency.MSVALIDITY + ", 'unixepoch', 'localtime'))" + AS + SQLiteView.Identity.EXPIRATION_DAY_OF_WEEK + COMMA +
+                    "strftime('%H:%M:%S', datetime(" + Block.TABLE_NAME + DOT + Block.TIME + "+" + Currency.TABLE_NAME + DOT + Currency.MSVALIDITY + ", 'unixepoch', 'localtime'))" + AS + SQLiteView.Identity.EXPIRATION_HOUR + COMMA +
+
+                    " CASE WHEN selfcnt.cnt IS NULL" +
+                    " THEN '0'" +
+                    " ELSE selfcnt.cnt" +
+                    " END " + AS + SQLiteView.Identity.SELF_COUNT + COMMA +
+
+                    " CASE WHEN mbcnt.cnt IS NULL" +
+                    " THEN '" + Boolean.FALSE.toString() + "'" +
+                    " ELSE '" + Boolean.TRUE.toString() + "'" +
+                    " END " + AS + SQLiteView.Identity.WAS_MEMBER + COMMA +
+
+
+                    " CASE WHEN " + Membership.TABLE_NAME + DOT + Membership.TYPE + "='" + MembershipType.IN.name() + "'" +
+                    " AND " + Block.TABLE_NAME + DOT + Block.TIME + "+" + Currency.TABLE_NAME + DOT + Currency.MSVALIDITY + " - strftime('%s', 'now') > 0" +
+                    " THEN '" + Boolean.TRUE.toString() + "'" +
+                    " ELSE '" + Boolean.FALSE.toString() + "'" +
+                    " END " + AS + SQLiteView.Identity.IS_MEMBER +
+
+                    " FROM " + Identity.TABLE_NAME +
+                    " LEFT JOIN " + Currency.TABLE_NAME +
+                    " ON " + Currency.TABLE_NAME + DOT + Currency._ID + "=" + Identity.TABLE_NAME + DOT + Identity.CURRENCY_ID +
+
+                    " LEFT JOIN (SELECT " + SelfCertification.IDENTITY_ID + COMMA + "COUNT(*) AS cnt" +
+                    " FROM " + SelfCertification.TABLE_NAME +
+                    " GROUP BY " + SelfCertification.IDENTITY_ID + ") AS selfcnt" +
+                    " ON selfcnt." + SelfCertification.IDENTITY_ID + "=" + Identity.TABLE_NAME + DOT + Identity._ID +
+
+                    " LEFT JOIN (SELECT " + Membership.IDENTITY_ID + COMMA + "COUNT(*) AS cnt " +
+                    " FROM " + Membership.TABLE_NAME + " GROUP BY " + Membership.IDENTITY_ID + ") AS mbcnt" +
+                    " ON mbcnt." + Membership.IDENTITY_ID + "=" + Identity.TABLE_NAME + DOT + Identity._ID +
+
+                    " LEFT JOIN (SELECT " + Membership.IDENTITY_ID + COMMA + "MAX(" + Membership.BLOCK_NUMBER + ")" + AS + Membership.BLOCK_NUMBER +
+                    " FROM " + Membership.TABLE_NAME +
+                    " GROUP BY " + Membership.IDENTITY_ID + ") AS last_membership" +
+                    " ON last_membership." + Membership.IDENTITY_ID + "=" + Identity.TABLE_NAME + DOT + Identity._ID +
+
+                    " LEFT JOIN " + Membership.TABLE_NAME +
+                    " ON " + Membership.TABLE_NAME + DOT + Membership.BLOCK_NUMBER + "= last_membership." + Membership.BLOCK_NUMBER +
+                    " AND " + Membership.TABLE_NAME + DOT + Membership.IDENTITY_ID + "=" + Identity.TABLE_NAME + DOT + Identity._ID +
+
+                    " LEFT JOIN " + Block.TABLE_NAME +
+                    " ON " + Block.TABLE_NAME + DOT + Block.NUMBER + "= last_membership." + Membership.BLOCK_NUMBER +
+                    " AND " + Block.TABLE_NAME + DOT + Block.CURRENCY_ID + "=" + Currency.TABLE_NAME + DOT + Currency._ID;
+            db.execSQL(CREATE_VIEW_IDENTITY);
+
         }
     }
-
 }

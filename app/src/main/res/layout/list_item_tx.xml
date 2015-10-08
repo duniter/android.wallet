@@ -1,38 +1,59 @@
-<GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:columnCount="2"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
     android:paddingLeft="16dp"
     android:paddingRight="16dp">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/comment"
-        android:textSize="@dimen/abc_text_size_caption_material"/>
+
+    <LinearLayout
+        android:layout_width="56dp"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/day"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/abc_text_size_caption_material" />
+
+        <TextView
+            android:id="@+id/hour"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/abc_text_size_caption_material" />
+
+    </LinearLayout>
+
     <TextView
         android:id="@+id/comment"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="@dimen/abc_text_size_caption_material"/>
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:gravity="start"
+        android:textSize="@dimen/abc_text_size_caption_material" />
 
-    <TextView
+    <LinearLayout
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/block"
-        android:textSize="@dimen/abc_text_size_caption_material"/>
-    <TextView
-        android:id="@+id/block"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="@dimen/abc_text_size_caption_material"
-        />
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:paddingStart="16dp">
 
-    <TextView
-        android:id="@+id/hash"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="@dimen/abc_text_size_caption_material"
-        android:layout_columnSpan="2"/>
+        <TextView
+            android:id="@+id/rel_amount_then"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="end"
+            android:textSize="@dimen/abc_text_size_title_material" />
 
-</GridLayout>
+        <TextView
+            android:id="@+id/qt_amount"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="end"
+            android:textSize="@dimen/abc_text_size_caption_material" />
+
+
+    </LinearLayout>
+
+</LinearLayout>

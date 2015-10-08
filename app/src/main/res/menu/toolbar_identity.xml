@@ -4,16 +4,10 @@
     tools:context=".MainActivity">
 
     <item
-        android:id="@+id/action_sign"
-        android:title="@string/sign"
-        ucoin:showAsAction="ifRoom|withText" />
-
-    <item
-        android:id="@+id/action_transfer"
-        android:title="@string/transfer"
-        ucoin:showAsAction="ifRoom|withText" />
-
-
+        android:id="@+id/action_delete"
+        android:title="@string/delete"
+        ucoin:showAsAction="never"
+        android:visible="false"/>
 </menu>
 
 

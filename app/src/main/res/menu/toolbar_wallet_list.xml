@@ -1,11 +1,8 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:ucoin="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/action_create"
-        android:title="@string/create_new"
-        android:icon="@drawable/ic_plus_white_24dp"
-        ucoin:iconifiedByDefault="true"
-        ucoin:showAsAction="always"/>
+        android:id="@+id/action_new_wallet"
+        android:title="@string/new_wallet"
+        ucoin:showAsAction="never|withText"/>
+
 </menu>
-
-

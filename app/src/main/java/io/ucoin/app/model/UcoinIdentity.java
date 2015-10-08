@@ -1,13 +1,49 @@
 package io.ucoin.app.model;
 
-public interface UcoinIdentity extends Entity {
+import io.ucoin.app.enumeration.DayOfWeek;
+import io.ucoin.app.enumeration.MembershipType;
+
+public interface UcoinIdentity extends SqlRow {
     Long currencyId();
+
     Long walletId();
 
     String uid();
-    String self();
-    Long timestamp();
+
+    Long sigDate();
+
+
+    Long selfCount();
+
+    Boolean isMember();
+
+    Boolean wasMember();
+
+    MembershipType lastMembership();
+
+    Long expirationTime();
+
+    Integer expirationYear();
+
+    Integer expirationMonth();
+
+    Integer expirationDay();
+
+    DayOfWeek expirationDayOfWeek();
+
+    String expirationHour();
+
+    void setSigDate(Long sigDate);
+
+    UcoinCurrency currency();
 
     UcoinWallet wallet();
+
     UcoinCertifications certifications();
+
+    UcoinSelfCertifications selfCertifications();
+
+    UcoinMemberships memberships();
+
+    UcoinMembers members();
 }

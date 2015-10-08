@@ -1,19 +1,27 @@
 package io.ucoin.app;
+
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.content.ContentResolver;
+import android.content.Context;
+import android.os.Bundle;
 
-import io.ucoin.app.model.UcoinCurrencies;
-import io.ucoin.app.sqlite.Currencies;
+import com.android.volley.RequestQueue;
+import com.android.volley.toolbox.Volley;
 
 public class Application extends android.app.Application{
 
-    private UcoinCurrencies mCurrencies;
+
+    public static final int ACTIVITY_LOOKUP = 0x1;
+    public static final int ACTIVITY_CURRENCY_LIST = 0x2;
+
+    private static Context mContext;
+    private static RequestQueue mRequestQueue;
 
     @Override
     public void onCreate(){
         super.onCreate();
-        mCurrencies = new Currencies(this);
+        mContext = getApplicationContext();
 
         //LOAD account
         AccountManager accountManager = AccountManager.get(this);
@@ -33,6 +41,43 @@ public class Application extends android.app.Application{
                     .getAccountsByType(getString(R.string.ACCOUNT_TYPE));
         }
 
+        //initialize Volley request queue
+        mRequestQueue = Volley.newRequestQueue(mContext);
+        mRequestQueue.start();
     }
-    public UcoinCurrencies currencies() { return mCurrencies; }
+
+    @Override
+    public void onTerminate() {
+        super.onTerminate();
+        mRequestQueue.stop();
+    }
+
+    public static RequestQueue getRequestQueue() {
+        return mRequestQueue;
+    }
+
+    public static Context getContext() {
+        return mContext;
+    }
+
+    public static long getCurrentTime() {
+        return (long)Math.floor(System.currentTimeMillis() / 1000);
+    }
+
+    public static void requestSync() {
+        Bundle extras = new Bundle();
+        extras.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
+        extras.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
+        AccountManager accountManager = AccountManager.get(mContext);
+        android.accounts.Account[] accounts = accountManager
+                .getAccountsByType(mContext.getString(R.string.ACCOUNT_TYPE));
+        ContentResolver.requestSync(accounts[0], mContext.getString(R.string.AUTHORITY), extras);
+    }
+
+    public static void cancelSync() {
+        AccountManager accountManager = AccountManager.get(mContext);
+        android.accounts.Account[] accounts = accountManager
+                .getAccountsByType(mContext.getString(R.string.ACCOUNT_TYPE));
+        ContentResolver.cancelSync(accounts[0], mContext.getString(R.string.AUTHORITY));
+    }
 }

@@ -1,0 +1,234 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:ucoin="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:descendantFocusability="beforeDescendants"
+    android:focusableInTouchMode="true"
+    android:orientation="vertical">
+
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/colorPrimary"
+        android:minHeight="?attr/actionBarSize"
+        ucoin:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+        ucoin:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingEnd="16dp"
+            android:paddingStart="16dp">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp">
+
+                <TextView
+                    android:id="@+id/from_label"
+                    android:layout_width="72dp"
+                    android:layout_height="wrap_content"
+                    android:text="@string/from"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentTop="true"
+                    android:textSize="@dimen/abc_text_size_body_1_material"/>
+
+                <TextView
+                    android:id="@+id/wallet_alias"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:layout_alignParentEnd="true"
+                    android:gravity="start"
+                    android:layout_toEndOf="@id/from_label"
+                    android:textSize="@dimen/abc_text_size_body_1_material" />
+
+                <TextView
+                    android:id="@+id/wallet_qt_amount"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_toEndOf="@id/from_label"
+                    android:layout_below="@id/wallet_alias"
+                    android:gravity="bottom|end"
+                    android:textSize="@dimen/abc_text_size_caption_material" />
+
+                <TextView
+                    android:id="@+id/wallet_relative_amount"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_toEndOf="@id/from_label"
+                    android:layout_below="@id/wallet_qt_amount"
+                    android:gravity="end"
+                    android:textSize="@dimen/abc_text_size_headline_material" />
+            </RelativeLayout>
+
+
+            <include layout="@layout/separator" />
+
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp">
+
+                <TextView
+                    android:id="@+id/to_label"
+                    android:layout_width="72dp"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentTop="true"
+                    android:text="@string/to"
+                    android:textSize="@dimen/abc_text_size_body_1_material"/>
+
+                <TextView
+                    android:id="@+id/receiver_uid"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:layout_toEndOf="@id/to_label"
+                    android:layout_toStartOf="@id/action_lookup"
+                    android:singleLine="true"
+                    android:ellipsize="end"
+                    android:textSize="@dimen/abc_text_size_body_1_material"/>
+
+                <EditText
+                    android:id="@+id/receiver_public_key"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/receiver_uid"
+                    android:layout_toEndOf="@id/to_label"
+                    android:layout_toStartOf="@+id/action_lookup"
+                    android:focusable="false"
+                    android:editable="false"
+                    android:background="@null"
+                    android:textSize="@dimen/abc_text_size_caption_material"/>
+
+
+                <ImageButton
+                    android:id="@+id/action_lookup"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:contentDescription="@string/search"
+                    android:layout_alignParentTop="true"
+                    android:layout_toStartOf="@+id/action_scan_qrcode"
+                    android:src="@drawable/ic_search_black_24dp" />
+                <!--
+                                <ImageButton
+                                    android:id="@+id/action_contact"
+                                    android:layout_width="48dp"
+                                    android:layout_height="48dp"
+                                    android:contentDescription="@string/contact"
+                                    android:src="@drawable/ic_person_black_24dp" />
+                -->
+                <ImageButton
+                    android:id="@+id/action_scan_qrcode"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_alignParentTop="true"
+                    android:layout_alignParentEnd="true"
+                    android:contentDescription="@string/qr_code"
+                    android:src="@drawable/ic_qrcode_black_24dp" />
+            </RelativeLayout>
+
+
+            <include layout="@layout/separator" />
+
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp">
+
+                <TextView
+                    android:id="@+id/amount_label"
+                    android:layout_width="72dp"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentTop="true"
+                    android:labelFor="@+id/rel_amount"
+                    android:text="@string/amount"
+                    android:textSize="@dimen/abc_text_size_body_1_material"/>
+
+                <TextView
+                    android:id="@+id/qt_amount"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentTop="true"
+                    android:layout_toEndOf="@id/amount_label"
+                    android:background="@null"
+                    android:gravity="end"
+                    android:labelFor="@id/qt_amount"
+                    android:singleLine="true"
+                    android:textSize="@dimen/abc_text_size_caption_material" />
+
+                <EditText
+                    android:id="@+id/rel_amount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_below="@id/qt_amount"
+                    android:layout_toEndOf="@id/amount_label"
+                    android:background="@null"
+                    android:gravity="end"
+                    android:inputType="numberDecimal"
+                    android:singleLine="true" />
+
+            </RelativeLayout>
+
+
+            <include layout="@layout/separator" />
+
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp">
+
+                <TextView
+                    android:id="@+id/comment_label"
+                    android:layout_width="72dp"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentTop="true"
+                    android:labelFor="@+id/comment"
+                    android:text="@string/comment"
+                    android:textSize="@dimen/abc_text_size_body_1_material"/>
+
+                <EditText
+                    android:id="@+id/comment"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentTop="true"
+                    android:layout_toEndOf="@id/comment_label"
+                    android:background="@null"
+                    android:layout_marginStart="16dp"
+                    android:inputType="textMultiLine"
+                    android:maxLength="255"
+                    android:singleLine="false"
+                    android:minLines="6"
+                    android:gravity="top"/>
+            </RelativeLayout>
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>

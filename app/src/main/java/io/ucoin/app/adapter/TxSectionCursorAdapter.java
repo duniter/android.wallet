@@ -1,0 +1,190 @@
+package io.ucoin.app.adapter;
+
+import android.content.Context;
+import android.database.Cursor;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.CursorAdapter;
+import android.widget.TextView;
+
+import java.text.DecimalFormat;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+
+import io.ucoin.app.R;
+import io.ucoin.app.enumeration.DayOfWeek;
+import io.ucoin.app.enumeration.Month;
+import io.ucoin.app.enumeration.TxDirection;
+import io.ucoin.app.enumeration.TxState;
+import io.ucoin.app.sqlite.SQLiteView;
+
+public class TxSectionCursorAdapter extends CursorAdapter {
+
+    private Context mContext;
+    private Cursor mCursor;
+    private int dayOfWeekIndex;
+    private int dayIndex;
+    private int hourIndex;
+    private int relAmountThenIndex;
+    private int directionIndex;
+    private int qtAmountIndex;
+    private int commentIndex;
+    private int stateIndex;
+
+
+    private HashMap<Integer, String> mSectionPosition;
+
+    public TxSectionCursorAdapter(Context context, Cursor c, int flags) {
+        super(context, c, flags);
+        mContext = context;
+        mCursor = c;
+        mSectionPosition = new LinkedHashMap<>(16, (float) 0.75, false);
+    }
+
+    public View getView(int position, View convertView, ViewGroup parent) {
+        View v;
+        if (mSectionPosition.containsKey(position)) {
+            v = newSectionView(mContext, parent);
+            bindSectionView(v, mContext, mSectionPosition.get(position));
+        } else {
+            int sectionBeforePosition = 0;
+            for (Integer sectionPosition : mSectionPosition.keySet()) {
+                if (position > sectionPosition) {
+                    sectionBeforePosition++;
+                }
+            }
+            if (!mCursor.moveToPosition(position - sectionBeforePosition)) {
+                throw new IllegalStateException("couldn't move cursor to position " + position);
+            }
+            v = newView(mContext, mCursor, parent);
+            bindView(v, mContext, mCursor);
+        }
+        return v;
+    }
+
+    public View newSectionView(Context context, ViewGroup parent) {
+        LayoutInflater inflater = (LayoutInflater) context
+                .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+
+        return inflater.inflate(R.layout.list_item_section_separator, parent, false);
+    }
+
+    public void bindSectionView(View v, Context context, String section) {
+        ((TextView) v.findViewById(R.id.month_year)).setText(section);
+    }
+
+    @Override
+    public View newView(Context context, Cursor cursor, ViewGroup parent) {
+        LayoutInflater inflater = (LayoutInflater) context
+                .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+
+        View view =  inflater.inflate(R.layout.list_item_tx, parent, false);
+
+        ViewHolder holder = new ViewHolder();
+        holder.day = (TextView) view.findViewById(R.id.day);
+        holder.hour = (TextView) view.findViewById(R.id.hour);
+        holder.relAmoutThen = (TextView) view.findViewById(R.id.rel_amount_then);
+        holder.qtAmount = (TextView) view.findViewById(R.id.qt_amount);
+        holder.comment = (TextView) view.findViewById(R.id.comment);
+
+        view.setTag(holder);
+        return view;
+    }
+
+    @Override
+    public void bindView(View view, Context context, Cursor cursor) {
+;
+
+        ViewHolder holder = (ViewHolder)view.getTag();
+        String d = cursor.getString(dayOfWeekIndex);
+        if (d == null) d = Integer.toString(DayOfWeek.UNKNOWN.ordinal());
+
+        String dayOfWeek = DayOfWeek.fromInt(Integer.parseInt(d)).toString(context);
+
+        holder.day.setText(dayOfWeek + " " + cursor.getString(dayIndex));
+        holder.hour.setText(cursor.getString(hourIndex));
+        String rel_amount = String.format("%.8f", cursor.getDouble(relAmountThenIndex));
+
+        TxDirection direction = TxDirection.valueOf(cursor.getString(directionIndex));
+        if(direction == TxDirection.IN) {
+            rel_amount = "+ " + rel_amount;
+        } else {
+            rel_amount = "- " + rel_amount;
+        }
+
+        holder.relAmoutThen.setText(rel_amount);
+        DecimalFormat formatter = new DecimalFormat("#,###");
+        Long qtAmount = cursor.getLong(qtAmountIndex);
+        holder.qtAmount.setText(formatter.format(qtAmount));
+        holder.comment.setText(cursor.getString(commentIndex));
+
+        TxState state = TxState.valueOf(cursor.getString(stateIndex));
+        if(state == TxState.CONFIRMED) {
+            view.setBackgroundColor(context.getResources().getColor(R.color.grey200));
+        } else {
+            view.setBackgroundColor(context.getResources().getColor(R.color.accentLight));
+        }
+    }
+
+    @Override
+    public Cursor swapCursor(Cursor newCursor) {
+        super.swapCursor(newCursor);
+
+        if (newCursor == null) {
+            return null;
+        }
+
+        dayOfWeekIndex = newCursor.getColumnIndex(SQLiteView.Tx.DAY_OF_WEEK);
+        dayIndex = newCursor.getColumnIndex(SQLiteView.Tx.DAY);
+        hourIndex = newCursor.getColumnIndex(SQLiteView.Tx.HOUR);
+        relAmountThenIndex = newCursor.getColumnIndex(SQLiteView.Tx.RELATIVE_AMOUNT_THEN);
+        directionIndex = newCursor.getColumnIndex(SQLiteView.Tx.DIRECTION);
+        qtAmountIndex = newCursor.getColumnIndex(SQLiteView.Tx.QUANTITATIVE_AMOUNT);
+        commentIndex = newCursor.getColumnIndex(SQLiteView.Tx.COMMENT);
+        stateIndex = newCursor.getColumnIndex(SQLiteView.Tx.STATE);
+
+        mCursor = newCursor;
+        mSectionPosition.clear();
+        int position = 0;
+        String section = "";
+
+        newCursor.moveToPosition(-1);
+        while (newCursor.moveToNext()) {
+            String month = newCursor.getString(newCursor.getColumnIndex(SQLiteView.Tx.MONTH));
+            //todo handle timestamp for sending and receiving transactions
+            if (month == null) month = Integer.toString(Month.UNKNOWN.ordinal());
+            String year = newCursor.getString(newCursor.getColumnIndex(SQLiteView.Tx.YEAR));
+            String newSection = Month.fromInt(Integer.parseInt(month)).toString(mContext) + " " + year;
+
+            if (!newSection.equals(section)) {
+                mSectionPosition.put(position, newSection);
+                section = newSection;
+                position++;
+            }
+            position++;
+        }
+
+        return newCursor;
+    }
+
+    @Override
+    public int getCount() {
+        return super.getCount() + mSectionPosition.size();
+    }
+
+    @Override
+    public boolean isEnabled(int position) {
+        return !mSectionPosition.containsKey(position);
+    }
+
+
+    private static class ViewHolder {
+        public TextView day;
+        public TextView hour;
+        public TextView relAmoutThen;
+        public TextView qtAmount;
+        public TextView comment;
+    }
+
+}

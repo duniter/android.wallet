@@ -1,15 +1,20 @@
 package io.ucoin.app.model;
 
-public interface UcoinMember extends Entity {
-    Long currencyId();
+public interface UcoinMember extends SqlRow {
+    Long identityId();
+
     String uid();
+
     String publicKey();
-    Boolean isMember();
-    Boolean wasMember();
+
     String self();
+
     Long timestamp();
 
-    void isMember(Boolean is);
-    void wasMember(Boolean was);
+    void setSelf(String self);
+
+    void setTimestamp(Long timestamp);
+
+    UcoinIdentity identity();
 }
 

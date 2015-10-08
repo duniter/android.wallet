@@ -1,65 +1,79 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical">
+    android:layout_height="match_parent">
 
-    <RelativeLayout
-        style="@style/Header"
+
+    <LinearLayout
+        android:id="@+id/wallet_header"
+        android:background="@color/primary"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:elevation="4dp"
+        android:orientation="vertical"
+        android:paddingBottom="16dp"
+        android:paddingStart="56dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true">
 
         <TextView
             android:id="@+id/alias"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentTop="true"
-            android:textColor="@color/textPrimary"
-            android:textSize="@dimen/abc_text_size_title_material" />
-
-        <TextView
-            android:id="@+id/public_key"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentRight="true"
-            android:layout_below="@id/alias"
-            android:textColor="@color/textPrimary"
-            android:textSize="@dimen/abc_text_size_title_material" />
-
-        <TextView
-            android:id="@+id/quantitative_amount"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true"
-            android:layout_below="@id/public_key"
-            android:textColor="@color/textPrimary"
-            android:textSize="@dimen/abc_text_size_title_material" />
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:textSize="@dimen/abc_text_size_caption_material"
+            android:textColor="@color/grey200"
+            android:gravity="bottom"/>
 
         <TextView
             android:id="@+id/relative_amount"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true"
-            android:layout_below="@id/public_key"
-            android:textColor="@color/textPrimary"
-            android:textSize="@dimen/abc_text_size_title_material" />
+            android:textSize="@dimen/abc_text_size_display_1_material"
+            android:textColor="@color/grey200"
+            android:gravity="bottom"/>
 
-    </RelativeLayout>
 
-    <io.ucoin.app.view.SlidingTabLayout
-        android:id="@+id/sliding_tabs"
+        <TextView
+            android:id="@+id/qt_amount"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:gravity="top"
+            android:textSize="@dimen/abc_text_size_caption_material"
+            android:textColor="@color/grey200"/>
+
+    </LinearLayout>
+
+    <ListView
+        android:id="@android:id/list"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/primary" />
+        android:layout_height="match_parent"
+        android:layout_below="@id/wallet_header"
+        android:clipToPadding="false"
+        android:paddingBottom="72dp"
+        android:scrollbarStyle="outsideOverlay" />
 
-    <android.support.v4.view.ViewPager
-        android:id="@+id/viewpager"
+    <TextView
+        android:id="@id/android:empty"
         android:layout_width="match_parent"
-        android:layout_height="0px"
-        android:layout_weight="1"
-        android:background="@android:color/white" />
-</LinearLayout>
+        android:layout_height="match_parent"
+        android:layout_below="@id/wallet_header"
+        android:text="@string/no_transactions"
+        android:textColor="@color/hideable_text_color"
+        android:textSize="18sp" />
+
+
+    <ImageButton
+        android:id="@+id/transfer_button"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginBottom="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
+        android:background="@drawable/shape_circle_accent"
+        android:contentDescription="@string/transfer"
+        android:elevation="4dp"
+        android:src="@drawable/ic_send_white_24dp" />
+
+</RelativeLayout>

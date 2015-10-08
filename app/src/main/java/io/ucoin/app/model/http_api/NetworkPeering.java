@@ -19,7 +19,7 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import io.ucoin.app.enums.EndpointProtocol;
+import io.ucoin.app.enumeration.EndpointProtocol;
 
 
 public class NetworkPeering implements Serializable {
@@ -40,12 +40,42 @@ public class NetworkPeering implements Serializable {
         return gson.fromJson(reader, NetworkPeering.class);
     }
 
+    public static NetworkPeering fromJson(String json) {
+        Gson gson = new GsonBuilder()
+                .registerTypeAdapter(Endpoint.class, new EndpointAdapter())
+                .create();
+
+        return gson.fromJson(json, NetworkPeering.class);
+    }
+
+    public String toString() {
+        String s = "currency=" + currency + "\n" +
+                "pubkey=" + pubkey + "\n" +
+                "signature=" + signature + "\n" +
+                "block=" + block + "\n";
+                for(Endpoint endpoint : endpoints) {
+                    s += endpoint.toString() + "\n";
+                }
+        return s;
+
+    }
+
     public static class Endpoint implements Serializable {
         public EndpointProtocol protocol;
         public String url;
         public String ipv4;
         public String ipv6;
         public Integer port;
+
+        @Override
+        public String toString() {
+            String s = "protocol=" + protocol.name() + "\n" +
+                    "url=" + url + "\n" +
+                    "ipv4=" + ipv4 + "\n" +
+                    "ipv6=" + ipv6 + "\n" +
+                    "port=" + port + "\n";
+            return s;
+        }
     }
 
     public static class EndpointAdapter extends TypeAdapter<Endpoint> {

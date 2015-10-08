@@ -1,0 +1,74 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:ucoin="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:descendantFocusability="beforeDescendants"
+    android:focusableInTouchMode="true"
+    android:orientation="vertical">
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/colorPrimary"
+        android:elevation="4dp"
+        android:minHeight="?attr/actionBarSize"
+        ucoin:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+        ucoin:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar" />
+
+    <EditText
+        android:id="@+id/public_key"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/public_key"
+        android:inputType="none"
+        android:padding="8dp"
+        android:singleLine="false"
+        android:textSize="@dimen/abc_text_size_body_1_material" />
+
+
+    <EditText
+        android:id="@+id/name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/name"
+        android:padding="16dp"
+        android:singleLine="true"
+        android:textSize="@dimen/abc_text_size_body_1_material" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+            <ImageButton
+                android:id="@+id/action_lookup"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_marginBottom="88dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginRight="16dp"
+                android:background="@drawable/shape_circle_accent"
+                android:elevation="4dp"
+                android:src="@drawable/ic_search_white_24dp"
+                android:contentDescription="@string/lookup"/>
+
+            <ImageButton
+                android:id="@+id/action_scan_qrcode"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_marginBottom="16dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginRight="16dp"
+                android:background="@drawable/shape_circle_accent"
+                android:elevation="4dp"
+                android:src="@drawable/ic_qrcode_white_24dp"
+                android:contentDescription="@string/qr_code"/>
+
+    </RelativeLayout>
+</LinearLayout>

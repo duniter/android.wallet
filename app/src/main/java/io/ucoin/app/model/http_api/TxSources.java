@@ -8,19 +8,24 @@ import java.io.Reader;
 import java.io.Serializable;
 import java.nio.charset.Charset;
 
-import io.ucoin.app.enums.SourceType;
+import io.ucoin.app.enumeration.SourceType;
 
 
 public class TxSources implements Serializable {
 
     public String currency;
     public String  pubkey;
-    public Source[] sources = new Source[]{};
+    public Source[] sources;
 
     public static TxSources fromJson(InputStream json) {
         Gson gson = new Gson();
         Reader reader = new InputStreamReader(json, Charset.forName("UTF-8"));
         return gson.fromJson(reader, TxSources.class);
+    }
+
+    public static TxSources fromJson(String json) {
+        Gson gson = new Gson();
+        return gson.fromJson(json, TxSources.class);
     }
 
     public String toString() {

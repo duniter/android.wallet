@@ -1,34 +1,46 @@
 package io.ucoin.app.fragment.currency;
 
+import android.app.Fragment;
 import android.app.LoaderManager;
 import android.content.CursorLoader;
+import android.content.DialogInterface;
 import android.content.Loader;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.provider.BaseColumns;
 import android.support.annotation.NonNull;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ListView;
+import android.view.animation.Animation;
+import android.view.animation.RotateAnimation;
+import android.widget.AdapterView;
+import android.widget.ExpandableListView;
+import android.widget.ImageButton;
 
-import io.ucoin.app.ListFragment;
 import io.ucoin.app.R;
-import io.ucoin.app.adapter.PeerCursorAdapter;
-import io.ucoin.app.content.Provider;
-import io.ucoin.app.fragment.AddPeerDialogFragment;
-import io.ucoin.app.model.UcoinCurrency;
-import io.ucoin.app.model.UcoinPeer;
+import io.ucoin.app.adapter.PeerCursorTreeAdapter;
+import io.ucoin.app.content.DbProvider;
+import io.ucoin.app.fragment.dialog.AddPeerDialogFragment;
+import io.ucoin.app.model.sql.sqlite.Peer;
 import io.ucoin.app.sqlite.SQLiteTable;
 
-public class PeerListFragment extends ListFragment
-        implements LoaderManager.LoaderCallbacks<Cursor>{
+public class PeerListFragment extends Fragment
+        implements LoaderManager.LoaderCallbacks<Cursor>,
+        DialogInterface.OnDismissListener,
+        ImageButton.OnClickListener,
+        ExpandableListView.OnGroupClickListener {
 
-    static public PeerListFragment newInstance(UcoinCurrency currency) {
+    private final int PEER_LOADER_ID = -1;
+
+    private ImageButton mButton;
+    private ExpandableListView mListView;
+
+    static public PeerListFragment newInstance(Long currencyId) {
         Bundle newInstanceargs = new Bundle();
-        newInstanceargs.putParcelable(UcoinCurrency.class.getSimpleName(), currency);
+        newInstanceargs.putLong(BaseColumns._ID, currencyId);
         PeerListFragment fragment = new PeerListFragment();
         fragment.setArguments(newInstanceargs);
         return fragment;
@@ -50,64 +62,110 @@ public class PeerListFragment extends ListFragment
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        getActivity().setTitle(getString(R.string.peers));
 
-        PeerCursorAdapter peerCursorAdapter
-                = new PeerCursorAdapter(getActivity(), null, 0);
-        setListAdapter(peerCursorAdapter);
-        getLoaderManager().initLoader(0, getArguments(), this);
+        mButton = (ImageButton) view.findViewById(R.id.add_peer_button);
+        //mButton.setOnClickListener(this);
+
+        PeerCursorTreeAdapter peerCursorTreeAdapter
+                = new PeerCursorTreeAdapter(null, getActivity());
+        mListView = (ExpandableListView) view.findViewById(R.id.list);
+        mListView.setAdapter(peerCursorTreeAdapter);
+        mListView.setEmptyView(view.findViewById(R.id.empty));
+        mListView.setOnGroupClickListener(this);
+        getLoaderManager().initLoader(PEER_LOADER_ID, getArguments(), this);
+        //registerForContextMenu(mListView);
     }
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.toolbar_peer_list, menu);
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+        menu.add(0, v.getId(), 0, getResources().getString(R.string.delete));
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.action_add:
-                Bundle args = getArguments();
-
-                UcoinCurrency currency =
-                        (UcoinCurrency) args.get(UcoinCurrency.class.getSimpleName());
-                AddPeerDialogFragment fragment =
-                        AddPeerDialogFragment.newInstance();
-                fragment.show(getFragmentManager(),
-                        fragment.getClass().getSimpleName());
-                return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public void onListItemClick(ListView l, View v, int position, long id) {
-
-        Bundle args = getArguments();
-        UcoinCurrency currency = args.getParcelable(UcoinCurrency.class.getSimpleName());
-        UcoinPeer peer = currency.peers().getById(id);
-
+    public boolean onContextItemSelected(MenuItem item) {
+        AdapterView.AdapterContextMenuInfo acmi = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+        Long peerId = acmi.id;
+        Peer peer = new Peer(getActivity(), peerId);
+        peer.delete();
+        return true;
     }
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        UcoinCurrency currency = args.getParcelable(UcoinCurrency.class.getSimpleName());
 
-        String selection = SQLiteTable.Peer.CURRENCY_ID + "=?";
-        String selectionArgs[] = new String[]{currency.id().toString()};
-        return new CursorLoader(
-                getActivity(),
-                Provider.PEER_URI,
-                null, selection, selectionArgs,
-                SQLiteTable.Wallet._ID + " ASC");
+        if (id == PEER_LOADER_ID) {
+            Long currencyId = args.getLong(BaseColumns._ID);
+            String selection = SQLiteTable.Peer.CURRENCY_ID + "=?";
+            String selectionArgs[] = new String[]{currencyId.toString()};
+            return new CursorLoader(
+                    getActivity(),
+                    DbProvider.PEER_URI,
+                    null, selection, selectionArgs,
+                    BaseColumns._ID + " ASC");
+        } else {
+            Long peerId = args.getLong(BaseColumns._ID);
+            String selection = SQLiteTable.Endpoint.PEER_ID + "=?";
+            String selectionArgs[] = new String[]{peerId.toString()};
+            return new CursorLoader(
+                    getActivity(),
+                    DbProvider.ENDPOINT_URI,
+                    null, selection, selectionArgs,
+                    BaseColumns._ID + " ASC ");
+        }
     }
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        ((PeerCursorAdapter) this.getListAdapter()).swapCursor(data);
+        if (loader.getId() == PEER_LOADER_ID) {
+            ((PeerCursorTreeAdapter) mListView.getExpandableListAdapter()).setGroupCursor(data);
+        } else {
+            ((PeerCursorTreeAdapter) mListView.getExpandableListAdapter()).setChildrenCursor(loader.getId(), data);
+        }
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-        ((PeerCursorAdapter) this.getListAdapter()).swapCursor(null);
+        if (loader.getId() == PEER_LOADER_ID) {
+            ((PeerCursorTreeAdapter) mListView.getExpandableListAdapter()).setGroupCursor(null);
+        } else {
+            ((PeerCursorTreeAdapter) mListView.getExpandableListAdapter()).setChildrenCursor(loader.getId(), null);
+        }
+    }
+
+
+    @Override
+    public void onClick(View v) {
+        RotateAnimation animation = new RotateAnimation(0, 145, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+        animation.setDuration(200);
+        animation.setFillAfter(true);
+        mButton.startAnimation(animation);
+
+        AddPeerDialogFragment fragment =
+                AddPeerDialogFragment.newInstance(getArguments().getLong(BaseColumns._ID));
+        fragment.setTargetFragment(this, 0);
+        fragment.show(getFragmentManager(), fragment.getClass().getSimpleName());
+    }
+
+    @Override
+    public boolean onGroupClick(ExpandableListView parent, View v, int groupPosition, long id) {
+        if (!parent.isGroupExpanded(groupPosition)) {
+            Bundle args = new Bundle();
+            args.putLong(BaseColumns._ID, id);
+            getLoaderManager().initLoader(groupPosition, args, this);
+        } else {
+            getLoaderManager().destroyLoader(groupPosition);
+        }
+        return false;
+    }
+
+
+    @Override
+    public void onDismiss(DialogInterface dialog) {
+        RotateAnimation animation = new RotateAnimation(145, 0, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+        animation.setDuration(200);
+        animation.setFillAfter(true);
+        mButton.startAnimation(animation);
     }
 }

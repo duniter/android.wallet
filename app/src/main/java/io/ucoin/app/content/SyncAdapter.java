@@ -10,359 +10,430 @@ import android.content.SyncResult;
 import android.os.Bundle;
 import android.util.Log;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import com.android.volley.DefaultRetryPolicy;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 
+import io.ucoin.app.BuildConfig;
 import io.ucoin.app.R;
-import io.ucoin.app.enums.CertificationType;
-import io.ucoin.app.enums.TxDirection;
+import io.ucoin.app.enumeration.CertificationType;
+import io.ucoin.app.enumeration.SourceState;
+import io.ucoin.app.enumeration.TxDirection;
+import io.ucoin.app.enumeration.TxState;
 import io.ucoin.app.model.UcoinBlock;
-import io.ucoin.app.model.UcoinCertification;
 import io.ucoin.app.model.UcoinCurrencies;
 import io.ucoin.app.model.UcoinCurrency;
 import io.ucoin.app.model.UcoinEndpoint;
+import io.ucoin.app.model.UcoinIdentity;
 import io.ucoin.app.model.UcoinMember;
-import io.ucoin.app.model.UcoinPendingEndpoint;
 import io.ucoin.app.model.UcoinSource;
 import io.ucoin.app.model.UcoinTx;
 import io.ucoin.app.model.UcoinWallet;
 import io.ucoin.app.model.http_api.BlockchainBlock;
-import io.ucoin.app.model.http_api.BlockchainParameter;
-import io.ucoin.app.model.http_api.NetworkPeering;
+import io.ucoin.app.model.http_api.BlockchainMemberships;
+import io.ucoin.app.model.http_api.BlockchainWithUd;
 import io.ucoin.app.model.http_api.TxHistory;
 import io.ucoin.app.model.http_api.TxSources;
+import io.ucoin.app.model.http_api.UdHistory;
 import io.ucoin.app.model.http_api.WotCertification;
 import io.ucoin.app.model.http_api.WotLookup;
-import io.ucoin.app.sqlite.Currencies;
-import io.ucoin.app.sqlite.PendingEndpoints;
+import io.ucoin.app.model.sql.sqlite.Currencies;
 
-public class SyncAdapter extends AbstractThreadedSyncAdapter {
+public class SyncAdapter extends AbstractThreadedSyncAdapter implements Response.ErrorListener {
+
+    private RequestQueue mRequestQueue;
+    private int mRequestCount = 0;
 
     public SyncAdapter(Context context, boolean autoInitialize) {
-        super(context, autoInitialize);
-        Provider.initUris(context);
+        this(context, autoInitialize, false);
     }
 
-    @SuppressWarnings("unused")
     public SyncAdapter(Context context, boolean autoInitialize, boolean allowParallelSyncs) {
         super(context, autoInitialize, allowParallelSyncs);
-        Provider.initUris(context);
+        DbProvider.initUris(context);
+        mRequestQueue = Volley.newRequestQueue(context);
+        mRequestQueue.start();
     }
 
     @Override
     public void onPerformSync(Account androidAccount, Bundle extras, String authority,
                               ContentProviderClient provider, SyncResult syncResult) {
+        if (BuildConfig.DEBUG) Log.d("SYNCADAPTER", "START_______________________________________");
 
-        Log.d("SYNCADAPTER", "START______________________________________________________________");
-        for (UcoinPendingEndpoint endpoint : new PendingEndpoints(getContext())) {
-            fetchNewCurrency(endpoint);
+
+        if (mRequestCount != 0) {
+            if (BuildConfig.DEBUG) Log.d("SyncAdapter", "ALREADY RUNNING");
+            return;
         }
 
         UcoinCurrencies currencies = new Currencies(getContext());
-        for (UcoinCurrency currency : currencies) {
-            syncWallets(currency);
-            syncTx(currency);
-            syncCertifications(currency, CertificationType.OF);
-            syncCertifications(currency, CertificationType.BY);
+        for (final UcoinCurrency currency : currencies) {
+            fetchCurrentBlock(currency);
         }
-        Log.d("SYNCADAPTER", "STOP_______________________________________________________________");
 
+        if (BuildConfig.DEBUG) Log.d("SYNCADAPTER", "END_________________________________________");
     }
 
-    public boolean syncBlocks(UcoinCurrency currency) {
-        //todo define a strategy for retrieving a peer from the currency
-        URL url;
-        HttpURLConnection conn;
-        InputStream stream;
-        BlockchainBlock remoteBlock;
-        UcoinEndpoint endpoint = currency.peers().iterator().next().endpoints().iterator().next();
+    public void fetchCurrentBlock(final UcoinCurrency currency) {
+        UcoinEndpoint endpoint = currency.peers().at(0).endpoints().at(0);
+        String url = "http://" + endpoint.ipv4() + ":" + endpoint.port() + "/blockchain/current/";
+        StringRequest request = new StringRequest(
+                url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        mRequestCount--;
+                        UcoinBlock localCurrentBlock = currency.blocks().currentBlock();
+                        BlockchainBlock currentBlock = BlockchainBlock.fromJson(response);
 
-        try {
-            url = new URL("http", "metab.ucoin.io", endpoint.port(), "/blockchain/current/");
-            conn = (HttpURLConnection) url.openConnection();
-            conn.setConnectTimeout(5000);
-            stream = conn.getInputStream();
-            remoteBlock = BlockchainBlock.fromJson(stream);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return false;
-        }
+                        fetchUdBlocks(currency);
+                        UcoinBlock newBlock = currency.blocks().add(currentBlock);
+                        if (newBlock != null &&
+                                localCurrentBlock != null &&
+                                localCurrentBlock.dividend() == null) {
+                            localCurrentBlock.delete();
+                        }
 
-        UcoinBlock sqlBlock = currency.blocks().lastBlock();
-        if (sqlBlock != null && sqlBlock.number() < remoteBlock.number) {
-            UcoinBlock bl = currency.blocks().add(remoteBlock);
-
-            sqlBlock.delete();
-            return true;
-        }
-        return false;
+                        syncWallets(currency);
+                        if (currency.identity() != null) syncIdentity(currency.identity());
+                    }
+                }, this);
+        request.setTag(this);
+        mRequestQueue.add(request);
+        mRequestCount++;
     }
 
+    void fetchUd(final UcoinIdentity identity) {
+        UcoinEndpoint endpoint = identity.currency().peers().at(0).endpoints().at(0);
+        String url = "http://" + endpoint.ipv4() + ":" + endpoint.port() + "/ud/history/";
+        url += identity.wallet().publicKey();
+        StringRequest request = new StringRequest(
+                url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        mRequestCount--;
+                        UdHistory udHistory = UdHistory.fromJson(response);
 
-    public void syncTx(UcoinCurrency currency) {
-        for (UcoinWallet wallet : currency.wallets()) {
+                        for (UdHistory.Ud ud : udHistory.history.history) {
+                            identity.wallet().uds().add(ud);
+                        }
+                    }
+                }, this);
+        request.setTag(this);
+        request.setRetryPolicy(new DefaultRetryPolicy(
+                60000,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+        mRequestQueue.add(request);
+        mRequestCount++;
+    }
 
-            URL url;
-            HttpURLConnection conn;
-            InputStream stream;
-            TxHistory txHistory;
-            UcoinEndpoint endpoint = currency.peers().iterator().next().endpoints().iterator().next();
-            try {
-                url = new URL("http", "metab.ucoin.io", endpoint.port(), "/tx/history/" + wallet.publicKey());
-                conn = (HttpURLConnection) url.openConnection();
-                conn.setConnectTimeout(5000);
-                stream = conn.getInputStream();
-                txHistory = new TxHistory().fromJson(stream);
-            } catch (IOException e) {
-                e.printStackTrace();
+    void fetchCert(final UcoinIdentity identity, final CertificationType type) {
+        UcoinEndpoint endpoint = identity.currency().peers().at(0).endpoints().at(0);
+        String url;
+        if (type == CertificationType.OF) {
+            url = "http://" + endpoint.ipv4() + ":" + endpoint.port() + "/wot/certifiers-of/";
+        } else {
+            url = "http://" + endpoint.ipv4() + ":" + endpoint.port() + "/wot/certified-by/";
 
-                return;
-            }
-
-            for (TxHistory.Tx sentTx : txHistory.history.sent) {
-                wallet.txs().add(sentTx, TxDirection.SENT);
-            }
-
-            for (TxHistory.Tx rcvTx : txHistory.history.received) {
-                wallet.txs().add(rcvTx, TxDirection.RECEIVED);
-            }
         }
+        url += identity.wallet().publicKey();
+        final StringRequest request = new StringRequest(
+                url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        mRequestCount--;
+                        WotCertification certifications = WotCertification.fromJson(response);
+                        for (WotCertification.Certification certification : certifications.certifications) {
+                            UcoinMember member = identity.members().getByPublicKey(certification.pubkey);
+                            if (member == null) {
+                                member = identity.members().add(certification);
+                                fetchMember(member);
+                            }
+                            identity.certifications().add(member, type, certification);
+                        }
+                    }
+                }, this);
+        request.setTag(this);
+        mRequestQueue.add(request);
+        mRequestCount++;
+    }
 
+    void fetchMember(final UcoinMember member) {
+        UcoinEndpoint endpoint = member.identity().currency().peers().at(0).endpoints().at(0);
+        String url = "http://" + endpoint.ipv4() + ":" + endpoint.port() + "/wot/lookup/";
+        url += member.publicKey();
+        final StringRequest request = new StringRequest(
+                url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        mRequestCount--;
+                        WotLookup lookup = WotLookup.fromJson(response);
+                        member.setSelf(lookup.results[0].uids[0].self);
+                        member.setTimestamp(lookup.results[0].uids[0].meta.timestamp);
+                    }
+                },
+                this);
+        request.setTag(this);
+        mRequestQueue.add(request);
+        mRequestCount++;
+    }
+
+    void fetchMemberships(final UcoinIdentity identity) {
+        UcoinEndpoint endpoint = identity.currency().peers().at(0).endpoints().at(0);
+        String url = "http://" + endpoint.ipv4() + ":" + endpoint.port() + "/blockchain/memberships/";
+        url += identity.uid();
+        StringRequest request = new StringRequest(
+                url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        mRequestCount--;
+                        BlockchainMemberships memberships = BlockchainMemberships.fromJson(response);
+                        for (BlockchainMemberships.Membership membership : memberships.memberships) {
+                            if (identity.currency().blocks().getByNumber(membership.blockNumber) == null) {
+                                fetchBlock(identity.currency(), membership.blockNumber, true);
+                            } else {
+                                identity.currency().blocks().getByNumber(membership.blockNumber).setIsMembership(true);
+                                identity.memberships().add(membership);
+                            }
+                        }
+                    }
+                }, this);
+        request.setTag(this);
+        mRequestQueue.add(request);
+        mRequestCount++;
+    }
+
+    void fetchSelfCertification(final UcoinIdentity identity) {
+        UcoinEndpoint endpoint = identity.currency().peers().at(0).endpoints().at(0);
+        String url = "http://" + endpoint.ipv4() + ":" + endpoint.port() + "/wot/lookup/";
+        url += identity.wallet().publicKey();
+        StringRequest request = new StringRequest(
+                url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        mRequestCount--;
+                        WotLookup lookup = WotLookup.fromJson(response);
+                        for (WotLookup.Result result : lookup.results) {
+                            if (result.pubkey.equals(identity.wallet().publicKey())) {
+                                for (WotLookup.Uid uid : result.uids) {
+                                    if (uid.uid.equals(identity.uid())) {
+                                        if ((identity.selfCertifications().getBySelf(uid.self)) == null) {
+                                            identity.selfCertifications().add(uid);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }, this);
+        request.setTag(this);
+        mRequestQueue.add(request);
+        mRequestCount++;
+    }
+
+    void syncIdentity(UcoinIdentity identity) {
+        fetchUd(identity);
+        fetchCert(identity, CertificationType.OF);
+        fetchCert(identity, CertificationType.BY);
+        fetchMemberships(identity);
+        fetchSelfCertification(identity);
+    }
+
+    void fetchUdBlocks(final UcoinCurrency currency) {
+        UcoinEndpoint endpoint = currency.peers().at(0).endpoints().at(0);
+        String url = "http://" + endpoint.ipv4() + ":" + endpoint.port() + "/blockchain/with/ud";
+        StringRequest request = new StringRequest(
+                url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        mRequestCount--;
+                        UcoinBlock lastUdBlock = currency.blocks().lastUdBlock();
+                        BlockchainWithUd udBlocksNumber = BlockchainWithUd.fromJson(response);
+                        for (Long number : udBlocksNumber.result.blocks) {
+                            if (lastUdBlock == null || number > lastUdBlock.number()) {
+                                fetchBlock(currency, number, false);
+                            }
+                        }
+                    }
+                }, this);
+        request.setTag(this);
+        mRequestQueue.add(request);
+        mRequestCount++;
+    }
+
+    void fetchBlock(final UcoinCurrency currency, Long number, final boolean isMembership) {
+        UcoinEndpoint endpoint = currency.peers().at(0).endpoints().at(0);
+        String url = "http://" + endpoint.ipv4() + ":" + endpoint.port() + "/blockchain/block/" + number;
+        StringRequest request = new StringRequest(
+                url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        mRequestCount--;
+                        BlockchainBlock block = BlockchainBlock.fromJson(response);
+                        UcoinBlock newBlock = currency.blocks().add(block);
+                        if (newBlock != null) {
+                            newBlock.setIsMembership(isMembership);
+                        }
+                    }
+                }, this);
+        request.setTag(this);
+        mRequestQueue.add(request);
+        mRequestCount++;
     }
 
     public void syncWallets(UcoinCurrency currency) {
         for (UcoinWallet wallet : currency.wallets()) {
+            fetchSources(wallet);
+        }
+    }
 
-            URL url;
-            HttpURLConnection conn;
-            InputStream stream;
-            TxSources txSources;
-            UcoinEndpoint endpoint = currency.peers().iterator().next().endpoints().iterator().next();
-            try {
-                url = new URL("http", "metab.ucoin.io", endpoint.port(), "/tx/sources/" + wallet.publicKey());
-                conn = (HttpURLConnection) url.openConnection();
-                conn.setConnectTimeout(5000);
-                stream = conn.getInputStream();
-                txSources = TxSources.fromJson(stream);
-            } catch (IOException e) {
-                e.printStackTrace();
-                return;
-            }
+    public void fetchSources(final UcoinWallet wallet) {
+        UcoinEndpoint endpoint = wallet.currency().peers().at(0).endpoints().at(0);
+        String url = "http://" + endpoint.ipv4() + ":" + endpoint.port() + "/tx/sources/";
+        url += wallet.publicKey();
 
-            // delete the consumed sources
-            for (UcoinSource sqlSource : wallet.sources()) {
-                boolean found = false;
+        StringRequest request = new StringRequest(
+                url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        mRequestCount--;
+                        TxSources sources = TxSources.fromJson(response);
 
-                for (TxSources.Source apiSource : txSources.sources) {
-                    if (sqlSource.fingerprint().equals(apiSource.fingerprint)) {
-                        found = true;
+                        for (UcoinSource source : wallet.sources()) {
+                            boolean consumed = true;
+                            for (TxSources.Source txSource : sources.sources) {
+                                if (source.fingerprint().equals(txSource.fingerprint)) {
+                                    consumed = false;
+                                    break;
+                                }
+                            }
+                            if (consumed) source.delete();
+                        }
+                        for (TxSources.Source txSource : sources.sources) {
+                            wallet.sources().add(txSource);
+                        }
+
+                        fetchTxs(wallet);
                     }
-                }
+                }, this);
 
-                if (!found) {
-                    sqlSource.delete();
-                }
-            }
+        request.setTag(this);
+        mRequestQueue.add(request);
+        mRequestCount++;
+    }
 
-            //add the new sources
-            boolean sourcesAdded = false;
-            for (TxSources.Source apiSource : txSources.sources) {
-                boolean found = false;
-                for (UcoinSource sqlSource : wallet.sources()) {
-                    if (apiSource.fingerprint.equals(sqlSource.fingerprint())) {
-                        found = true;
+    public void fetchTxs(final UcoinWallet wallet) {
+        UcoinEndpoint endpoint = wallet.currency().peers().at(0).endpoints().at(0);
+        String url = "http://" + endpoint.ipv4() + ":" + endpoint.port() + "/tx/history/";
+        url += wallet.publicKey();
+/*
+        UcoinTx lastTx = wallet.txs().getLastTx();
+        if (lastTx != null) {
+            url += "/times/" + lastTx.time() + 1 + "/" + Application.getCurrentTime();
+        }
+*/
+        StringRequest request = new StringRequest(
+                url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        mRequestCount--;
+                        TxHistory txHistory = TxHistory.fromJson(response);
+                        for (TxHistory.ReceivedTx tx : txHistory.history.received) {
+                            UcoinTx localTx = wallet.txs().getByHash(tx.hash);
+                            if (localTx == null) {
+                                boolean isIssuer = false;
+                                for (String issuer : tx.issuers) {
+                                    if (issuer.equals(wallet.publicKey())) {
+                                        isIssuer = true;
+                                        break;
+                                    }
+                                }
+                                if (!isIssuer) {
+                                    if (tx.time != null) wallet.txs().add(tx, TxDirection.IN);
+                                }
+                            } else if (localTx.state() == TxState.PENDING) {
+                                localTx.setState(TxState.CONFIRMED);
+                                localTx.setTime(tx.time);
+                                localTx.setBlock(tx.block_number);
+                            }
+                        }
+
+                        for (TxHistory.SentTx tx : txHistory.history.sent) {
+                            UcoinTx localTx = wallet.txs().getByHash(tx.hash);
+                            if (localTx == null) {
+                                boolean isIssuer = false;
+                                for (String issuer : tx.issuers) {
+                                    if (issuer.equals(wallet.publicKey())) {
+                                        isIssuer = true;
+                                        break;
+                                    }
+                                }
+                                if (isIssuer) {
+                                    if (tx.time != null) wallet.txs().add(tx, TxDirection.OUT);
+                                }
+                            } else if (localTx.state() == TxState.PENDING) {
+                                localTx.setState(TxState.CONFIRMED);
+                                localTx.setTime(tx.time);
+                                localTx.setBlock(tx.block_number);
+                            }
+                        }
+
+
+                        for (TxHistory.PendingTx tx : txHistory.history.pending) {
+                            UcoinTx localTx = wallet.txs().getByHash(tx.hash);
+                            if (localTx == null) {
+                                boolean isIssuer = false;
+                                for (String issuer : tx.issuers) {
+                                    if (issuer.equals(wallet.publicKey())) {
+                                        isIssuer = true;
+                                        break;
+                                    }
+                                }
+
+                                UcoinTx newTx;
+                                if (!isIssuer) {
+                                    newTx = wallet.txs().add(tx, TxDirection.IN);
+                                } else {
+                                    newTx = wallet.txs().add(tx, TxDirection.OUT);
+                                    for (TxHistory.Tx.Input input : tx.inputs) {
+                                        UcoinSource source = wallet.sources().getByFingerprint(input.fingerprint);
+                                        if (source != null) {
+                                            source.setState(SourceState.CONSUMED);
+                                        }
+                                    }
+                                }
+                                if (newTx != null) {
+                                    newTx.setBlock(wallet.currency().blocks().currentBlock().number());
+                                    newTx.setTime(wallet.currency().blocks().currentBlock().time());
+                                }
+                            }
+                        }
                     }
-                }
-
-                if (!found) {
-                    wallet.sources().add(apiSource);
-                    sourcesAdded = true;
-                }
-            }
-
-            if (sourcesAdded) {
-                notifyNewSource();
-            }
-        }
+                }, this);
+        request.setTag(this);
+        mRequestQueue.add(request);
+        mRequestCount++;
     }
-
-    public void fetchNewCurrency(UcoinPendingEndpoint endpoint) {
-        try {
-            //Load Peer
-            URL url = new URL("http", endpoint.address(), endpoint.port(), "/network/peering/");
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setConnectTimeout(5000);
-            InputStream stream = conn.getInputStream();
-            NetworkPeering networkPeering = NetworkPeering.fromJson(stream);
-
-            // Load currency
-            url = new URL("http", endpoint.address(), endpoint.port(), "/blockchain/parameters");
-            conn = (HttpURLConnection) url.openConnection();
-            conn.setConnectTimeout(5000);
-            stream = conn.getInputStream();
-            BlockchainParameter parameter = BlockchainParameter.fromJson(stream);
-
-            //Load first block
-            url = new URL("http", endpoint.address(), endpoint.port(), "/blockchain/block/0");
-            conn = (HttpURLConnection) url.openConnection();
-            conn.setConnectTimeout(5000);
-            stream = conn.getInputStream();
-            BlockchainBlock firstBlock = BlockchainBlock.fromJson(stream);
-
-            //Load last block
-            url = new URL("http", endpoint.address(), endpoint.port(), "/blockchain/current");
-            conn = (HttpURLConnection) url.openConnection();
-            conn.setConnectTimeout(5000);
-            stream = conn.getInputStream();
-            BlockchainBlock currentBlock = BlockchainBlock.fromJson(stream);
-
-            endpoint.delete();
-            UcoinCurrencies currencies = new Currencies(getContext());
-            UcoinCurrency currency = currencies.add(parameter);
-            currency.peers().add(networkPeering);
-            currency.blocks().add(firstBlock);
-            currency.blocks().add(currentBlock);
-            notifyNewCurrency(currency);
-
-        } catch (IOException e) {
-            e.printStackTrace();
-            return;
-        }
-
-    }
-
-    //todo this code is dirty I think, should write more suitable API
-    public UcoinMember fetchMember(UcoinCurrency currency, String public_key) {
-        URL url;
-        HttpURLConnection conn;
-        InputStream stream;
-        WotLookup lookup;
-        UcoinEndpoint endpoint = currency.peers().iterator().next().endpoints().iterator().next();
-        try {
-            url = new URL("http", "metab.ucoin.io", endpoint.port(), "/wot/lookup/" +
-                    public_key);
-            conn = (HttpURLConnection) url.openConnection();
-            conn.setConnectTimeout(5000);
-            stream = conn.getInputStream();
-            lookup = WotLookup.fromJson(stream);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-
-        for (WotLookup.Result result : lookup.results) {
-            String publicKey = result.pubkey;
-            for (WotLookup.Uid uid : result.uids) {
-                UcoinMember member = currency.members().newMember(
-                        uid.uid,
-                        publicKey,
-                        false,
-                        false,
-                        uid.self,
-                        uid.meta.timestamp);
-                return member;
-            }
-        }
-        return null;
-    }
-
-
-    public void syncCertifications(UcoinCurrency currency, CertificationType type) {
-        if (currency.identity() == null) {
-            return;
-        }
-
-        URL url;
-        HttpURLConnection conn;
-        InputStream stream;
-        WotCertification certifications;
-        UcoinEndpoint endpoint = currency.peers().iterator().next().endpoints().iterator().next();
-        try {
-            if (type == CertificationType.OF) {
-                url = new URL("http", "metab.ucoin.io", endpoint.port(), "/wot/certifiers-of/" +
-                        currency.identity().wallet().publicKey());
-            } else {
-                url = new URL("http", "metab.ucoin.io", endpoint.port(), "/wot/certified-by/" +
-                        currency.identity().wallet().publicKey());
-            }
-            conn = (HttpURLConnection) url.openConnection();
-            conn.setConnectTimeout(5000);
-            stream = conn.getInputStream();
-            certifications = WotCertification.fromJson(stream);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return;
-        }
-
-
-        // delete the expired certifications
-        for (UcoinCertification sqlCertification : currency.identity().certifications().getByType(type)) {
-            boolean found = false;
-            for (WotCertification.Certification apiCertification : certifications.certifications) {
-                if (sqlCertification.signature().equals(apiCertification.signature)) {
-                    found = true;
-                }
-            }
-
-            if (!found) {
-                sqlCertification.delete();
-            }
-        }
-
-        //add the new certifications
-        for (WotCertification.Certification apiCertification : certifications.certifications) {
-            boolean found = false;
-            for (UcoinCertification sqlCertification : currency.identity().certifications().getByType(type)) {
-                if (apiCertification.signature.equals(sqlCertification.signature())) {
-                    found = true;
-                }
-            }
-
-            boolean certificationAdded = false;
-            if (!found) {
-                UcoinMember member = currency.members().getByUid(apiCertification.uid);
-                if (member == null) {
-                    member = fetchMember(currency, apiCertification.pubkey);
-                    member.isMember(apiCertification.isMember);
-                    //todo was member is not available from API
-                    member.wasMember(apiCertification.isMember);
-                    member = currency.members().add(member);
-                }
-
-                currency.identity().certifications().add(member, type, apiCertification);
-                certificationAdded = true;
-            }
-
-            if (certificationAdded) {
-                notifyNewCertification();
-            }
-        }
-    }
-
 
     private void notifyNewCurrency(UcoinCurrency currency) {
         // build notification
         // the addAction re-use the same intent to keep the example short
         Notification n = new Notification.Builder(getContext())
                 .setContentTitle("New currency")
-                .setContentText("Currency \"" + currency.currencyName() + "\" succesfully added")
-                .setSmallIcon(R.drawable.ic_plus_white_36dp)
-                .setAutoCancel(true).build();
-
-
-        NotificationManager manager =
-                (NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE);
-        manager.notify(0, n);
-    }
-
-    private void notifyNewSource() {
-        // build notification
-        // the addAction re-use the same intent to keep the example short
-        Notification n = new Notification.Builder(getContext())
-                .setContentTitle("New sources")
-                .setContentText("Subject")
+                .setContentText("Currency \"" + currency.name() + "\" succesfully added")
                 .setSmallIcon(R.drawable.ic_plus_white_36dp)
                 .setAutoCancel(true).build();
 
@@ -381,9 +452,14 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 .setSmallIcon(R.drawable.ic_plus_white_36dp)
                 .setAutoCancel(true).build();
 
-
         NotificationManager manager =
                 (NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE);
         manager.notify(0, n);
+    }
+
+    @Override
+    public void onErrorResponse(VolleyError error) {
+        mRequestCount--;
+        if (BuildConfig.DEBUG) Log.d("SyncAdapter:", error.toString());
     }
 }

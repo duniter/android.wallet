@@ -27,14 +27,13 @@
     <string name="close_drawer">Close the navigation drawer</string>
 
     <!-- Strings related to transfer/transaction -->
-    <string name="wallet_transmitter">Wallet (transmitter)</string>
+    <string name="source_wallet">Source Wallet</string>
     <string name="receiver_uid">Receiver uid</string>
     <string name="amount">Amount</string>
     <string name="UD">UD</string>
     <string name="unit_coins_label">coins</string>
     <string name="wallet">Wallet</string>
     <string name="comment_hint">Comment</string>
-    <string name="amount_not_integer">Amount must a valid integer</string>
     <string name="transactions">Transactions</string>
 
     <!-- Strings related to actions -->
@@ -42,6 +41,7 @@
     <string name="generate_seed">Generate seed</string>
     <string name="sign">Sign</string>
     <string name="self">Self</string>
+    <string name="revoke">Revoke</string>
     <string name="search">Search</string>
     <string name="sign_in">Sign in</string>
     <string name="dev">Dev</string>
@@ -50,7 +50,7 @@
     <string name="copy">Copy</string>
     <string name="add">Add</string>
     <string name="CANCEL">CANCEL</string>
-    <string name="ok">OK</string>
+    <string name="OK">OK</string>
     <string name="join">Join</string>
     <string name="delete">Delete</string>
     <string name="remove">Remove</string>
@@ -99,7 +99,8 @@
         collision. Typically, your personal e-mail is a good choice, added to the fact it is easy to
         remember.</string>
     <string name="password_instructions">Password: Choose a very strong password, so no one
-        can find it. This password can\'t be changed thereafter, so choose it carefully.</string>
+        can find it. This password can\'t be changed thereafter, so choose it carefully. The password can\'t be
+    recovered, don\'t loose it</string>
 
     <string name="test">Test</string>
 
@@ -113,19 +114,20 @@
     <string name="uid_instructions">User ID: If you choose an UID which is already used inside a community, you won\'t be able to join this community. So ensure not to collide with someone else\'s UID.</string>
     <string name="uid_cannot_be_empty">UID cannot be empty</string>
     <string name="salt_cannot_be_empty">Salt cannot be empty</string>
+    <string name="alias_cannot_be_empty">Alias cannot be empty</string>
     <string name="password_cannot_be_empty">Password cannot be empty</string>
     <string name="confirm_password_cannot_be_empty">Confirm password cannot be empty</string>
     <string name="passwords_dont_match">Passwords don\'t match</string>
     <string name="currency_added">Currency added</string>
     <string name="invalid_peer_address">Invalid peer address</string>
-    <string name="invalid_peer_port">Invalid perr port</string>
+    <string name="invalid_peer_port">Invalid peer port</string>
     <string name="wallets">Wallets</string>
     <string name="create_new">Create new</string>
     <string name="add_wallet">Add wallet</string>
     <string name="no_wallet">No wallet</string>
     <string name="sources">Sources</string>
     <string name="no_source">No source</string>
-    <string name="alias_hint">local alias (optionnal)</string>
+    <string name="alias_hint">local alias</string>
     <string name="alias">Alias</string>
     <string name="add_currency">Add currency</string>
 
@@ -173,11 +175,99 @@
     <string name="hash">hash</string>
     <string name="sent">Sent</string>
     <string name="no_transactions">No transactions</string>
+    <string name="receiver_wallet">Receiver Wallet</string>
+    <string name="from">From</string>
+    <string name="to">To</string>
+    <string name="qr_code">QR code</string>
+    <string name="contact">Contact</string>
+    <string name="write">Write</string>
+    <string name="insufficient_funds">Insufficient funds</string>
+    <string name="amount_is_empty">Amount is empty</string>
+    <string name="sync">Sync</string>
+    <string name="close">Close</string>
+    <string name="show_qrcode">Show QR code</string>
+    <string name="quantitative_amount">quantitative amount</string>
+    <string name="relative_amount_then">relative amount then</string>
+    <string name="relative_amount_now">relative amount now</string>
+    <string name="date">Date</string>
+    <string name="year">Year</string>
+    <string name="month">Month</string>
+    <string name="day">Day</string>
+    <string name="hour">Hour</string>
+    <string name="minute">Minute</string>
+    <string name="second">Second</string>
+    <string name="day_of_week">Day of week</string>
+
+    <string name="SUN">SUN</string>
+    <string name="MON">MON</string>
+    <string name="TUE">TUE</string>
+    <string name="WED">WED</string>
+    <string name="THU">THU</string>
+    <string name="FRI">FRI</string>
+    <string name="SAT">SAT</string>
+
+    <string name="january">January</string>
+    <string name="february">February</string>
+    <string name="march">March</string>
+    <string name="april">April</string>
+    <string name="may">May</string>
+    <string name="june">June</string>
+    <string name="july">July</string>
+    <string name="august">August</string>
+    <string name="september">September</string>
+    <string name="october">October</string>
+    <string name="november">November</string>
+    <string name="december">December</string>
+    <string name="UNK">UNK</string>
+    <string name="new_wallet">New wallet</string>
+    <string name="no_membership">No membership</string>
+    <string name="membership">Membership</string>
+    <string name="expires_on">Expires on</string>
+    <string name="expired">Expired</string>
+    <string name="state">State</string>
+    <string name="renew">renew</string>
+    <string name="no_currencies">No currencies</string>
+    <string name="contacts">Contacts</string>
+    <string name="blocks">Blocks</string>
+    <string name="peers">Peers</string>
+    <string name="no_blocks">No blocks</string>
+    <string name="leave">Leave</string>
+    <string name="no_ud">No U.D.</string>
+    <string name="no_contact">No contact</string>
+    <string name="add_contact">Add contact</string>
+    <string name="name">Name</string>
+    <string name="membership_exists_block">A membership already exists a this block</string>
+    <string name="select_self_certification">Select self-certification</string>
+    <string name="currency_already_exists">Currency already exists</string>
+    <string name="loading_currency">Loading currency...</string>
+    <string name="peer_already_exists">Peer already exists</string>
+    <string name="incompatible_peer">Incompatible peer</string>
+    <string name="join_currency">Do you want to join this currency ?</string>
+    <string name="create_membership">Create membership</string>
+    <string name="renew_this_membership">Renew this membership ?</string>
+    <string name="certify">Certify</string>
+    <string name="confirm_certification">Confirm certification ?</string>
+    <string name="do_you_want_to_certify_this_uid">Do you want to certify this UID</string>
+    <string name="circle">circle</string>
+    <string name="monetary_mass">Monetary mass</string>
+    <string name="balance">Balance</string>
+    <string name="tx_direction">Tx direction</string>
+    <string name="comment_is_not_valid">The comment is not valid</string>
+    <string name="amount_not_valid">Amount is not valid</string>
+    <string name="public_key_is_not_valid">Public key is not valid</string>
+    <string name="amount_is_not_valid">Amount is not valid</string>
+    <string name="amount_must_be_positive">Amount must be a positive value</string>
+    <string name="transaction_sent">Transaction sent</string>
+    <string name="membership_sent">Membership sent</string>
+    <string name="self_certification_sent">Self certification sent</string>
+    <string name="revocation_sent">Revocation sent</string>
+    <string name="certification_sent">Certification sent</string>
+    <string name="current_block">Current block</string>
+    <string name="certification">Certification</string>
 
     <string-array name="drawer_items">
         <item>@string/wallets</item>
-        <item>@string/currencies</item>
-        <item>@string/settings</item>
-        <item>@string/dev</item>
+        <item>@string/contacts</item>
+        <item>@string/identity</item>
     </string-array>
 </resources>

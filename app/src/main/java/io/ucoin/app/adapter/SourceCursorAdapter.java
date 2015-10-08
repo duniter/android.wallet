@@ -42,5 +42,9 @@ public class SourceCursorAdapter extends CursorAdapter{
         TextView fingerprint = (TextView) view.findViewById(R.id.fingerprint);
         int fingerprintIndex = cursor.getColumnIndex(SQLiteTable.Source.FINGERPRINT);
         fingerprint.setText(cursor.getString(fingerprintIndex));
+
+        TextView state = (TextView) view.findViewById(R.id.state);
+        int stateIndex = cursor.getColumnIndex(SQLiteTable.Source.STATE);
+        state.setText(cursor.getString(stateIndex));
     }
 }
