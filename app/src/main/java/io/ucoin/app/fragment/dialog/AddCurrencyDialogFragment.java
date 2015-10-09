@@ -15,6 +15,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.NoConnectionError;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
@@ -174,8 +175,14 @@ public class AddCurrencyDialogFragment extends DialogFragment
 
     @Override
     public void onErrorResponse(VolleyError error) {
-        Toast.makeText(Application.getContext(), error.toString(), Toast.LENGTH_LONG).show();
-        mFormLayout.setVisibility(View.VISIBLE);
+        if(error instanceof NoConnectionError) {
+            Toast.makeText(Application.getContext(),
+                    getResources().getString(R.string.no_connection),
+                    Toast.LENGTH_LONG).show();
+        } else {
+            Toast.makeText(Application.getContext(), error.toString(), Toast.LENGTH_LONG).show();
+        }
+            mFormLayout.setVisibility(View.VISIBLE);
         mProgressLayout.setVisibility(View.GONE);
     }
 }

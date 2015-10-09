@@ -17,6 +17,7 @@ import android.widget.SearchView;
 import android.widget.Toast;
 
 import com.android.volley.DefaultRetryPolicy;
+import com.android.volley.NoConnectionError;
 import com.android.volley.Response;
 import com.android.volley.RetryPolicy;
 import com.android.volley.VolleyError;
@@ -121,7 +122,15 @@ public class LookupActivity extends ActionBarActivity implements SearchView.OnQu
                     public void onErrorResponse(VolleyError error) {
                         mProgressBar.setVisibility(View.GONE);
                         mListView.setVisibility(View.VISIBLE);
-                        Toast.makeText(LookupActivity.this, error.toString(), Toast.LENGTH_LONG).show();
+
+                        if (error instanceof NoConnectionError) {
+                            Toast.makeText(Application.getContext(),
+                                    getResources().getString(R.string.no_connection),
+                                    Toast.LENGTH_LONG).show();
+                        } else {
+                            Toast.makeText(Application.getContext(), error.toString(), Toast.LENGTH_LONG).show();
+                        }
+
                     }
                 });
         request.setTag(this);

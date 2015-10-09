@@ -264,6 +264,7 @@
     <string name="certification_sent">Certification sent</string>
     <string name="current_block">Current block</string>
     <string name="certification">Certification</string>
+    <string name="no_connection">No connection</string>
 
     <string-array name="drawer_items">
         <item>@string/wallets</item>

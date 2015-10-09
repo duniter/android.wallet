@@ -22,6 +22,7 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.NoConnectionError;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
@@ -205,12 +206,12 @@ public class TransferActivity extends ActionBarActivity
 
         IntentResult scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, intent);
         if (requestCode == Application.ACTIVITY_LOOKUP) {
-            WotLookup.Result result = (WotLookup.Result)intent.getExtras().getSerializable(WotLookup.Result.class.getSimpleName());
-            if(result.pubkey.matches(PUBLIC_KEY_REGEX)) {
+            WotLookup.Result result = (WotLookup.Result) intent.getExtras().getSerializable(WotLookup.Result.class.getSimpleName());
+            if (result.pubkey.matches(PUBLIC_KEY_REGEX)) {
 
-            mReceiverUid.setVisibility(View.VISIBLE);
-            mReceiverPublicKey.setText(result.pubkey);
-            mReceiverUid.setText(result.uids[0].uid);
+                mReceiverUid.setVisibility(View.VISIBLE);
+                mReceiverPublicKey.setText(result.pubkey);
+                mReceiverUid.setText(result.uids[0].uid);
             } else {
                 mReceiverUid.setVisibility(View.GONE);
                 mReceiverPublicKey.setText("");
@@ -355,7 +356,14 @@ public class TransferActivity extends ActionBarActivity
                         mTransferMenuItem.setEnabled(true);
                         Drawable drawable = ResourcesCompat.getDrawable(getResources(), R.drawable.ic_send_white_24dp, null);
                         mTransferMenuItem.setIcon(drawable);
-                        Toast.makeText(TransferActivity.this, error.toString(), Toast.LENGTH_LONG).show();
+
+                        if (error instanceof NoConnectionError) {
+                            Toast.makeText(Application.getContext(),
+                                    getResources().getString(R.string.no_connection),
+                                    Toast.LENGTH_LONG).show();
+                        } else {
+                            Toast.makeText(Application.getContext(), error.toString(), Toast.LENGTH_LONG).show();
+                        }
                     }
                 }) {
             @Override

@@ -10,7 +10,6 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.provider.BaseColumns;
 import android.support.annotation.NonNull;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -19,6 +18,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import com.android.volley.NoConnectionError;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
@@ -273,7 +273,14 @@ public class MembershipListFragment extends ListFragment
 
     @Override
     public void onErrorResponse(VolleyError error) {
-        Toast.makeText(getActivity(), error.toString(), Toast.LENGTH_LONG).show();
+
+        if (error instanceof NoConnectionError) {
+            Toast.makeText(Application.getContext(),
+                    getResources().getString(R.string.no_connection),
+                    Toast.LENGTH_LONG).show();
+        } else {
+            Toast.makeText(Application.getContext(), error.toString(), Toast.LENGTH_LONG).show();
+        }
     }
 
     @Override
