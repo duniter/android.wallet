@@ -214,7 +214,7 @@ public class DbProvider extends ContentProvider implements SQLiteTable {
                         selectionArgs, null, null, sortOrder);
                 break;
             case IDENTITY_ID:
-                queryBuilder.setTables(Identity.TABLE_NAME);
+                queryBuilder.setTables(SQLiteView.Identity.VIEW_NAME);
                 cursor = queryBuilder.query(db, null,
                         BaseColumns._ID + "=?",
                         new String[]{uri.getLastPathSegment()},

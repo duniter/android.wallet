@@ -108,15 +108,16 @@ public class MembershipListFragment extends ListFragment
             joinItem.setVisible(false);
             renewItem.setVisible(false);
             leaveItem.setVisible(false);
-        }
-        if(!isMember) {
-            joinItem.setVisible(true);
-            renewItem.setVisible(false);
-            leaveItem.setVisible(false);
         } else {
-            joinItem.setVisible(false);
-            renewItem.setVisible(true);
-            leaveItem.setVisible(true);
+            if (!isMember) {
+                joinItem.setVisible(true);
+                renewItem.setVisible(false);
+                leaveItem.setVisible(false);
+            } else {
+                joinItem.setVisible(false);
+                renewItem.setVisible(true);
+                leaveItem.setVisible(true);
+            }
         }
     }
 
@@ -188,18 +189,19 @@ public class MembershipListFragment extends ListFragment
         Long identityId = getArguments().getLong(BaseColumns._ID);
         UcoinIdentity identity = new io.ucoin.app.model.sql.sqlite.Identity(getActivity(), identityId);
 
-        if (identity.sigDate() == 0) {
+        if (identity.sigDate() == null) {
             if (identity.selfCount() == 1) {
                 Iterator it = identity.selfCertifications().iterator();
                 UcoinSelfCertification certification = (UcoinSelfCertification) it.next();
                 identity.setSigDate(certification.timestamp());
             } else if (identity.selfCount() > 1) {
-
                 SelectSelfDialogFragment fragment = SelectSelfDialogFragment.newInstance(getArguments().getLong(BaseColumns._ID));
                 fragment.setTargetFragment(this, 1);
                 fragment.show(getFragmentManager(),
                         fragment.getClass().getSimpleName());
 
+                return;
+            } else {
                 return;
             }
         }
@@ -212,7 +214,7 @@ public class MembershipListFragment extends ListFragment
 
     public void createMembership(boolean renew) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setTitle(R.string.create_membership);
+        builder.setTitle(R.string.membership);
         if (!renew) {
             builder.setMessage(R.string.join_currency);
         } else {

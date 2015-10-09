@@ -196,6 +196,11 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements Response
                     public void onResponse(String response) {
                         mRequestCount--;
                         BlockchainMemberships memberships = BlockchainMemberships.fromJson(response);
+
+                        if(identity.sigDate() == null) {
+                            identity.setSigDate(memberships.sigDate);
+                        }
+
                         for (BlockchainMemberships.Membership membership : memberships.memberships) {
                             if (identity.currency().blocks().getByNumber(membership.blockNumber) == null) {
                                 fetchBlock(identity.currency(), membership.blockNumber, true);

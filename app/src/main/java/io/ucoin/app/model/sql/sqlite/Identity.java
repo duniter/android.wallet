@@ -6,7 +6,6 @@ import android.content.Context;
 import io.ucoin.app.content.DbProvider;
 import io.ucoin.app.enumeration.DayOfWeek;
 import io.ucoin.app.enumeration.MembershipType;
-import io.ucoin.app.model.UcoinCertification;
 import io.ucoin.app.model.UcoinCertifications;
 import io.ucoin.app.model.UcoinCurrency;
 import io.ucoin.app.model.UcoinIdentity;
@@ -135,14 +134,11 @@ public class Identity extends Row
     @Override
     public String toString() {
         String s = "\nIDENTITY id=" + ((id() == null) ? "not in database" : id()) + "\n";
+        s += "\nsigDate=" + sigDate();
         s += "\ncurrencyId=" + currencyId();
         s += "\nwalletId=" + walletId();
         s += "\nuid=" + uid();
         s += "\n\twallet=" + wallet().toString();
-
-        for (UcoinCertification certification : certifications()) {
-            s += certification.toString();
-        }
 
         return s;
     }
