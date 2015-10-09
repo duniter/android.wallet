@@ -10,6 +10,7 @@ import android.widget.TextView;
 
 import io.ucoin.app.R;
 import io.ucoin.app.enumeration.DayOfWeek;
+import io.ucoin.app.enumeration.MembershipType;
 import io.ucoin.app.enumeration.Month;
 import io.ucoin.app.sqlite.SQLiteView;
 
@@ -45,33 +46,36 @@ public class MembershipCursorAdapter extends CursorAdapter {
                 DayOfWeek.fromInt(cursor.getInt(dayOfWeekIndex)).toString(context) + " " +
                         cursor.getString(dayIndex) + " " +
                         Month.fromInt(Integer.parseInt(cursor.getString(monthIndex))).toString(context) + " " +
+                        cursor.getString(monthIndex) + " " +
                         cursor.getString(hourIndex)
         );
 
-        TextView expirationDate = (TextView) view.findViewById(R.id.expiration_date);
-        yearIndex = cursor.getColumnIndex(SQLiteView.Membership.EXPIRATION_YEAR);
-        monthIndex = cursor.getColumnIndex(SQLiteView.Membership.EXPIRATION_MONTH);
-        dayIndex = cursor.getColumnIndex(SQLiteView.Membership.EXPIRATION_DAY);
-        dayOfWeekIndex = cursor.getColumnIndex(SQLiteView.Membership.EXPIRATION_DAY_OF_WEEK);
-        hourIndex = cursor.getColumnIndex(SQLiteView.Membership.EXPIRATION_HOUR);
-        timeIndex = cursor.getColumnIndex(SQLiteView.Membership.EXPIRATION_TIME);
-        expirationDate.setText(cursor.getString(timeIndex));
-
-        expirationDate.setText(
-                DayOfWeek.fromInt(cursor.getInt(dayOfWeekIndex)).toString(context) + " " +
-                        cursor.getString(dayIndex) + " " +
-                        Month.fromInt(cursor.getInt(monthIndex)).toString(context) + " " +
-                        cursor.getString(hourIndex)
-
-        );
 
         TextView membership = (TextView) view.findViewById(R.id.membership);
         int membershipIndex = cursor.getColumnIndex(SQLiteView.Membership.TYPE);
         membership.setText(cursor.getString(membershipIndex));
-/*
-        TextView expired = (TextView) view.findViewById(R.id.expired);
-        int expiredIndex = cursor.getColumnIndex(SQLiteView.Membership.EXPIRED);
-        expired.setText(colon + cursor.getString(expiredIndex));
-*/
+
+        TextView expirationDate = (TextView) view.findViewById(R.id.expiration_date);
+        if(MembershipType.fromString(cursor.getString(membershipIndex)) == MembershipType.IN) {
+            yearIndex = cursor.getColumnIndex(SQLiteView.Membership.EXPIRATION_YEAR);
+            monthIndex = cursor.getColumnIndex(SQLiteView.Membership.EXPIRATION_MONTH);
+            dayIndex = cursor.getColumnIndex(SQLiteView.Membership.EXPIRATION_DAY);
+            dayOfWeekIndex = cursor.getColumnIndex(SQLiteView.Membership.EXPIRATION_DAY_OF_WEEK);
+            hourIndex = cursor.getColumnIndex(SQLiteView.Membership.EXPIRATION_HOUR);
+            timeIndex = cursor.getColumnIndex(SQLiteView.Membership.EXPIRATION_TIME);
+            expirationDate.setText(cursor.getString(timeIndex));
+
+            expirationDate.setText(
+                    DayOfWeek.fromInt(cursor.getInt(dayOfWeekIndex)).toString(context) + " " +
+                            cursor.getString(dayIndex) + " " +
+                            Month.fromInt(cursor.getInt(monthIndex)).toString(context) + " " +
+                            cursor.getString(monthIndex) + " " +
+                            cursor.getString(hourIndex)
+            );
+
+        } else {
+            expirationDate.setText("");
+        }
+
     }
 }
