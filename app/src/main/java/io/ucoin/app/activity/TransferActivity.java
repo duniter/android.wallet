@@ -6,7 +6,9 @@ import android.content.Intent;
 import android.content.Loader;
 import android.content.pm.ActivityInfo;
 import android.database.Cursor;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
@@ -70,6 +72,7 @@ public class TransferActivity extends ActionBarActivity
     private BigDecimal mQuantitativeUD;
     private Cursor mWalletCursor;
     private ImageButton mLookupButton;
+    private MenuItem mTransferMenuItem;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -178,6 +181,7 @@ public class TransferActivity extends ActionBarActivity
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.toolbar_transfer, menu);
+        mTransferMenuItem = menu.findItem(R.id.action_transfer);
         return true;
     }
 
@@ -331,6 +335,9 @@ public class TransferActivity extends ActionBarActivity
         UcoinEndpoint endpoint = wallet.currency().peers().at(0).endpoints().at(0);
         String url = "http://" + endpoint.ipv4() + ":" + endpoint.port() + "/tx/process/";
 
+        mTransferMenuItem.setEnabled(false);
+        Drawable drawable = ResourcesCompat.getDrawable(getResources(), R.drawable.ic_send_grey600_24dp, null);
+        mTransferMenuItem.setIcon(drawable);
         StringRequest request = new StringRequest(
                 Request.Method.POST,
                 url,
@@ -345,6 +352,9 @@ public class TransferActivity extends ActionBarActivity
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
+                        mTransferMenuItem.setEnabled(true);
+                        Drawable drawable = ResourcesCompat.getDrawable(getResources(), R.drawable.ic_send_white_24dp, null);
+                        mTransferMenuItem.setIcon(drawable);
                         Toast.makeText(TransferActivity.this, error.toString(), Toast.LENGTH_LONG).show();
                     }
                 }) {
