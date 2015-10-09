@@ -20,6 +20,7 @@ import android.widget.AdapterView;
 import android.widget.ExpandableListView;
 import android.widget.ImageButton;
 
+import io.ucoin.app.BuildConfig;
 import io.ucoin.app.R;
 import io.ucoin.app.adapter.PeerCursorTreeAdapter;
 import io.ucoin.app.content.DbProvider;
@@ -65,8 +66,9 @@ public class PeerListFragment extends Fragment
         getActivity().setTitle(getString(R.string.peers));
 
         mButton = (ImageButton) view.findViewById(R.id.add_peer_button);
-        //mButton.setOnClickListener(this);
-
+        if(!BuildConfig.DEBUG) {
+            mButton.setVisibility(View.GONE);
+        }
         PeerCursorTreeAdapter peerCursorTreeAdapter
                 = new PeerCursorTreeAdapter(null, getActivity());
         mListView = (ExpandableListView) view.findViewById(R.id.list);
@@ -74,7 +76,9 @@ public class PeerListFragment extends Fragment
         mListView.setEmptyView(view.findViewById(R.id.empty));
         mListView.setOnGroupClickListener(this);
         getLoaderManager().initLoader(PEER_LOADER_ID, getArguments(), this);
-        //registerForContextMenu(mListView);
+        if(BuildConfig.DEBUG) {
+            registerForContextMenu(mListView);
+        }
     }
 
     @Override

@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.nio.channels.FileChannel;
 
 import io.ucoin.app.Application;
+import io.ucoin.app.BuildConfig;
 import io.ucoin.app.R;
 import io.ucoin.app.content.DbProvider;
 import io.ucoin.app.enumeration.DayOfWeek;
@@ -92,6 +93,10 @@ public class CurrencyActivity extends ActionBarActivity
         drawerPeersView.setOnClickListener(this);
         drawerBlocksView.setOnClickListener(this);
 
+        if(BuildConfig.DEBUG) {
+            drawerBlocksView.setVisibility(View.VISIBLE);
+        }
+
         // Set the adapter for the drawer list view
 /*
         String[]drawerItems = getResources().getStringArray(R.array.drawer_items);
@@ -115,22 +120,26 @@ public class CurrencyActivity extends ActionBarActivity
             }
         });
 
-        TextView exportDb = (TextView) findViewById(R.id.export_db);
-        exportDb.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                exportDB();
-            }
-        });
+        if (BuildConfig.DEBUG) {
+            TextView exportDb = (TextView) findViewById(R.id.export_db);
+            exportDb.setVisibility(View.VISIBLE);
+            exportDb.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    exportDB();
+                }
+            });
 
-        TextView requestSync = (TextView) findViewById(R.id.request_sync);
-        requestSync.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Application.requestSync();
-            }
-        });
 
+            TextView requestSync = (TextView) findViewById(R.id.request_sync);
+            requestSync.setVisibility(View.VISIBLE);
+            requestSync.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Application.requestSync();
+                }
+            });
+        }
 
         Long currencyId = getIntent().getExtras().getLong(BaseColumns._ID);
         Fragment fragment = WalletListFragment.newInstance(currencyId);
@@ -223,7 +232,7 @@ public class CurrencyActivity extends ActionBarActivity
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
         super.onActivityResult(requestCode, resultCode, intent);
 
-        if(resultCode == RESULT_OK && requestCode == Application.ACTIVITY_CURRENCY_LIST) {
+        if (resultCode == RESULT_OK && requestCode == Application.ACTIVITY_CURRENCY_LIST) {
             Long currencyId = intent.getExtras().getLong(BaseColumns._ID);
             SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
             SharedPreferences.Editor editor = preferences.edit();

@@ -22,8 +22,8 @@
             android:layout_alignParentTop="true"
             android:layout_toStartOf="@+id/drawer_switch_currency_button"
             android:clickable="false"
-            android:paddingEnd="16dp"
             android:ellipsize="end"
+            android:paddingEnd="16dp"
             android:singleLine="true"
             android:textColor="@color/textPrimary"
             android:textSize="@dimen/abc_text_size_title_material"
@@ -156,11 +156,10 @@
                 android:text="@string/blocks"
                 android:textColor="#000"
                 android:textSize="@dimen/abc_text_size_body_2_material"
-                android:visibility="gone"/>
+                android:visibility="gone" />
 
 
-            <include layout="@layout/drawer_separator"
-                android:visibility="gone"/>
+            <include layout="@layout/drawer_separator" />
 
             <TextView
                 android:id="@+id/drawer_settings"
@@ -177,7 +176,7 @@
                 android:text="@string/settings"
                 android:textColor="#FF000000"
                 android:textSize="@dimen/abc_text_size_body_2_material"
-                android:visibility="gone"/>
+                android:visibility="gone" />
 
             <TextView
                 android:id="@+id/export_db"
@@ -194,7 +193,7 @@
                 android:text="@string/export_db"
                 android:textColor="#FF000000"
                 android:textSize="@dimen/abc_text_size_body_2_material"
-                android:visibility="gone"/>
+                android:visibility="gone" />
 
             <TextView
                 android:id="@+id/request_sync"
@@ -211,7 +210,7 @@
                 android:text="@string/sync"
                 android:textColor="#FF000000"
                 android:textSize="@dimen/abc_text_size_body_2_material"
-                android:visibility="gone"/>
+                android:visibility="gone" />
         </LinearLayout>
     </ScrollView>
 </LinearLayout>
