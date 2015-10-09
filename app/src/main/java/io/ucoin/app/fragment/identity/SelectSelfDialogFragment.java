@@ -19,6 +19,7 @@ import android.widget.ListView;
 import io.ucoin.app.R;
 import io.ucoin.app.adapter.SelfCertificationCursorAdapter;
 import io.ucoin.app.content.DbProvider;
+import io.ucoin.app.enumeration.MembershipType;
 import io.ucoin.app.enumeration.SelfCertificationState;
 import io.ucoin.app.model.UcoinIdentity;
 import io.ucoin.app.model.UcoinSelfCertification;
@@ -68,7 +69,7 @@ public class SelectSelfDialogFragment extends DialogFragment
                 UcoinSelfCertification certification = new SelfCertification(getActivity(), mSelectedItemId);
                 identity.setSigDate(certification.timestamp());
                 MembershipListFragment fragment = (MembershipListFragment)getTargetFragment();
-                fragment.createMembership(false);
+                fragment.createMembership(MembershipType.IN);
                 dismiss();
             }
         });

@@ -24,6 +24,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -126,10 +127,8 @@ public class MembershipListFragment extends ListFragment
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_join:
-                actionJoin(false);
-                return true;
             case R.id.action_renew:
-                actionJoin(true);
+                actionJoin();
                 return true;
             case R.id.action_leave:
                 actionLeave();
@@ -185,7 +184,7 @@ public class MembershipListFragment extends ListFragment
     }
 
 
-    public void actionJoin(boolean renew) {
+    public void actionJoin() {
         Long identityId = getArguments().getLong(BaseColumns._ID);
         UcoinIdentity identity = new io.ucoin.app.model.sql.sqlite.Identity(getActivity(), identityId);
 
@@ -206,19 +205,20 @@ public class MembershipListFragment extends ListFragment
             }
         }
 
-        createMembership(renew);
+        createMembership(MembershipType.IN);
     }
 
     public void actionLeave() {
+        createMembership(MembershipType.OUT);
     }
 
-    public void createMembership(boolean renew) {
+    public void createMembership(MembershipType type) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle(R.string.membership);
-        if (!renew) {
+        if (type == MembershipType.IN) {
             builder.setMessage(R.string.join_currency);
         } else {
-            builder.setMessage(R.string.renew_this_membership);
+            builder.setMessage(R.string.leave_currency);
         }
         Long identityId = getArguments().getLong(BaseColumns._ID);
         final UcoinIdentity identity = new io.ucoin.app.model.sql.sqlite.Identity(getActivity(), identityId);
@@ -228,7 +228,7 @@ public class MembershipListFragment extends ListFragment
         UcoinBlock lastBlock = identity.currency().blocks().currentBlock();
         membership.block = lastBlock.number();
         membership.hash = lastBlock.hash();
-        membership.membershipType = MembershipType.IN;
+        membership.membershipType = type;
         membership.UID = identity.uid();
         membership.certificationTs = identity.sigDate();
 
@@ -281,7 +281,8 @@ public class MembershipListFragment extends ListFragment
                     getResources().getString(R.string.no_connection),
                     Toast.LENGTH_LONG).show();
         } else {
-            Toast.makeText(Application.getContext(), error.toString(), Toast.LENGTH_LONG).show();
+            String str = new String(error.networkResponse.data, Charset.forName("UTF-8"));
+            Toast.makeText(Application.getContext(), str, Toast.LENGTH_LONG).show();
         }
     }
 

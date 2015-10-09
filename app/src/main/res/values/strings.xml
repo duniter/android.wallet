@@ -236,7 +236,6 @@
     <string name="no_contact">No contact</string>
     <string name="add_contact">Add contact</string>
     <string name="name">Name</string>
-    <string name="membership_exists_block">A membership already exists a this block</string>
     <string name="select_self_certification">Select self-certification</string>
     <string name="currency_already_exists">Currency already exists</string>
     <string name="loading_currency">Loading currency...</string>
@@ -244,7 +243,6 @@
     <string name="incompatible_peer">Incompatible peer</string>
     <string name="join_currency">Do you want to join this currency ?</string>
     <string name="create_membership">Create membership</string>
-    <string name="renew_this_membership">Renew this membership ?</string>
     <string name="certify">Certify</string>
     <string name="confirm_certification">Confirm certification ?</string>
     <string name="do_you_want_to_certify_this_uid">Do you want to certify this UID</string>
