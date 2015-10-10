@@ -1,36 +1,23 @@
-# ucoin-android-app
+# android.wallet
 uCoin Android client application.
 
-Started on december 2014, still in progress... Developers need ! ;o)
-
-## Features
-
-Main idea is to be able :
-- to manage a contact list, using (if possible) smartphone contacts
-- to lookup/sign someone
-- to paid someone (a store, ...)
-- to paid from a smartphone to another, even if there is no Internet connection (like sending a signed transaction document ?)
-- to see transfer history, with a indicator when a transaction has been processed by the blockchain
-+ balance
-
-And maybe :
-- to manage multi-account.
-  The idea is to never store salt/passwd of the main account (signed account for member with UD), but use attached accounts for daily transaction, with saved salt/passwd (because it's boring to fill it for each payment !). e.g. once by month, you should connect with the main account and transfer your UD on secondary accounts. So if you loose your smartphone, you keep your main account secure.
-The connection to the main account could also be asked automatically (when a transfer from secondaries account's could not be done)
-
-## Developers
-Developpement use Android Studio , and Android NDK (Native Developpement Kit) to be able to use TweetNaCl (a compact crypto library).
+##Developpement
+Use Android Studio , and Android NDK (Native Developpement Kit) to be able to use TweetNaCl (a compact crypto library).
 
 You should install
 - [Android Studio](https://developer.android.com/sdk/index.html)
-- [NDK (Native Developpement Kit)](https://developer.android.com/tools/sdk/ndk/index.html): use android-ndk-r10d (64bit)
-- Configure the Android Studio project : edit the local.properties file, use by Gradle
+- [NDK (Native Developpement Kit)](https://developer.android.com/ndk/downloads/index.html)
+- Configure the Android Studio project : edit the local.properties file, used by Gradle
+```
+sdk.dir=/path/to/android-sdk
+ndk.dir=/path/to/android-ndk
+```
 
-- Install dependencies for needed for kalium-jni compilation
+- Install dependencies needed by kalium-jni compilation
 ```
 sudo apt-get install build-essential libpcre3 libpcre3-dev libtool automake
 ```
-- Clone the source repository from GitHub and generate static libsodium for all Android architectures using the following instructions :
+-  Using the instructions below, clone the source repository from GitHub and generate static libsodium for all Android architectures.
 
 	First export the path of the android NDK previously installed
 	```
@@ -40,8 +27,8 @@ sudo apt-get install build-essential libpcre3 libpcre3-dev libtool automake
 	Then
 
 	```
-	git clone https://github.com/ucoin-io/ucoin-android-app.git
-	cd ucoin-android-app
+	git clone https://github.com/ucoin-io/android.wallet
+	cd android.wallet
 	git submodule init
 	git submodule sync
 	git submodule update
@@ -50,5 +37,6 @@ sudo apt-get install build-essential libpcre3 libpcre3-dev libtool automake
 	./dist-build/android-arm.sh
 	./dist-build/android-mips.sh
 	./dist-build/android-x86.sh
-	cd
+	cd ~
+
 	```
