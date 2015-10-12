@@ -1,6 +1,6 @@
-scrypt/scrypt.iml
-ucoin-android-app.iml
+android.wallet.iml
 app/app.iml
+scrypt/scrypt.iml
 kalium-jni/kalium-jni.iml
 volley/volley.iml
 # Built application files
