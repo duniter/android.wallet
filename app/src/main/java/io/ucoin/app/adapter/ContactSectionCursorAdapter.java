@@ -87,16 +87,20 @@ public class ContactSectionCursorAdapter extends CursorAdapter {
         String section = "";
 
         newCursor.moveToPosition(-1);
+        HashMap<Integer, String> sectionPosition = new LinkedHashMap<>(16, (float) 0.75, false);
         while (newCursor.moveToNext()) {
             String newSection = newCursor.getString(newCursor.getColumnIndex(SQLiteTable.Contact.NAME)).substring(0, 1).toUpperCase();
 
             if (!newSection.equals(section)) {
-                mSectionPosition.put(position, newSection);
+                sectionPosition.put(position, newSection);
                 section = newSection;
                 position++;
             }
             position++;
         }
+
+        mSectionPosition = sectionPosition;
+        notifyDataSetChanged();
 
         return newCursor;
     }
