@@ -21,6 +21,7 @@ import io.ucoin.app.BuildConfig;
 import io.ucoin.app.R;
 import io.ucoin.app.enumeration.CertificationType;
 import io.ucoin.app.enumeration.SourceState;
+import io.ucoin.app.enumeration.SourceType;
 import io.ucoin.app.enumeration.TxDirection;
 import io.ucoin.app.enumeration.TxState;
 import io.ucoin.app.model.UcoinBlock;
@@ -106,10 +107,10 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements Response
         mRequestCount++;
     }
 
-    void fetchUd(final UcoinIdentity identity) {
-        UcoinEndpoint endpoint = identity.currency().peers().at(0).endpoints().at(0);
+    void fetchUds(final UcoinWallet wallet) {
+        UcoinEndpoint endpoint = wallet.currency().peers().at(0).endpoints().at(0);
         String url = "http://" + endpoint.ipv4() + ":" + endpoint.port() + "/ud/history/";
-        url += identity.wallet().publicKey();
+        url += wallet.publicKey();
         StringRequest request = new StringRequest(
                 url,
                 new Response.Listener<String>() {
@@ -119,7 +120,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements Response
                         UdHistory udHistory = UdHistory.fromJson(response);
 
                         for (UdHistory.Ud ud : udHistory.history.history) {
-                            identity.wallet().uds().add(ud);
+                            wallet.uds().add(ud);
                         }
                     }
                 }, this);
@@ -246,7 +247,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements Response
     }
 
     void syncIdentity(UcoinIdentity identity) {
-        fetchUd(identity);
         fetchCert(identity, CertificationType.OF);
         fetchCert(identity, CertificationType.BY);
         fetchMemberships(identity);
@@ -315,7 +315,9 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements Response
                     public void onResponse(String response) {
                         mRequestCount--;
                         TxSources sources = TxSources.fromJson(response);
-
+                        boolean sourcesDeleted = false;
+                        boolean txSourceAdded = false;
+                        boolean udSourceAdded = false;
                         for (UcoinSource source : wallet.sources()) {
                             boolean consumed = true;
                             for (TxSources.Source txSource : sources.sources) {
@@ -324,13 +326,20 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements Response
                                     break;
                                 }
                             }
-                            if (consumed) source.delete();
+                            if (consumed){
+                                source.delete();
+                                sourcesDeleted = true;
+                            }
                         }
                         for (TxSources.Source txSource : sources.sources) {
-                            wallet.sources().add(txSource);
+                            if (wallet.sources().add(txSource) != null) {
+                                if (txSource.type == SourceType.D) udSourceAdded = true;
+                                if (txSource.type == SourceType.T) txSourceAdded = true;
+                            }
                         }
 
-                        fetchTxs(wallet);
+                        if(txSourceAdded) fetchTxs(wallet);
+                        if(udSourceAdded) fetchUds(wallet);
                     }
                 }, this);
 
