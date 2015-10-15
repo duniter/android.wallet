@@ -1,4 +1,4 @@
-package io.ucoin.app.fragment.identity;
+package io.ucoin.app.fragment.dialog;
 
 import android.app.Dialog;
 import android.app.DialogFragment;
@@ -21,6 +21,7 @@ import io.ucoin.app.adapter.SelfCertificationCursorAdapter;
 import io.ucoin.app.content.DbProvider;
 import io.ucoin.app.enumeration.MembershipType;
 import io.ucoin.app.enumeration.SelfCertificationState;
+import io.ucoin.app.fragment.identity.MembershipListFragment;
 import io.ucoin.app.model.UcoinIdentity;
 import io.ucoin.app.model.UcoinSelfCertification;
 import io.ucoin.app.model.sql.sqlite.SelfCertification;

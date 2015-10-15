@@ -55,6 +55,9 @@ public class DbProvider extends ContentProvider implements SQLiteTable {
     private static final int CONTACT = 150;
     private static final int CONTACT_ID = 151;
 
+    private static final int OPERATION = 200;
+    private static final int OPERATION_ID = 201;
+
 
     public static Uri CURRENCY_URI;
     public static Uri IDENTITY_URI;
@@ -74,6 +77,7 @@ public class DbProvider extends ContentProvider implements SQLiteTable {
     public static Uri MEMBERSHIP_URI;
     public static Uri SELF_CERTIFICATION_URI;
     public static Uri CONTACT_URI;
+    public static Uri OPERATION_URI;
 
     private SQLiteHelper mSQLiteHelper;
 
@@ -118,6 +122,8 @@ public class DbProvider extends ContentProvider implements SQLiteTable {
                 .path(context.getString(R.string.self_certification_uri)).build();
         CONTACT_URI = new Uri.Builder().scheme("content").authority(AUTHORITY)
                 .path(context.getString(R.string.contact_uri)).build();
+        OPERATION_URI = new Uri.Builder().scheme("content").authority(AUTHORITY)
+                .path(context.getString(R.string.operation_uri)).build();
 
 
         uriMatcher.addURI(AUTHORITY, context.getString(R.string.currency_uri), CURRENCY);
@@ -170,6 +176,9 @@ public class DbProvider extends ContentProvider implements SQLiteTable {
 
         uriMatcher.addURI(AUTHORITY, context.getString(R.string.contact_uri), CONTACT);
         uriMatcher.addURI(AUTHORITY, context.getString(R.string.contact_uri) + "#", CONTACT_ID);
+
+        uriMatcher.addURI(AUTHORITY, context.getString(R.string.operation_uri), OPERATION);
+        uriMatcher.addURI(AUTHORITY, context.getString(R.string.operation_uri) + "#", OPERATION_ID);
     }
 
     @Override
@@ -407,6 +416,18 @@ public class DbProvider extends ContentProvider implements SQLiteTable {
                 break;
             case CONTACT_ID:
                 queryBuilder.setTables(Contact.TABLE_NAME);
+                cursor = queryBuilder.query(db, null,
+                        BaseColumns._ID + "=?",
+                        new String[]{uri.getLastPathSegment()},
+                        null, null, null);
+                break;
+            case OPERATION:
+                queryBuilder.setTables(SQLiteView.Operation.VIEW_NAME);
+                cursor = queryBuilder.query(db, projection, selection,
+                        selectionArgs, null, null, sortOrder);
+                break;
+            case OPERATION_ID:
+                queryBuilder.setTables(SQLiteView.Operation.VIEW_NAME);
                 cursor = queryBuilder.query(db, null,
                         BaseColumns._ID + "=?",
                         new String[]{uri.getLastPathSegment()},
@@ -821,6 +842,7 @@ public class DbProvider extends ContentProvider implements SQLiteTable {
             case TX_SIGNATURE:
             case TX_SIGNATURE_ID:
                 getContext().getContentResolver().notifyChange(TX_URI, null);
+                getContext().getContentResolver().notifyChange(OPERATION_URI, null);
                 notifyChange(WALLET);
                 break;
             case MEMBER:
@@ -845,6 +867,7 @@ public class DbProvider extends ContentProvider implements SQLiteTable {
             case UD:
             case UD_ID:
                 getContext().getContentResolver().notifyChange(UD_URI, null);
+                getContext().getContentResolver().notifyChange(OPERATION_URI, null);
                 notifyChange(WALLET);
                 break;
             case MEMBERSHIP:

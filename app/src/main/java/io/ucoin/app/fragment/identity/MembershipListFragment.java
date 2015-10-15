@@ -34,6 +34,7 @@ import io.ucoin.app.R;
 import io.ucoin.app.adapter.MembershipCursorAdapter;
 import io.ucoin.app.content.DbProvider;
 import io.ucoin.app.enumeration.MembershipType;
+import io.ucoin.app.fragment.dialog.SelectSelfDialogFragment;
 import io.ucoin.app.model.UcoinBlock;
 import io.ucoin.app.model.UcoinEndpoint;
 import io.ucoin.app.model.UcoinIdentity;

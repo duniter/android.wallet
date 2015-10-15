@@ -21,7 +21,7 @@ import java.text.DecimalFormat;
 import io.ucoin.app.R;
 import io.ucoin.app.activity.CurrencyActivity;
 import io.ucoin.app.activity.TransferActivity;
-import io.ucoin.app.adapter.TxSectionCursorAdapter;
+import io.ucoin.app.adapter.OperationSectionCursorAdapter;
 import io.ucoin.app.content.DbProvider;
 import io.ucoin.app.fragment.dialog.QrCodeDialogFragment;
 import io.ucoin.app.model.UcoinWallet;
@@ -35,7 +35,7 @@ public class WalletFragment extends ListFragment
 
     private static final String WALLET_ID = "wallet_id";
     private static int WALLET_LOADER_ID = 0;
-    private static int TX_LOADER_ID = 1;
+    private static int OPERATION_LOADER_ID = 1;
 
     public static WalletFragment newInstance(Long walletId) {
         Bundle newInstanceArgs = new Bundle();
@@ -68,10 +68,10 @@ public class WalletFragment extends ListFragment
         getLoaderManager().initLoader(WALLET_LOADER_ID, getArguments(), this);
 
 
-        TxSectionCursorAdapter txSectionCursorAdapter
-                = new TxSectionCursorAdapter(getActivity(), null, 0);
-        setListAdapter(txSectionCursorAdapter);
-        getLoaderManager().initLoader(TX_LOADER_ID, getArguments(), this);
+        OperationSectionCursorAdapter operationSectionCursorAdapter
+                = new OperationSectionCursorAdapter(getActivity(), null, 0);
+        setListAdapter(operationSectionCursorAdapter);
+        getLoaderManager().initLoader(OPERATION_LOADER_ID, getArguments(), this);
 
         ImageButton transferButton = (ImageButton) view.findViewById(R.id.transfer_button);
         transferButton.setOnClickListener(new View.OnClickListener() {
@@ -154,16 +154,16 @@ public class WalletFragment extends ListFragment
                     null, selection, selectionArgs,
                     null);
         } else {
-            String selection = SQLiteView.Tx.WALLET_ID + "=?";
+            String selection = SQLiteView.Operation.WALLET_ID + "=?";
             String selectionArgs[] = new String[]{
                     walletId.toString()
             };
 
             return new CursorLoader(
                     getActivity(),
-                    DbProvider.TX_URI,
+                    DbProvider.OPERATION_URI,
                     null, selection, selectionArgs,
-                    SQLiteView.Tx.BLOCK + " DESC");
+                    SQLiteView.Operation.TIME + " DESC");
         }
 
     }
@@ -173,14 +173,14 @@ public class WalletFragment extends ListFragment
         if (loader.getId() == WALLET_LOADER_ID) {
             refreshWalletInfo(data);
         } else {
-            ((TxSectionCursorAdapter)this.getListAdapter()).swapCursor(data);
+            ((OperationSectionCursorAdapter)this.getListAdapter()).swapCursor(data);
         }
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-        if(loader.getId() == TX_LOADER_ID) {
-            ((TxSectionCursorAdapter)this.getListAdapter()).swapCursor(null);
+        if(loader.getId() == OPERATION_LOADER_ID) {
+            ((OperationSectionCursorAdapter)this.getListAdapter()).swapCursor(null);
         }
     }
 

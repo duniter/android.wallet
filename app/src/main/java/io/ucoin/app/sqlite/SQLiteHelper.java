@@ -204,6 +204,7 @@ public class SQLiteHelper extends SQLiteOpenHelper implements SQLiteTable {
                 Tx.BLOCK + INTEGER + COMMA +
                 Tx.TIME + INTEGER + COMMA +
                 Tx.STATE + TEXT + NOTNULL + COMMA +
+                Tx.QUANTITATIVE_AMOUNT + INTEGER + NOTNULL + COMMA +
                 "FOREIGN KEY (" + Tx.WALLET_ID + ") REFERENCES " +
                 Wallet.TABLE_NAME + "(" + Wallet._ID + ") ON DELETE CASCADE" + COMMA +
                 UNIQUE + "(" + Tx.WALLET_ID + COMMA + Tx.HASH + ")" +
@@ -283,6 +284,33 @@ public class SQLiteHelper extends SQLiteOpenHelper implements SQLiteTable {
                 Identity.TABLE_NAME + "(" + Identity._ID + ") ON DELETE CASCADE" +
                 ")";
         db.execSQL(CREATE_TABLE_SELF_CERTIFICATION);
+
+        String CREATE_TABLE_OPERATION = "CREATE TABLE " + Operation.TABLE_NAME + "(" +
+                Operation._ID + " INTEGER PRIMARY KEY AUTOINCREMENT" + COMMA +
+                Operation.TX_ID + INTEGER + COMMA +
+                Operation.UD_ID + INTEGER + COMMA +
+                Operation.WALLET_ID + INTEGER + NOTNULL + COMMA +
+                Operation.DIRECTION + TEXT + NOTNULL + COMMA +
+                Operation.COMMENT + TEXT + COMMA +
+                Operation.QUANTITATIVE_AMOUNT + INTEGER + NOTNULL + COMMA +
+                Operation.BLOCK + INTEGER + NOTNULL + COMMA +
+                Operation.TIME + INTEGER + NOTNULL + COMMA +
+                Operation.STATE + TEXT + COMMA +
+                Operation.YEAR + INTEGER + NOTNULL + COMMA +
+                Operation.MONTH + INTEGER + NOTNULL + COMMA +
+                Operation.DAY + INTEGER + NOTNULL + COMMA +
+                Operation.DAY_OF_WEEK + INTEGER + NOTNULL + COMMA +
+                Operation.HOUR + TEXT + NOTNULL + COMMA +
+                "FOREIGN KEY (" + Operation.WALLET_ID + ") REFERENCES " +
+                Wallet.TABLE_NAME + "(" + Wallet._ID + ")" + COMMA +
+                "FOREIGN KEY (" + Operation.TX_ID + ") REFERENCES " +
+                Tx.TABLE_NAME + "(" + Wallet._ID + ") ON DELETE CASCADE" + COMMA +
+                "FOREIGN KEY (" + Operation.UD_ID + ") REFERENCES " +
+                Ud.TABLE_NAME + "(" + Ud._ID + ") ON DELETE CASCADE" + COMMA +
+                UNIQUE + "(" + Operation.WALLET_ID + COMMA + Operation.TX_ID + ")" + COMMA +
+                UNIQUE + "(" + Operation.WALLET_ID + COMMA + Operation.UD_ID + ")" +
+                ")";
+        db.execSQL(CREATE_TABLE_OPERATION);
     }
 
     @Override
@@ -297,10 +325,13 @@ public class SQLiteHelper extends SQLiteOpenHelper implements SQLiteTable {
             //enable FOREIGN KEY constraint
             db.execSQL("PRAGMA foreign_keys=ON");
             try {
+                db.execSQL("DROP TRIGGER IF EXISTS after_insert_tx");
+                db.execSQL("DROP TRIGGER IF EXISTS after_insert_ud");
                 db.execSQL("DROP VIEW IF EXISTS " + SQLiteView.Currency.VIEW_NAME);
                 db.execSQL("DROP VIEW IF EXISTS " + SQLiteView.Wallet.VIEW_NAME);
                 db.execSQL("DROP VIEW IF EXISTS " + SQLiteView.Member.VIEW_NAME);
                 db.execSQL("DROP VIEW IF EXISTS " + SQLiteView.Certification.VIEW_NAME);
+                db.execSQL("DROP VIEW IF EXISTS " + SQLiteView.Operation.VIEW_NAME);
                 db.execSQL("DROP VIEW IF EXISTS " + SQLiteView.Tx.VIEW_NAME);
                 db.execSQL("DROP VIEW IF EXISTS " + SQLiteView.Ud.VIEW_NAME);
                 db.execSQL("DROP VIEW IF EXISTS " + SQLiteView.Membership.VIEW_NAME);
@@ -308,6 +339,68 @@ public class SQLiteHelper extends SQLiteOpenHelper implements SQLiteTable {
             } catch (SQLiteException e) {
                 if (BuildConfig.DEBUG) Log.d("SQLITEHELPER", e.getMessage());
             }
+
+            String TRIGGER_AFTER_INSERT_TX = "CREATE TRIGGER IF NOT EXISTS after_insert_tx AFTER INSERT ON " + Tx.TABLE_NAME +
+                    " BEGIN " +
+                    " INSERT INTO " + Operation.TABLE_NAME +  "(" +
+                    Operation.WALLET_ID + COMMA +
+                    Operation.TX_ID + COMMA +
+                    Operation.DIRECTION + COMMA +
+                    Operation.COMMENT + COMMA +
+                    Operation.QUANTITATIVE_AMOUNT + COMMA +
+                    Operation.BLOCK + COMMA +
+                    Operation.TIME + COMMA +
+                    Operation.STATE + COMMA +
+                    Operation.YEAR + COMMA +
+                    Operation.MONTH + COMMA +
+                    Operation.DAY + COMMA +
+                    Operation.DAY_OF_WEEK + COMMA +
+                    Operation.HOUR +
+                    ") VALUES (" +
+                    "new." + Tx.WALLET_ID + COMMA +
+                    "new." + Tx._ID + COMMA +
+                    "new." + Tx.DIRECTION + COMMA +
+                    "new." + Tx.COMMENT + COMMA +
+                    "new." + Tx.QUANTITATIVE_AMOUNT + COMMA +
+                    "new." + Tx.BLOCK + COMMA +
+                    "new." + Tx.TIME + COMMA +
+                    "new." + Tx.STATE + COMMA +
+                    "strftime('%Y', datetime(" + "new." + Tx.TIME + ", 'unixepoch', 'localtime'))" + COMMA +
+                    "strftime('%m', datetime(" + "new." + Tx.TIME + ", 'unixepoch', 'localtime'))" + COMMA +
+                    "strftime('%d', datetime(" + "new." + Tx.TIME + ", 'unixepoch', 'localtime'))" + COMMA +
+                    "strftime('%w', datetime(" + "new." + Tx.TIME + ", 'unixepoch', 'localtime'))" + COMMA +
+                    "strftime('%H:%M:%S', datetime(" + "new." + Tx.TIME + ", 'unixepoch', 'localtime'))" +
+                    "); END";
+            db.execSQL(TRIGGER_AFTER_INSERT_TX);
+
+            String TRIGGER_AFTER_INSERT_UD = "CREATE TRIGGER IF NOT EXISTS after_insert_ud AFTER INSERT ON " + Ud.TABLE_NAME +
+                    " BEGIN " +
+                    " INSERT INTO " + Operation.TABLE_NAME +  "(" +
+                    Operation.WALLET_ID + COMMA +
+                    Operation.UD_ID + COMMA +
+                    Operation.DIRECTION + COMMA +
+                    Operation.QUANTITATIVE_AMOUNT + COMMA +
+                    Operation.BLOCK + COMMA +
+                    Operation.TIME + COMMA +
+                    Operation.YEAR + COMMA +
+                    Operation.MONTH + COMMA +
+                    Operation.DAY + COMMA +
+                    Operation.DAY_OF_WEEK + COMMA +
+                    Operation.HOUR +
+                    ") VALUES (" +
+                    "new." + Ud.WALLET_ID + COMMA +
+                    "new." + Ud._ID  + COMMA +
+                    "\"" + TxDirection.IN.name() + "\"" + COMMA +
+                    "new." + Ud.QUANTITATIVE_AMOUNT + COMMA +
+                    "new." + Ud.BLOCK + COMMA +
+                    "new." + Ud.TIME + COMMA +
+                    "strftime('%Y', datetime(" + "new." + Ud.TIME + ", 'unixepoch', 'localtime'))" + COMMA +
+                    "strftime('%m', datetime(" + "new." + Ud.TIME + ", 'unixepoch', 'localtime'))" + COMMA +
+                    "strftime('%d', datetime(" + "new." + Ud.TIME + ", 'unixepoch', 'localtime'))" + COMMA +
+                    "strftime('%w', datetime(" + "new." + Ud.TIME + ", 'unixepoch', 'localtime'))" + COMMA +
+                    "strftime('%H:%M:%S', datetime(" + "new." + Ud.TIME + ", 'unixepoch', 'localtime'))" +
+                    "); END";
+            db.execSQL(TRIGGER_AFTER_INSERT_UD);
 
             String CREATE_VIEW_CURRENCY = "CREATE VIEW " + SQLiteView.Currency.VIEW_NAME +
                     " AS SELECT " +
@@ -450,6 +543,44 @@ public class SQLiteHelper extends SQLiteOpenHelper implements SQLiteTable {
                     " LEFT JOIN " + Member.TABLE_NAME +
                     " ON " + Certification.TABLE_NAME + DOT + Certification.MEMBER_ID + "=" + Member.TABLE_NAME + DOT + Member._ID;
             db.execSQL(CREATE_VIEW_CERTIFICATION);
+
+            String CREATE_VIEW_OPERATION = "CREATE VIEW " + SQLiteView.Operation.VIEW_NAME +
+                    " AS SELECT " +
+                    Operation.TABLE_NAME + DOT + Operation._ID + AS + SQLiteView.Operation._ID + COMMA +
+                    Operation.TABLE_NAME + DOT + Operation.WALLET_ID + AS + SQLiteView.Operation.WALLET_ID + COMMA +
+                    Operation.TABLE_NAME + DOT + Operation.TX_ID + AS + SQLiteView.Operation.TX_ID + COMMA +
+                    Operation.TABLE_NAME + DOT + Operation.UD_ID + AS + SQLiteView.Operation.UD_ID + COMMA +
+                    Operation.TABLE_NAME + DOT + Operation.DIRECTION + AS + SQLiteView.Operation.DIRECTION + COMMA +
+                    Operation.TABLE_NAME + DOT + Operation.COMMENT + AS + SQLiteView.Operation.COMMENT + COMMA +
+                    Operation.TABLE_NAME + DOT + Operation.QUANTITATIVE_AMOUNT + AS + SQLiteView.Operation.QUANTITATIVE_AMOUNT + COMMA +
+                    Operation.TABLE_NAME + DOT + Operation.TIME + AS + SQLiteView.Operation.TIME + COMMA +
+                    Operation.TABLE_NAME + DOT + Operation.STATE + AS + SQLiteView.Operation.STATE + COMMA +
+                    Operation.TABLE_NAME + DOT + Operation.YEAR + AS + SQLiteView.Operation.YEAR + COMMA +
+                    Operation.TABLE_NAME + DOT + Operation.MONTH + AS + SQLiteView.Operation.MONTH + COMMA +
+                    Operation.TABLE_NAME + DOT + Operation.DAY + AS + SQLiteView.Operation.DAY + COMMA +
+                    Operation.TABLE_NAME + DOT + Operation.DAY_OF_WEEK + AS + SQLiteView.Operation.DAY_OF_WEEK + COMMA +
+                    Operation.TABLE_NAME + DOT + Operation.HOUR + AS + SQLiteView.Operation.HOUR + COMMA +
+                    "ROUND (CAST (" + Operation.TABLE_NAME + DOT + Operation.QUANTITATIVE_AMOUNT + " AS REAL ) / ud_block_then." + Block.DIVIDEND + ", 8)" +
+                    AS + SQLiteView.Operation.RELATIVE_AMOUNT_THEN +
+
+                    " FROM " + Operation.TABLE_NAME +
+                    " LEFT JOIN " + Wallet.TABLE_NAME +
+                    " ON " + Wallet.TABLE_NAME + DOT + Wallet._ID + "=" + Operation.TABLE_NAME + DOT + Operation.WALLET_ID +
+
+                    " LEFT JOIN " + Currency.TABLE_NAME +
+                    " ON " + Currency.TABLE_NAME + DOT + Currency._ID + "=" + Wallet.TABLE_NAME + DOT + Wallet.CURRENCY_ID  +
+
+                    " LEFT JOIN (SELECT " + Operation.TABLE_NAME + DOT + Operation._ID + COMMA + " MAX(" + Block.TABLE_NAME + DOT + Block.DIVIDEND + ") AS " + Block.DIVIDEND +
+                    " FROM " + Operation.TABLE_NAME + "," + Wallet.TABLE_NAME + "," + Block.TABLE_NAME +
+                    " WHERE " + Operation.TABLE_NAME + DOT + Operation.WALLET_ID + "=" + Wallet.TABLE_NAME + DOT + Wallet._ID +
+                    " AND " + Block.TABLE_NAME + DOT + Block.CURRENCY_ID + "=" + Wallet.TABLE_NAME + DOT + Wallet.CURRENCY_ID +
+                    " AND " + Block.TABLE_NAME + DOT + Block.DIVIDEND + " IS NOT NULL " +
+                    " AND " + Block.TABLE_NAME + DOT + Block.NUMBER + "<=" + Operation.TABLE_NAME + DOT + Operation.BLOCK +
+                    " GROUP BY " + Operation.TABLE_NAME + DOT + Operation._ID + ") AS ud_block_then " +
+                    " ON ud_block_then._ID=" + Operation.TABLE_NAME + DOT + Operation._ID;
+
+            db.execSQL(CREATE_VIEW_OPERATION);
+
 
             String CREATE_VIEW_TX = "CREATE VIEW " + SQLiteView.Tx.VIEW_NAME +
                     " AS SELECT " +

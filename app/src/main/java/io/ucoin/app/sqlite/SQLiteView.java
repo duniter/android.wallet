@@ -113,4 +113,9 @@ public interface SQLiteView {
 
         public static final String EXPIRED = "expired";
     }
+
+    final class Operation extends SQLiteTable.Operation {
+        public static final String VIEW_NAME = "operation_view";
+        public static final String RELATIVE_AMOUNT_THEN = "relative_amount_then";
+    }
 }

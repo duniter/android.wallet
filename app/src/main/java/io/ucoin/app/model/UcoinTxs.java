@@ -17,4 +17,6 @@ public interface UcoinTxs extends SqlTable, Iterable<UcoinTx> {
     UcoinTxs getByDirection(TxDirection direction);
 
     UcoinTx getByHash(String hash);
+
+    UcoinWallet wallet();
 }

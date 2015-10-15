@@ -19,7 +19,7 @@ import io.ucoin.app.enumeration.TxDirection;
 import io.ucoin.app.enumeration.TxState;
 import io.ucoin.app.sqlite.SQLiteView;
 
-public class TxSectionCursorAdapter extends CursorAdapter {
+public class OperationSectionCursorAdapter extends CursorAdapter {
 
     private Context mContext;
     private Cursor mCursor;
@@ -35,7 +35,7 @@ public class TxSectionCursorAdapter extends CursorAdapter {
 
     private HashMap<Integer, String> mSectionPosition;
 
-    public TxSectionCursorAdapter(Context context, Cursor c, int flags) {
+    public OperationSectionCursorAdapter(Context context, Cursor c, int flags) {
         super(context, c, flags);
         mContext = context;
         mCursor = c;
@@ -79,7 +79,7 @@ public class TxSectionCursorAdapter extends CursorAdapter {
         LayoutInflater inflater = (LayoutInflater) context
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
-        View view =  inflater.inflate(R.layout.list_item_tx, parent, false);
+        View view = inflater.inflate(R.layout.list_item_tx, parent, false);
 
         ViewHolder holder = new ViewHolder();
         holder.day = (TextView) view.findViewById(R.id.day);
@@ -94,9 +94,9 @@ public class TxSectionCursorAdapter extends CursorAdapter {
 
     @Override
     public void bindView(View view, Context context, Cursor cursor) {
-;
+        ;
 
-        ViewHolder holder = (ViewHolder)view.getTag();
+        ViewHolder holder = (ViewHolder) view.getTag();
         String d = cursor.getString(dayOfWeekIndex);
         if (d == null) d = Integer.toString(DayOfWeek.UNKNOWN.ordinal());
 
@@ -106,8 +106,8 @@ public class TxSectionCursorAdapter extends CursorAdapter {
         holder.hour.setText(cursor.getString(hourIndex));
         String rel_amount = String.format("%.8f", cursor.getDouble(relAmountThenIndex));
 
-        TxDirection direction = TxDirection.valueOf(cursor.getString(directionIndex));
-        if(direction == TxDirection.IN) {
+        if (cursor.isNull(directionIndex) ||
+                TxDirection.valueOf(cursor.getString(directionIndex)) == TxDirection.IN) {
             rel_amount = "+ " + rel_amount;
         } else {
             rel_amount = "- " + rel_amount;
@@ -119,8 +119,9 @@ public class TxSectionCursorAdapter extends CursorAdapter {
         holder.qtAmount.setText(formatter.format(qtAmount));
         holder.comment.setText(cursor.getString(commentIndex));
 
-        TxState state = TxState.valueOf(cursor.getString(stateIndex));
-        if(state == TxState.CONFIRMED) {
+        if (cursor.isNull(stateIndex)) {
+            view.setBackgroundColor(context.getResources().getColor(R.color.primaryLight));
+        } else if (TxState.valueOf(cursor.getString(stateIndex)) == TxState.CONFIRMED) {
             view.setBackgroundColor(context.getResources().getColor(R.color.grey200));
         } else {
             view.setBackgroundColor(context.getResources().getColor(R.color.accentLight));
@@ -135,14 +136,14 @@ public class TxSectionCursorAdapter extends CursorAdapter {
             return null;
         }
 
-        dayOfWeekIndex = newCursor.getColumnIndex(SQLiteView.Tx.DAY_OF_WEEK);
-        dayIndex = newCursor.getColumnIndex(SQLiteView.Tx.DAY);
-        hourIndex = newCursor.getColumnIndex(SQLiteView.Tx.HOUR);
-        relAmountThenIndex = newCursor.getColumnIndex(SQLiteView.Tx.RELATIVE_AMOUNT_THEN);
-        directionIndex = newCursor.getColumnIndex(SQLiteView.Tx.DIRECTION);
-        qtAmountIndex = newCursor.getColumnIndex(SQLiteView.Tx.QUANTITATIVE_AMOUNT);
-        commentIndex = newCursor.getColumnIndex(SQLiteView.Tx.COMMENT);
-        stateIndex = newCursor.getColumnIndex(SQLiteView.Tx.STATE);
+        dayOfWeekIndex = newCursor.getColumnIndex(SQLiteView.Operation.DAY_OF_WEEK);
+        dayIndex = newCursor.getColumnIndex(SQLiteView.Operation.DAY);
+        hourIndex = newCursor.getColumnIndex(SQLiteView.Operation.HOUR);
+        relAmountThenIndex = newCursor.getColumnIndex(SQLiteView.Operation.RELATIVE_AMOUNT_THEN);
+        directionIndex = newCursor.getColumnIndex(SQLiteView.Operation.DIRECTION);
+        qtAmountIndex = newCursor.getColumnIndex(SQLiteView.Operation.QUANTITATIVE_AMOUNT);
+        commentIndex = newCursor.getColumnIndex(SQLiteView.Operation.COMMENT);
+        stateIndex = newCursor.getColumnIndex(SQLiteView.Operation.STATE);
 
         mCursor = newCursor;
         mSectionPosition.clear();

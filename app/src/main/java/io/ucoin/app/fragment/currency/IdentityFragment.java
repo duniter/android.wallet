@@ -27,7 +27,6 @@ import io.ucoin.app.fragment.dialog.AddIdentityDialogFragment;
 import io.ucoin.app.fragment.identity.MemberListFragment;
 import io.ucoin.app.fragment.identity.MembershipListFragment;
 import io.ucoin.app.fragment.identity.SelfCertificationListFragment;
-import io.ucoin.app.fragment.identity.UdListFragment;
 import io.ucoin.app.model.UcoinCurrency;
 import io.ucoin.app.model.sql.sqlite.Currency;
 import io.ucoin.app.sqlite.SQLiteTable;
@@ -201,7 +200,7 @@ public class IdentityFragment extends Fragment
          */
         @Override
         public int getCount() {
-            return 4;
+            return 3;
         }
 
         /**
@@ -214,10 +213,8 @@ public class IdentityFragment extends Fragment
         @Override
         public CharSequence getPageTitle(int position) {
             if (position == 0)
-                return getString(R.string.dividend);
-            else if (position == 1)
                 return getString(R.string.certification);
-            else if (position == 2)
+            else if (position == 1)
                 return getString(R.string.membership);
             else
                 return getString(R.string.self);
@@ -228,14 +225,11 @@ public class IdentityFragment extends Fragment
             android.app.Fragment fragment;
 
             if (i == 0) {
-                fragment = UdListFragment.newInstance(mCursor.getLong(mCursor.getColumnIndex(SQLiteView.Identity.WALLET_ID)));
-                fragment.setHasOptionsMenu(true);
-            } else if (i == 1) {
                 fragment = MemberListFragment.newInstance(
                         getArguments().getLong(BaseColumns._ID),
                         mCursor.getLong(mCursor.getColumnIndex(SQLiteView.Identity._ID)));
                 fragment.setHasOptionsMenu(true);
-            } else if (i == 2) {
+            } else if (i == 1) {
                 fragment = MembershipListFragment.newInstance(mCursor.getLong(mCursor.getColumnIndex(SQLiteView.Identity._ID)));
                 fragment.setHasOptionsMenu(true);
             } else {

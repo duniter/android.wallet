@@ -14,6 +14,7 @@ import io.ucoin.app.enumeration.TxDirection;
 import io.ucoin.app.enumeration.TxState;
 import io.ucoin.app.model.UcoinTx;
 import io.ucoin.app.model.UcoinTxs;
+import io.ucoin.app.model.UcoinWallet;
 import io.ucoin.app.model.http_api.TxHistory;
 import io.ucoin.app.sqlite.SQLiteTable;
 import io.ucoin.app.sqlite.SQLiteView;
@@ -43,6 +44,32 @@ final public class Txs extends Table
         values.put(SQLiteTable.Tx.VERSION, tx.version);
         values.put(SQLiteTable.Tx.COMMENT, tx.comment);
         values.put(SQLiteTable.Tx.DIRECTION, direction.name());
+
+        //calculate qtAmount once
+        Long qtAmount = (long) 0;
+        switch (direction) {
+            case IN:
+                for(TxHistory.Tx.Output output : tx.outputs) {
+                    if (output.publicKey.matches(wallet().publicKey())) {
+                        qtAmount += output.amount;
+                    }
+                }
+                break;
+            case OUT:
+                for(TxHistory.Tx.Input input : tx.inputs) {
+                    if(tx.issuers[input.index].matches(wallet().publicKey()))
+                        qtAmount += input.amount;
+                }
+
+                for(TxHistory.Tx.Output output : tx.outputs) {
+                    if (output.publicKey.matches(wallet().publicKey())) {
+                        qtAmount -= output.amount;
+                    }
+                }
+
+                break;
+        }
+        values.put(SQLiteTable.Tx.QUANTITATIVE_AMOUNT, qtAmount);
 
         if (tx instanceof TxHistory.ConfirmedTx) {
             values.put(SQLiteTable.Tx.HASH, ((TxHistory.ConfirmedTx) tx).hash);
@@ -124,6 +151,11 @@ final public class Txs extends Table
         } else {
             return null;
         }
+    }
+
+    @Override
+    public UcoinWallet wallet() {
+        return new Wallet(mContext, mWalletId);
     }
 
     @Override

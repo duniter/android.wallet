@@ -3,7 +3,7 @@
 <resources>
     <!-- Default screen margins, per the Android Design guidelines. -->
     <color name="primary">#030055</color>
-    <color name="primaryLight">#7f17005b</color>
+    <color name="primaryLight">#1b3d00ff</color>
     <color name="primaryDark">#ff000020</color>
     <color name="accent">#ff7a00</color>
     <color name="accentLight">#36ff7a00</color>
