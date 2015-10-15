@@ -151,6 +151,8 @@ public class OperationSectionCursorAdapter extends CursorAdapter {
         String section = "";
 
         newCursor.moveToPosition(-1);
+
+        HashMap<Integer, String> sectionPosition = new LinkedHashMap<>(16, (float) 0.75, false);
         while (newCursor.moveToNext()) {
             String month = newCursor.getString(newCursor.getColumnIndex(SQLiteView.Tx.MONTH));
             //todo handle timestamp for sending and receiving transactions
@@ -159,12 +161,14 @@ public class OperationSectionCursorAdapter extends CursorAdapter {
             String newSection = Month.fromInt(Integer.parseInt(month)).toString(mContext) + " " + year;
 
             if (!newSection.equals(section)) {
-                mSectionPosition.put(position, newSection);
+                sectionPosition.put(position, newSection);
                 section = newSection;
                 position++;
             }
             position++;
         }
+        mSectionPosition = sectionPosition;
+        notifyDataSetChanged();
 
         return newCursor;
     }
