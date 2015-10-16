@@ -1,9 +1,10 @@
 package io.ucoin.app.model.sql.sqlite;
 
+import android.content.ContentProviderOperation;
+import android.content.ContentProviderResult;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
-import android.net.Uri;
 import android.provider.BaseColumns;
 
 import java.util.ArrayList;
@@ -40,19 +41,32 @@ final public class Peers extends Table
         values.put(SQLiteTable.Peer.PUBLIC_KEY, networkPeering.pubkey);
         values.put(SQLiteTable.Peer.SIGNATURE, networkPeering.signature);
 
-        //todo use sql transaction and rollback in case of failure
-        Uri uri = insert(values);
-        if (Long.parseLong(uri.getLastPathSegment()) > 0) {
-            UcoinPeer peer = new Peer(mContext, Long.parseLong(uri.getLastPathSegment()));
+        ArrayList<ContentProviderOperation> operations = new ArrayList<>();
+        operations.add(ContentProviderOperation.newInsert(DbProvider.PEER_URI)
+                .withValues(values)
+                .build());
 
-            for (NetworkPeering.Endpoint endpoint : networkPeering.endpoints) {
-                peer.endpoints().add(endpoint);
-            }
+        for (NetworkPeering.Endpoint endpoint : networkPeering.endpoints) {
+            values = new ContentValues();
+            values.put(SQLiteTable.Endpoint.PROTOCOL, endpoint.protocol.name());
+            values.put(SQLiteTable.Endpoint.URL, endpoint.url);
+            values.put(SQLiteTable.Endpoint.IPV4, endpoint.ipv4);
+            values.put(SQLiteTable.Endpoint.IPV6, endpoint.ipv6);
+            values.put(SQLiteTable.Endpoint.PORT, endpoint.port);
 
-            return peer;
+            operations.add(ContentProviderOperation.newInsert(DbProvider.ENDPOINT_URI)
+                    .withValues(values)
+                    .withValueBackReference(SQLiteTable.Endpoint.PEER_ID, 0)
+                    .build());
         }
-        return null;
 
+        ContentProviderResult[] result;
+        try {
+            result = applyBatch(operations);
+        } catch (Exception e) {
+            return null;
+        }
+        return new Peer(mContext, Long.parseLong(result[0].uri.getLastPathSegment()));
     }
 
     @Override
@@ -63,9 +77,9 @@ final public class Peers extends Table
     @Override
     public UcoinPeer at(int position) {
         Iterator<UcoinPeer> it = iterator();
-        if(it == null) return null;
+        if (it == null) return null;
 
-        while(position-- > 0) it.next();
+        while (position-- > 0) it.next();
 
         return it.next();
     }
@@ -73,7 +87,7 @@ final public class Peers extends Table
     @Override
     public Iterator<UcoinPeer> iterator() {
         Cursor cursor = fetch();
-        if(cursor != null) {
+        if (cursor != null) {
             ArrayList<UcoinPeer> data = new ArrayList<>();
             while (cursor.moveToNext()) {
                 Long id = cursor.getLong(cursor.getColumnIndex(BaseColumns._ID));
