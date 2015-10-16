@@ -1,10 +1,17 @@
 package io.ucoin.app.model.sql.sqlite;
 
+import android.content.ContentProviderOperation;
+import android.content.ContentProviderResult;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.OperationApplicationException;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.RemoteException;
 
+import java.util.ArrayList;
+
+import io.ucoin.app.R;
 import io.ucoin.app.model.SqlTable;
 
 public class Table implements SqlTable {
@@ -72,5 +79,11 @@ public class Table implements SqlTable {
     public Cursor fetch() {
         return mContext.getContentResolver().query(mUri, null,
                 mSelection, mSelectionArgs, mSortOrder);
+    }
+
+    @Override
+    public ContentProviderResult[] applyBatch (ArrayList<ContentProviderOperation> operations) throws RemoteException, OperationApplicationException {
+        String authority = mContext.getResources().getString(R.string.AUTHORITY);
+        return mContext.getContentResolver().applyBatch(authority, operations);
     }
 }

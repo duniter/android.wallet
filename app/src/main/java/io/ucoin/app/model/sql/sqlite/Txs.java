@@ -1,9 +1,10 @@
 package io.ucoin.app.model.sql.sqlite;
 
+import android.content.ContentProviderOperation;
+import android.content.ContentProviderResult;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
-import android.net.Uri;
 import android.provider.BaseColumns;
 
 import java.util.ArrayList;
@@ -49,19 +50,19 @@ final public class Txs extends Table
         Long qtAmount = (long) 0;
         switch (direction) {
             case IN:
-                for(TxHistory.Tx.Output output : tx.outputs) {
+                for (TxHistory.Tx.Output output : tx.outputs) {
                     if (output.publicKey.matches(wallet().publicKey())) {
                         qtAmount += output.amount;
                     }
                 }
                 break;
             case OUT:
-                for(TxHistory.Tx.Input input : tx.inputs) {
-                    if(tx.issuers[input.index].matches(wallet().publicKey()))
+                for (TxHistory.Tx.Input input : tx.inputs) {
+                    if (tx.issuers[input.index].matches(wallet().publicKey()))
                         qtAmount += input.amount;
                 }
 
-                for(TxHistory.Tx.Output output : tx.outputs) {
+                for (TxHistory.Tx.Output output : tx.outputs) {
                     if (output.publicKey.matches(wallet().publicKey())) {
                         qtAmount -= output.amount;
                     }
@@ -82,33 +83,71 @@ final public class Txs extends Table
         }
 
 
-        //todo use sql transaction and rollback in case of failure
-        Uri uri = insert(values);
-        if (Long.parseLong(uri.getLastPathSegment()) > 0) {
-            UcoinTx newTx = new Tx(mContext, Long.parseLong(uri.getLastPathSegment()));
+        //insertion in TX table
+        ArrayList<ContentProviderOperation> operations = new ArrayList<>();
+        operations.add(ContentProviderOperation.newInsert(DbProvider.TX_URI)
+                .withValues(values)
+                .build());
 
-            for (String issuer : tx.issuers) {
-                newTx.issuers().add(issuer, newTx.issuers().count());
-            }
+        //insertions in TX_ISSUER table
+        int issuerOrder = 0;
+        for (String issuer : tx.issuers) {
+            values = new ContentValues();
+            values.put(SQLiteTable.TxIssuer.PUBLIC_KEY, issuer);
+            values.put(SQLiteTable.TxIssuer.ISSUER_ORDER, issuerOrder++);
+            operations.add(ContentProviderOperation.newInsert(DbProvider.TX_ISSUER_URI)
+                    .withValues(values)
+                    .withValueBackReference(SQLiteTable.TxIssuer.TX_ID, 0)
+                    .build());
+        }
 
-            for (TxHistory.Tx.Input input : tx.inputs) {
-                newTx.inputs().add(input);
-            }
+        //insertions in TX_INPUT table
+        for (TxHistory.Tx.Input input : tx.inputs) {
+            values = new ContentValues();
+            values.put(SQLiteTable.TxInput.ISSUER_INDEX, input.index);
+            values.put(SQLiteTable.TxInput.TYPE, input.type.name());
+            values.put(SQLiteTable.TxInput.NUMBER, input.number);
+            values.put(SQLiteTable.TxInput.FINGERPRINT, input.fingerprint);
+            values.put(SQLiteTable.TxInput.AMOUNT, input.amount);
+            operations.add(ContentProviderOperation.newInsert(DbProvider.TX_INPUT_URI)
+                    .withValues(values)
+                    .withValueBackReference(SQLiteTable.TxInput.TX_ID, 0)
+                    .build());
+        }
 
-            for (TxHistory.Tx.Output output : tx.outputs) {
-                newTx.outputs().add(output);
-            }
+        //insertions in TX_OUPUT table
+        for (TxHistory.Tx.Output output : tx.outputs) {
+            values = new ContentValues();
+            values.put(SQLiteTable.TxOutput.PUBLIC_KEY, output.publicKey);
+            values.put(SQLiteTable.TxOutput.AMOUNT, output.amount);
 
-            if (tx.signatures != null) {
-                for (String signature : tx.signatures) {
-                    newTx.signatures().add(signature, newTx.signatures().count());
-                }
-            }
+            operations.add(ContentProviderOperation.newInsert(DbProvider.TX_OUTPUT_URI)
+                    .withValues(values)
+                    .withValueBackReference(SQLiteTable.TxOutput.TX_ID, 0)
+                    .build());
+        }
 
-            return newTx;
-        } else {
+        //insertions in TX_SIGNATURE table
+        issuerOrder = 0;
+        for (String signature : tx.signatures) {
+            values = new ContentValues();
+            values.put(SQLiteTable.TxSignature.VALUE, signature);
+            values.put(SQLiteTable.TxSignature.ISSUER_ORDER, issuerOrder++);
+
+            operations.add(ContentProviderOperation.newInsert(DbProvider.TX_SIGNATURE_URI)
+                    .withValues(values)
+                    .withValueBackReference(SQLiteTable.TxSignature.TX_ID, 0)
+                    .build());
+        }
+
+        ContentProviderResult[] result;
+        try {
+            result = applyBatch(operations);
+        } catch (Exception e) {
             return null;
         }
+
+        return new Tx(mContext, Long.parseLong(result[0].uri.getLastPathSegment()));
     }
 
     @Override

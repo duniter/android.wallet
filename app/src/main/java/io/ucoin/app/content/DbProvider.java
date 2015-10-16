@@ -1,14 +1,19 @@
 package io.ucoin.app.content;
 
 import android.content.ContentProvider;
+import android.content.ContentProviderOperation;
+import android.content.ContentProviderResult;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.OperationApplicationException;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.provider.BaseColumns;
+
+import java.util.ArrayList;
 
 import io.ucoin.app.R;
 import io.ucoin.app.sqlite.SQLiteHelper;
@@ -697,7 +702,7 @@ public class DbProvider extends ContentProvider implements SQLiteTable {
 
         }
 
-       notifyChange(uriType);
+        notifyChange(uriType);
         return deletedRows;
     }
 
@@ -886,4 +891,23 @@ public class DbProvider extends ContentProvider implements SQLiteTable {
                 throw new IllegalArgumentException("Unknown URI type: " + uriType);
         }
     }
+
+    @Override
+    public ContentProviderResult[] applyBatch(ArrayList<ContentProviderOperation> operations) throws OperationApplicationException {
+        SQLiteDatabase db = mSQLiteHelper.getWritableDatabase();
+        ContentProviderResult result[];
+
+        try {
+            db.beginTransaction();
+            result = super.applyBatch(operations);
+            db.setTransactionSuccessful();
+        } catch (Exception e) {
+            db.endTransaction();
+            throw e;
+        }
+
+        db.endTransaction();
+        return result;
+    }
+
 }
