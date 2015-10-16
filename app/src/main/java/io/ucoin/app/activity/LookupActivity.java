@@ -34,7 +34,6 @@ import io.ucoin.app.model.sql.sqlite.Currency;
 public class LookupActivity extends ActionBarActivity implements SearchView.OnQueryTextListener,
         ListView.OnItemClickListener {
 
-    public final static String CURRENCY_ID = "currency_id";
     private Toolbar mToolbar;
     private ProgressBar mProgressBar;
     private ListView mListView;
@@ -103,7 +102,7 @@ public class LookupActivity extends ActionBarActivity implements SearchView.OnQu
 
         mProgressBar.setVisibility(View.VISIBLE);
         mListView.setVisibility(View.GONE);
-        UcoinCurrency currency = new Currency(this, getIntent().getExtras().getLong(CURRENCY_ID));
+        UcoinCurrency currency = new Currency(this, getIntent().getExtras().getLong(Application.EXTRA_CURRENCY_ID));
         UcoinEndpoint endpoint = currency.peers().at(0).endpoints().at(0);
         String url = "http://" + endpoint.ipv4() + ":" + endpoint.port() + "/wot/lookup/" + query;
         StringRequest request = new StringRequest(

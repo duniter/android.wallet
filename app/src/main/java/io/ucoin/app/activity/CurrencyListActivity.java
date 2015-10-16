@@ -19,6 +19,7 @@ import android.widget.AdapterView;
 import android.widget.ImageButton;
 import android.widget.ListView;
 
+import io.ucoin.app.Application;
 import io.ucoin.app.R;
 import io.ucoin.app.adapter.CurrencyCursorAdapter;
 import io.ucoin.app.content.DbProvider;
@@ -80,7 +81,7 @@ public class CurrencyListActivity extends ActionBarActivity
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         Intent intent = new Intent(this, CurrencyActivity.class);
-        intent.putExtra(BaseColumns._ID, id);
+        intent.putExtra(Application.EXTRA_CURRENCY_ID, id);
         setResult(RESULT_OK, intent);
         finish();
     }

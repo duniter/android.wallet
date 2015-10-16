@@ -15,6 +15,10 @@ public class Application extends android.app.Application{
     public static final int ACTIVITY_LOOKUP = 0x1;
     public static final int ACTIVITY_CURRENCY_LIST = 0x2;
 
+
+    public static final String EXTRA_CURRENCY_ID= "currency_id";
+    public static final String EXTRA_WALLET_ID= "wallet_id";
+
     private static Context mContext;
     private static RequestQueue mRequestQueue;
 

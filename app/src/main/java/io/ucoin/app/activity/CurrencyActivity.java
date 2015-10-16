@@ -44,6 +44,7 @@ import io.ucoin.app.fragment.currency.ContactListFragment;
 import io.ucoin.app.fragment.currency.IdentityFragment;
 import io.ucoin.app.fragment.currency.PeerListFragment;
 import io.ucoin.app.fragment.currency.WalletListFragment;
+import io.ucoin.app.fragment.wallet.WalletFragment;
 import io.ucoin.app.sqlite.SQLiteView;
 
 
@@ -93,7 +94,7 @@ public class CurrencyActivity extends ActionBarActivity
         drawerPeersView.setOnClickListener(this);
         drawerBlocksView.setOnClickListener(this);
 
-        if(BuildConfig.DEBUG) {
+        if (BuildConfig.DEBUG) {
             drawerBlocksView.setVisibility(View.VISIBLE);
         }
 
@@ -141,7 +142,7 @@ public class CurrencyActivity extends ActionBarActivity
             });
         }
 
-        Long currencyId = getIntent().getExtras().getLong(BaseColumns._ID);
+        Long currencyId = getIntent().getExtras().getLong(Application.EXTRA_CURRENCY_ID);
         Fragment fragment = WalletListFragment.newInstance(currencyId);
         // Insert the fragment by replacing any existing fragment
         FragmentManager fragmentManager = getFragmentManager();
@@ -157,6 +158,23 @@ public class CurrencyActivity extends ActionBarActivity
                 .addToBackStack(fragment.getClass().getSimpleName())
                 .commit();
         getLoaderManager().initLoader(0, getIntent().getExtras(), this);
+
+
+        if (getIntent().getExtras().containsKey(Application.EXTRA_WALLET_ID)) {
+            fragment = WalletFragment.newInstance(getIntent().getExtras().getLong(Application.EXTRA_WALLET_ID));
+            fragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+            fragmentManager.beginTransaction()
+                    .setCustomAnimations(
+                            R.animator.delayed_fade_in,
+                            R.animator.fade_out,
+                            R.animator.delayed_fade_in,
+                            R.animator.fade_out)
+                    .replace(R.id.frame_content, fragment, fragment.getClass().getSimpleName())
+                    .addToBackStack(fragment.getClass().getSimpleName())
+                    .commit();
+        }
+
+
     }
 
     @Override
@@ -233,14 +251,14 @@ public class CurrencyActivity extends ActionBarActivity
         super.onActivityResult(requestCode, resultCode, intent);
 
         if (resultCode == RESULT_OK && requestCode == Application.ACTIVITY_CURRENCY_LIST) {
-            Long currencyId = intent.getExtras().getLong(BaseColumns._ID);
+            Long currencyId = intent.getExtras().getLong(Application.EXTRA_CURRENCY_ID);
             SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
             SharedPreferences.Editor editor = preferences.edit();
             editor.putLong("currency_id", currencyId);
             editor.apply();
 
             intent = new Intent(this, CurrencyActivity.class);
-            intent.putExtra(BaseColumns._ID, currencyId);
+            intent.putExtra(Application.EXTRA_CURRENCY_ID, currencyId);
             startActivity(intent);
             finish();
         }
@@ -329,7 +347,7 @@ public class CurrencyActivity extends ActionBarActivity
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        Long currencyId = args.getLong(BaseColumns._ID);
+        Long currencyId = args.getLong(Application.EXTRA_CURRENCY_ID);
         String selection;
         String selectionArgs[];
 
@@ -387,7 +405,7 @@ public class CurrencyActivity extends ActionBarActivity
         closeDrawer();
 
         Fragment fragment = null;
-        Long currencyId = getIntent().getExtras().getLong(BaseColumns._ID);
+        Long currencyId = getIntent().getExtras().getLong(Application.EXTRA_CURRENCY_ID);
         switch (v.getId()) {
             case R.id.drawer_wallets:
                 fragment = WalletListFragment.newInstance(currencyId);
@@ -410,9 +428,11 @@ public class CurrencyActivity extends ActionBarActivity
                 fragment.setHasOptionsMenu(true);
                 break;
         }
+
         if (fragment != null) {
             // Insert the fragment by replacing any existing fragment
             FragmentManager fragmentManager = getFragmentManager();
+
             fragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
             fragmentManager.beginTransaction()
                     .setCustomAnimations(
@@ -423,7 +443,6 @@ public class CurrencyActivity extends ActionBarActivity
                     .replace(R.id.frame_content, fragment, fragment.getClass().getSimpleName())
                     .addToBackStack(fragment.getClass().getSimpleName())
                     .commit();
-
             // close the drawer
             closeDrawer();
         } else {

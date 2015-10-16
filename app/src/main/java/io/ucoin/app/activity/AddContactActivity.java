@@ -27,8 +27,6 @@ public class AddContactActivity extends ActionBarActivity {
     private EditText mName;
     private EditText mPublicKey;
 
-    public final static String CURRENCY_ID = "currency_id";
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,7 +41,7 @@ public class AddContactActivity extends ActionBarActivity {
             public void onClick(View v) {
                 Intent intent = new Intent(AddContactActivity.this,
                         LookupActivity.class);
-                intent.putExtra(LookupActivity.CURRENCY_ID, getIntent().getExtras().getLong(CURRENCY_ID));
+                intent.putExtra(Application.EXTRA_CURRENCY_ID, getIntent().getExtras().getLong(Application.EXTRA_CURRENCY_ID));
                 startActivityForResult(intent, Application.ACTIVITY_LOOKUP);
             }
         });
@@ -119,7 +117,7 @@ public class AddContactActivity extends ActionBarActivity {
             Toast.makeText(this, "public key is invalid", Toast.LENGTH_SHORT).show();
             return;
         }
-        Long currencyId = getIntent().getExtras().getLong(CURRENCY_ID);
+        Long currencyId = getIntent().getExtras().getLong(Application.EXTRA_CURRENCY_ID);
         UcoinCurrency currency = new Currency(this, currencyId);
         currency.contacts().add(name, publicKey);
         finish();

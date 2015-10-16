@@ -57,8 +57,6 @@ public class TransferActivity extends ActionBarActivity
         Field Comment is a string of maximum 255 characters, exclusively composed of
         alphanumeric characters, space, - _ : / ; * [ ] ( ) ? ! ^ + = @ & ~ # { } | \ < > % .
     */
-    public static final String WALLET_ID = "wallet_id";
-
     private static final String COMMENT_REGEX = "^[\\p{Alnum}\\p{Space}{\\-_:/;\\*\\[\\]\\(\\)\\?\\!\\^\\+=@&~\\#\\{\\}\\|\\\\<>%\\.}]{0,255}";
     private static final String AMOUNT_REGEX = "^[0-9]{1,3}(\\.[0-9]{0,8})?$";
     private static final String PUBLIC_KEY_REGEX = "[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{43,44}$";
@@ -228,7 +226,7 @@ public class TransferActivity extends ActionBarActivity
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
 
-        Long walletId = args.getLong(WALLET_ID);
+        Long walletId = args.getLong(Application.EXTRA_WALLET_ID);
         String selection;
         String selectionArgs[];
 
@@ -266,7 +264,7 @@ public class TransferActivity extends ActionBarActivity
     public void actionLookup() {
         Intent intent = new Intent(this, LookupActivity.class);
         Long currencyId = mWalletCursor.getLong(mWalletCursor.getColumnIndex(SQLiteView.Wallet.CURRENCY_ID));
-        intent.putExtra(LookupActivity.CURRENCY_ID, currencyId);
+        intent.putExtra(Application.EXTRA_CURRENCY_ID, currencyId);
         startActivityForResult(intent, Application.ACTIVITY_LOOKUP);
     }
 
@@ -279,7 +277,7 @@ public class TransferActivity extends ActionBarActivity
     }
 
     public boolean actionTransfer() {
-        Long walletId = getIntent().getExtras().getLong(WALLET_ID);
+        Long walletId = getIntent().getExtras().getLong(Application.EXTRA_WALLET_ID);
         Long qtAmount;
         String receiverPublicKey = mReceiverPublicKey.getText().toString();
         String comment;

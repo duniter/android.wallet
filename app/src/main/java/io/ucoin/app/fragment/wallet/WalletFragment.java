@@ -18,6 +18,7 @@ import android.widget.TextView;
 
 import java.text.DecimalFormat;
 
+import io.ucoin.app.Application;
 import io.ucoin.app.R;
 import io.ucoin.app.activity.CurrencyActivity;
 import io.ucoin.app.activity.TransferActivity;
@@ -79,7 +80,7 @@ public class WalletFragment extends ListFragment
             public void onClick(View v) {
                 Intent intent = new Intent(getActivity(), TransferActivity.class);
                 UcoinWallet wallet = new Wallet(getActivity(), getArguments().getLong(WALLET_ID));
-                intent.putExtra(TransferActivity.WALLET_ID, wallet.id());
+                intent.putExtra(Application.EXTRA_WALLET_ID, wallet.id());
                 startActivity(intent);
             }
         });

@@ -94,7 +94,7 @@ public class MemberListFragment extends ListFragment
             case R.id.action_certify:
                 Intent intent = new Intent(getActivity(),
                         LookupActivity.class);
-                intent.putExtra(LookupActivity.CURRENCY_ID, getArguments().getLong(CURRENCY_ID));
+                intent.putExtra(Application.EXTRA_CURRENCY_ID, getArguments().getLong(CURRENCY_ID));
                 startActivityForResult(intent, Application.ACTIVITY_LOOKUP);
                 return true;
             default:

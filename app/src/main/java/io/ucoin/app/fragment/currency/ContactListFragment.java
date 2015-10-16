@@ -22,6 +22,7 @@ import android.widget.SearchView;
 
 import java.util.Arrays;
 
+import io.ucoin.app.Application;
 import io.ucoin.app.R;
 import io.ucoin.app.activity.AddContactActivity;
 import io.ucoin.app.activity.CurrencyActivity;
@@ -143,7 +144,7 @@ SearchView.OnQueryTextListener{
 
     private void actionAddContact(Long currencyId) {
         Intent intent = new Intent(getActivity(), AddContactActivity.class);
-        intent.putExtra(AddContactActivity.CURRENCY_ID, currencyId);
+        intent.putExtra(Application.EXTRA_CURRENCY_ID, currencyId);
         startActivity(intent);
     }
 
