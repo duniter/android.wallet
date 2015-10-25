@@ -15,6 +15,8 @@ public interface UcoinWallet extends SqlRow {
 
     Long quantitativeAmount();
 
+    Long syncBlock();
+
     UcoinSources sources();
 
     UcoinTxs txs();
@@ -22,4 +24,6 @@ public interface UcoinWallet extends SqlRow {
     UcoinUds uds();
 
     UcoinCurrency currency();
+
+    void setSyncBlock(Long number);
 }

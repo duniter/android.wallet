@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 
 import io.ucoin.app.Application;
+import io.ucoin.app.model.sql.sqlite.Currencies;
 
 public class MainActivity extends Activity {
 
@@ -15,8 +16,15 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         Long currencyId = preferences.getLong("currency_id", -1);
-        if (currencyId == -1) startCurrrencyListActivity();
-        else startCurrencyACtivity(currencyId);
+        if (currencyId == -1) {
+            startCurrencyListActivity();
+        }
+        else if (new Currencies(this).getById(currencyId) == null) {
+            startCurrencyListActivity();
+        } else {
+            startCurrencyActivity(currencyId);
+        }
+
     }
 
     @Override
@@ -33,15 +41,15 @@ public class MainActivity extends Activity {
         editor.putLong("currency_id", currencyId);
         editor.apply();
 
-        startCurrencyACtivity(currencyId);
+        startCurrencyActivity(currencyId);
     }
 
-    public void startCurrrencyListActivity() {
+    public void startCurrencyListActivity() {
         Intent intent = new Intent(this, CurrencyListActivity.class);
         startActivityForResult(intent, Application.ACTIVITY_CURRENCY_LIST);
     }
 
-    public void startCurrencyACtivity(Long currencyId) {
+    public void startCurrencyActivity(Long currencyId) {
         Intent intent = new Intent(this, CurrencyActivity.class);
         intent.putExtra(Application.EXTRA_CURRENCY_ID, currencyId);
         startActivity(intent);

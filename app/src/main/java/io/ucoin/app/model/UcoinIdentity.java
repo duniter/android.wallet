@@ -33,7 +33,11 @@ public interface UcoinIdentity extends SqlRow {
 
     String expirationHour();
 
+    Long syncBlock();
+
     void setSigDate(Long sigDate);
+
+    void setSyncBlock(Long block);
 
     UcoinCurrency currency();
 

@@ -63,6 +63,15 @@ public class Block extends Row
     }
 
     @Override
+    public boolean remove() {
+        if(!isMembership() && dividend() == null) {
+            delete();
+            return true;
+        }
+        return false;
+    }
+
+    @Override
     public UcoinCurrency currency() {
         return new Currency(mContext, currencyId());
     }

@@ -9,6 +9,8 @@ import android.os.Bundle;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.Volley;
 
+import io.ucoin.app.content.DbProvider;
+
 public class Application extends android.app.Application{
 
 
@@ -26,6 +28,8 @@ public class Application extends android.app.Application{
     public void onCreate(){
         super.onCreate();
         mContext = getApplicationContext();
+
+        DbProvider.initUris(mContext);
 
         //LOAD account
         AccountManager accountManager = AccountManager.get(this);

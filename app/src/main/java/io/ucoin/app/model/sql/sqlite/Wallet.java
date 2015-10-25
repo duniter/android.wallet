@@ -1,5 +1,6 @@
 package io.ucoin.app.model.sql.sqlite;
 
+import android.content.ContentValues;
 import android.content.Context;
 
 import io.ucoin.app.content.DbProvider;
@@ -8,6 +9,7 @@ import io.ucoin.app.model.UcoinSources;
 import io.ucoin.app.model.UcoinTxs;
 import io.ucoin.app.model.UcoinUds;
 import io.ucoin.app.model.UcoinWallet;
+import io.ucoin.app.sqlite.SQLiteTable;
 import io.ucoin.app.sqlite.SQLiteView;
 
 public class Wallet extends Row
@@ -48,6 +50,11 @@ public class Wallet extends Row
     }
 
     @Override
+    public Long syncBlock() {
+        return getLong(SQLiteView.Wallet.SYNC_BLOCK);
+    }
+
+    @Override
     public Double relativeAmount() {
         return getDouble(SQLiteView.Wallet.RELATIVE_AMOUNT);
     }
@@ -70,6 +77,13 @@ public class Wallet extends Row
     @Override
     public UcoinCurrency currency() {
         return new Currency(mContext, currencyId());
+    }
+
+    @Override
+    public void setSyncBlock(Long number) {
+        ContentValues values = new ContentValues();
+        values.put(SQLiteTable.Wallet.SYNC_BLOCK, number);
+        update(values);
     }
 
     @Override

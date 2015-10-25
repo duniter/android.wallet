@@ -63,7 +63,14 @@ final public class Currencies extends Table
 
     @Override
     public UcoinCurrency getById(Long id) {
-        return new Currency(mContext, id);
+        String selection = SQLiteTable.Currency._ID + "=?";
+        String[] selectionArgs = new String[]{id.toString()};
+        UcoinCurrencies currencies = new Currencies(mContext, selection, selectionArgs);
+        if (currencies.iterator().hasNext()) {
+            return currencies.iterator().next();
+        } else {
+            return null;
+        }
     }
 
     @Override

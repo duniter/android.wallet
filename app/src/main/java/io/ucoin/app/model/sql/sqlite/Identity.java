@@ -95,9 +95,21 @@ public class Identity extends Row
     }
 
     @Override
+    public Long syncBlock() {
+        return getLong(SQLiteView.Identity.SYNC_BLOCK);
+    }
+
+    @Override
     public void setSigDate(Long sigDate) {
         ContentValues values= new ContentValues();
         values.put(SQLiteTable.Identity.SIG_DATE, sigDate);
+        update(values);
+    }
+
+    @Override
+    public void setSyncBlock(Long block) {
+        ContentValues values= new ContentValues();
+        values.put(SQLiteTable.Identity.SYNC_BLOCK, block);
         update(values);
     }
 

@@ -35,5 +35,7 @@ public interface UcoinBlock extends SqlRow {
 
     void setIsMembership(Boolean isMembership);
 
+    boolean remove();
+
     UcoinCurrency currency();
 }

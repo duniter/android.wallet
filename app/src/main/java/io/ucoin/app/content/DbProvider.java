@@ -189,7 +189,6 @@ public class DbProvider extends ContentProvider implements SQLiteTable {
     @Override
     public boolean onCreate() {
         Context context = getContext();
-        initUris(context);
         mSQLiteHelper = new SQLiteHelper(context, context.getString(R.string.DBNAME),
                 null, context.getResources().getInteger(R.integer.DBVERSION));
 
@@ -440,7 +439,7 @@ public class DbProvider extends ContentProvider implements SQLiteTable {
                 break;
 
             default:
-                throw new RuntimeException("NO MATCH URI : " + uri.getQuery());
+                throw new RuntimeException("NO MATCH URI : " + uri.toString());
         }
         cursor.setNotificationUri(getContext().getContentResolver(), uri);
         return cursor;

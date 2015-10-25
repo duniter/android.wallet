@@ -1,5 +1,6 @@
 package io.ucoin.app.model.sql.sqlite;
 
+import android.content.ContentProviderOperation;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -11,6 +12,7 @@ import java.util.Iterator;
 
 import io.ucoin.app.content.DbProvider;
 import io.ucoin.app.enumeration.SourceState;
+import io.ucoin.app.enumeration.SourceType;
 import io.ucoin.app.model.UcoinSource;
 import io.ucoin.app.model.UcoinSources;
 import io.ucoin.app.model.http_api.TxSources;
@@ -53,6 +55,34 @@ final public class Sources extends Table
     }
 
     @Override
+    public UcoinSources set(TxSources sources) {
+        ArrayList<ContentProviderOperation> operations = new ArrayList<>();
+        operations.add(ContentProviderOperation.newDelete(DbProvider.SOURCE_URI)
+                        .withSelection(SQLiteTable.Source.WALLET_ID + "=?", new String[]{mWalletId.toString()})
+                        .build()
+        );
+
+        for (TxSources.Source source : sources.sources) {
+            operations.add(ContentProviderOperation.newInsert(DbProvider.SOURCE_URI)
+                    .withValue(SQLiteTable.Source.WALLET_ID, mWalletId)
+                    .withValue(SQLiteTable.Source.TYPE, source.type.name())
+                    .withValue(SQLiteTable.Source.FINGERPRINT, source.fingerprint)
+                    .withValue(SQLiteTable.Source.NUMBER, source.number)
+                    .withValue(SQLiteTable.Source.AMOUNT, source.amount)
+                    .withValue(SQLiteTable.Source.STATE, SourceState.AVAILABLE.name())
+                    .build());
+        }
+
+        try {
+            applyBatch(operations);
+        } catch (Exception e) {
+            return null;
+        }
+
+        return this;
+    }
+
+    @Override
     public UcoinSource getById(Long id) {
         return new Source(mContext, id);
     }
@@ -76,9 +106,17 @@ final public class Sources extends Table
 
     @Override
     public UcoinSources getByState(SourceState state) {
-        String selection = SQLiteTable.Tx.WALLET_ID + "=? AND " +
+        String selection = SQLiteTable.Source.WALLET_ID + "=? AND " +
                 SQLiteTable.Source.STATE + "=?";
         String[] selectionArgs = new String[]{mWalletId.toString(), state.name()};
+        return new Sources(mContext, mWalletId, selection, selectionArgs);
+    }
+
+    @Override
+    public UcoinSources getByType(SourceType type) {
+        String selection = SQLiteTable.Source.WALLET_ID + "=? AND " +
+                SQLiteTable.Source.TYPE + "=?";
+        String[] selectionArgs = new String[]{mWalletId.toString(), type.name()};
         return new Sources(mContext, mWalletId, selection, selectionArgs);
     }
 
