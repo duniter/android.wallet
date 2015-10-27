@@ -5,31 +5,31 @@
 
     <LinearLayout
         android:id="@+id/wallet_header"
-        android:background="@color/primary"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:background="@color/primary"
         android:elevation="4dp"
         android:orientation="vertical"
         android:paddingBottom="16dp"
-        android:paddingStart="56dp"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true">
+        android:paddingStart="56dp">
 
         <TextView
             android:id="@+id/alias"
             android:layout_width="match_parent"
             android:layout_height="40dp"
-            android:textSize="@dimen/abc_text_size_caption_material"
+            android:gravity="bottom"
             android:textColor="@color/grey200"
-            android:gravity="bottom"/>
+            android:textSize="@dimen/abc_text_size_caption_material" />
 
         <TextView
             android:id="@+id/relative_amount"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="@dimen/abc_text_size_display_1_material"
+            android:gravity="bottom"
             android:textColor="@color/grey200"
-            android:gravity="bottom"/>
+            android:textSize="@dimen/abc_text_size_display_1_material" />
 
 
         <TextView
@@ -37,19 +37,26 @@
             android:layout_width="match_parent"
             android:layout_height="40dp"
             android:gravity="top"
-            android:textSize="@dimen/abc_text_size_caption_material"
-            android:textColor="@color/grey200"/>
+            android:textColor="@color/grey200"
+            android:textSize="@dimen/abc_text_size_caption_material" />
 
     </LinearLayout>
 
-    <ListView
-        android:id="@android:id/list"
+
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:id="@+id/swipe_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/wallet_header"
-        android:clipToPadding="false"
-        android:paddingBottom="72dp"
-        android:scrollbarStyle="outsideOverlay" />
+        android:layout_below="@id/wallet_header">
+
+        <ListView
+            android:id="@android:id/list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingBottom="72dp"
+            android:scrollbarStyle="outsideOverlay" />
+    </android.support.v4.widget.SwipeRefreshLayout>
 
     <TextView
         android:id="@id/android:empty"

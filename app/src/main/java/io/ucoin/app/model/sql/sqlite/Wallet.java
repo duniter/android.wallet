@@ -95,7 +95,7 @@ public class Wallet extends Row
         s += "\nprivateKey=" + privateKey();
         s += "\nalias=" + alias();
         s += "\nquantitativeAmount=" + quantitativeAmount();
-        s += "\nrelativeAmountNow=" + relativeAmount();
+        s += "\nrelativeAmount=" + relativeAmount();
 
         return s;
     }

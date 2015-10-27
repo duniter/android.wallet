@@ -11,12 +11,7 @@ import com.android.volley.toolbox.StringRequest;
 import java.util.HashMap;
 
 import io.ucoin.app.BuildConfig;
-import io.ucoin.app.enumeration.SourceState;
-import io.ucoin.app.enumeration.TxDirection;
-import io.ucoin.app.enumeration.TxState;
 import io.ucoin.app.model.UcoinEndpoint;
-import io.ucoin.app.model.UcoinSource;
-import io.ucoin.app.model.UcoinTx;
 import io.ucoin.app.model.UcoinWallet;
 import io.ucoin.app.model.http_api.TxHistory;
 import io.ucoin.app.model.http_api.TxSources;
@@ -27,16 +22,18 @@ public class WalletWrapper implements Response.ErrorListener, RequestQueue.Reque
     private UcoinWallet mWallet;
     private HashMap<Request, Boolean> mRequests;
 
-    WalletWrapper(UcoinQueue queue, UcoinWallet wallet) {
+    public WalletWrapper(UcoinQueue queue, UcoinWallet wallet) {
         mRequestQueue = queue;
         mWallet = wallet;
         mRequests = new HashMap<>();
     }
 
     public void start() {
-        mRequests.put(fetchSources(), null);
+        if(mWallet.syncBlock() < mWallet.currency().blocks().currentBlock().number()) {
+            mRequests.put(fetchSources(), null);
+            mRequests.put(fetchUds(), null);
+        }
         mRequests.put(fetchTxs(), null);
-        mRequests.put(fetchUds(), null);
     }
 
     public Request fetchSources() {
@@ -49,28 +46,29 @@ public class WalletWrapper implements Response.ErrorListener, RequestQueue.Reque
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
-                        onSourcesRequest(TxSources.fromJson(response));
+                        mWallet.sources().set(TxSources.fromJson(response));
                     }
                 }, this);
         request.setTag(this);
         mRequestQueue.add(request);
         return request;
     }
-
     public Request fetchTxs() {
         UcoinEndpoint endpoint = mWallet.currency().peers().at(0).endpoints().at(0);
         String url = "http://" + endpoint.ipv4() + ":" + endpoint.port() + "/tx/history/";
-//        UcoinTx lastTx = wallet.txs().getLastTx();
-//        if (lastTx != null) {
-//            url += "/times/" + lastTx.time() + 1 + "/" + Application.getCurrentTime();
         url += mWallet.publicKey();
-
+/*
+        UcoinTx lastTx = mWallet.txs().getLastConfirmedTx();
+        if (lastTx != null) {
+            url += "/times/" + lastTx.time() + 1 + "/" + Application.getCurrentTime();
+        }
+  */
         StringRequest request = new StringRequest(
                 url,
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
-                        onTxRequest(TxHistory.fromJson(response));
+                        mWallet.txs().add(TxHistory.fromJson(response));
                     }
                 }, this);
         request.setTag(this);
@@ -87,96 +85,15 @@ public class WalletWrapper implements Response.ErrorListener, RequestQueue.Reque
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
-                        onUdsRequest(UdHistory.fromJson(response));
+                        UdHistory history = UdHistory.fromJson(response);
+                        for (UdHistory.Ud ud : history.history.history) {
+                            mWallet.uds().add(ud);
+                        }
                     }
                 }, this);
         request.setTag(this);
         mRequestQueue.add(request);
         return request;
-    }
-
-
-    public void onSourcesRequest(TxSources sources) {
-        mWallet.sources().set(sources);
-    }
-
-    public void onTxRequest(TxHistory history) {
-        for (TxHistory.ReceivedTx tx : history.history.received) {
-            UcoinTx localTx = mWallet.txs().getByHash(tx.hash);
-            if (localTx == null) {
-                boolean isIssuer = false;
-                for (String issuer : tx.issuers) {
-                    if (issuer.equals(mWallet.publicKey())) {
-                        isIssuer = true;
-                        break;
-                    }
-                }
-                if (!isIssuer) {
-                    if (tx.time != null) mWallet.txs().add(tx, TxDirection.IN);
-                }
-            } else if (localTx.state() == TxState.PENDING) {
-                localTx.setState(TxState.CONFIRMED);
-                localTx.setTime(tx.time);
-                localTx.setBlock(tx.block_number);
-            }
-        }
-
-        for (TxHistory.SentTx tx : history.history.sent) {
-            UcoinTx localTx = mWallet.txs().getByHash(tx.hash);
-            if (localTx == null) {
-                boolean isIssuer = false;
-                for (String issuer : tx.issuers) {
-                    if (issuer.equals(mWallet.publicKey())) {
-                        isIssuer = true;
-                        break;
-                    }
-                }
-                if (isIssuer) {
-                    if (tx.time != null) mWallet.txs().add(tx, TxDirection.OUT);
-                }
-            } else if (localTx.state() == TxState.PENDING) {
-                localTx.setState(TxState.CONFIRMED);
-                localTx.setTime(tx.time);
-                localTx.setBlock(tx.block_number);
-            }
-        }
-
-
-        for (TxHistory.PendingTx tx : history.history.pending) {
-            UcoinTx localTx = mWallet.txs().getByHash(tx.hash);
-            if (localTx == null) {
-                boolean isIssuer = false;
-                for (String issuer : tx.issuers) {
-                    if (issuer.equals(mWallet.publicKey())) {
-                        isIssuer = true;
-                        break;
-                    }
-                }
-
-                UcoinTx newTx;
-                if (!isIssuer) {
-                    newTx = mWallet.txs().add(tx, TxDirection.IN);
-                } else {
-                    newTx = mWallet.txs().add(tx, TxDirection.OUT);
-                    for (TxHistory.Tx.Input input : tx.inputs) {
-                        UcoinSource source = mWallet.sources().getByFingerprint(input.fingerprint);
-                        if (source != null) {
-                            source.setState(SourceState.CONSUMED);
-                        }
-                    }
-                }
-                if (newTx != null) {
-                    newTx.setBlock(mWallet.currency().blocks().currentBlock().number());
-                    newTx.setTime(mWallet.currency().blocks().currentBlock().time());
-                }
-            }
-        }
-    }
-
-    public void onUdsRequest(UdHistory history) {
-        for (UdHistory.Ud ud : history.history.history) {
-            mWallet.uds().add(ud);
-        }
     }
 
     @Override

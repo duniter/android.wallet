@@ -39,10 +39,12 @@ import io.ucoin.app.Application;
 import io.ucoin.app.R;
 import io.ucoin.app.UcoinUris;
 import io.ucoin.app.enumeration.SourceState;
+import io.ucoin.app.enumeration.TxDirection;
 import io.ucoin.app.model.UcoinEndpoint;
 import io.ucoin.app.model.UcoinSource;
 import io.ucoin.app.model.UcoinWallet;
 import io.ucoin.app.model.document.Transaction;
+import io.ucoin.app.model.http_api.TxHistory;
 import io.ucoin.app.model.http_api.WotLookup;
 import io.ucoin.app.model.sql.sqlite.Wallet;
 import io.ucoin.app.sqlite.SQLiteTable;
@@ -286,7 +288,7 @@ public class TransferActivity extends ActionBarActivity
         if ((qtAmount = validateAmount(mRelAmount.getText().toString())) == null) return false;
         if ((comment = validateComment(mComment.getText().toString())) == null) return false;
 
-        UcoinWallet wallet = new Wallet(this, walletId);
+        final UcoinWallet wallet = new Wallet(this, walletId);
 
         //Create Tx
         final Transaction transaction = new Transaction();
@@ -304,7 +306,8 @@ public class TransferActivity extends ActionBarActivity
         //set inputs
         long cumulativeAmount = 0;
         for (UcoinSource source : wallet.sources().getByState(SourceState.AVAILABLE)) {
-            transaction.addInput(source, 0);
+            transaction.addInput(source);
+            source.setState(SourceState.CONSUMED);
             cumulativeAmount += source.amount();
             if (cumulativeAmount > qtAmount) {
                 break;
@@ -343,8 +346,9 @@ public class TransferActivity extends ActionBarActivity
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
+                        TxHistory.PendingTx tx = TxHistory.PendingTx.fromJson(response);
+                        wallet.txs().add(tx, TxDirection.OUT);
                         Toast.makeText(TransferActivity.this, getResources().getString(R.string.transaction_sent), Toast.LENGTH_LONG).show();
-                        Application.requestSync();
                         finish();
                     }
                 },
@@ -354,6 +358,10 @@ public class TransferActivity extends ActionBarActivity
                         mTransferMenuItem.setEnabled(true);
                         Drawable drawable = ResourcesCompat.getDrawable(getResources(), R.drawable.ic_send_white_24dp, null);
                         mTransferMenuItem.setIcon(drawable);
+
+                        for(UcoinSource source : transaction.getSources()) {
+                            source.setState(SourceState.AVAILABLE);
+                        }
 
                         if (error instanceof NoConnectionError) {
                             Toast.makeText(Application.getContext(),

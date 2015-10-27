@@ -40,10 +40,8 @@ public class TxHistory implements Serializable {
     }
 
     public class History implements Serializable {
-        public SentTx[] sent;
-        public ReceivedTx[] received;
-        public SendingTx[] sending;
-        public ReceivingTx[] receiving;
+        public ConfirmedTx[] sent;
+        public ConfirmedTx[] received;
         public PendingTx[] pending;
     }
 
@@ -54,6 +52,7 @@ public class TxHistory implements Serializable {
         public Output[] outputs;
         public String comment;
         public String[] signatures;
+        public String hash;
 
 
         public static Tx fromJson(InputStream json) {
@@ -64,6 +63,16 @@ public class TxHistory implements Serializable {
             Reader reader = new InputStreamReader(json, Charset.forName("UTF-8"));
             return gson.fromJson(reader, Tx.class);
         }
+
+
+        public static Tx fromJson(String json) {
+            Gson gson = new GsonBuilder()
+                    .registerTypeAdapter(Input.class, new InputAdapter())
+                    .registerTypeAdapter(Output.class, new OutputAdapter())
+                    .create();
+            return gson.fromJson(json, Tx.class);
+        }
+
 
         public static class Input implements Serializable {
             public Integer index;
@@ -143,7 +152,6 @@ public class TxHistory implements Serializable {
     }
 
     public static class PendingTx extends Tx {
-        public String hash;
 
         public static PendingTx fromJson(InputStream json) {
             Gson gson = new GsonBuilder()
@@ -153,13 +161,21 @@ public class TxHistory implements Serializable {
             Reader reader = new InputStreamReader(json, Charset.forName("UTF-8"));
             return gson.fromJson(reader, PendingTx.class);
         }
+
+
+        public static PendingTx fromJson(String json) {
+            Gson gson = new GsonBuilder()
+                    .registerTypeAdapter(Input.class, new InputAdapter())
+                    .registerTypeAdapter(Output.class, new OutputAdapter())
+                    .create();
+            return gson.fromJson(json, PendingTx.class);
+        }
     }
 
 
-    public static abstract class ConfirmedTx extends PendingTx {
+    public static class ConfirmedTx extends Tx {
         public Long block_number;
         public Long time;
-
 
         public static ConfirmedTx fromJson(InputStream json) {
             Gson gson = new GsonBuilder()
@@ -169,19 +185,16 @@ public class TxHistory implements Serializable {
             Reader reader = new InputStreamReader(json, Charset.forName("UTF-8"));
             return gson.fromJson(reader, ConfirmedTx.class);
         }
+
+        public static ConfirmedTx fromJson(String json) {
+            Gson gson = new GsonBuilder()
+                    .registerTypeAdapter(Input.class, new InputAdapter())
+                    .registerTypeAdapter(Output.class, new OutputAdapter())
+                    .create();
+            return gson.fromJson(json, ConfirmedTx.class);
+        }
     }
 
-    public static class SentTx extends ConfirmedTx {
-    }
-
-    public class ReceivedTx extends ConfirmedTx {
-    }
-
-    public static class SendingTx extends PendingTx {
-    }
-
-    public class ReceivingTx extends PendingTx {
-    }
 
 }
       /*

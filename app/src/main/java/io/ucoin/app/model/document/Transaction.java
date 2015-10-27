@@ -15,10 +15,11 @@ public class Transaction {
 
     private String mCurrency;
     private ArrayList<String> mIssuers = new ArrayList<>();
-    private ArrayList<String> mInputs = new ArrayList<>();
+    private ArrayList<UcoinSource> mInputs = new ArrayList<>();
     private ArrayList<String> mOutputs = new ArrayList<>();
     private String mComment;
     private ArrayList<String> mSignatures = new ArrayList<>();
+
 
     public void setCurrency(String currency)
     {
@@ -29,9 +30,12 @@ public class Transaction {
         mIssuers.add(publicKey);
     }
 
-    public void addInput(UcoinSource source, int index) {
-        String input = index +":" + source.type().name() + ":" + source.number() + ":" + source.fingerprint() + ":" + source.amount();
-        mInputs.add(input);
+    public void addInput(UcoinSource source) {
+        mInputs.add(source);
+    }
+
+    public ArrayList<UcoinSource> getSources() {
+        return mInputs;
     }
 
     public void addOuput(String publicKey, Long amount) {
@@ -58,8 +62,8 @@ public class Transaction {
         }
 
         s += "Inputs:" + "\n";
-        for (String input : mInputs) {
-            s += input + "\n";
+        for (UcoinSource source : mInputs) {
+            s += 0 +":" + source.type().name() + ":" + source.number() + ":" + source.fingerprint() + ":" + source.amount() + "\n";
         }
 
         s += "Outputs:" + "\n";
@@ -72,26 +76,7 @@ public class Transaction {
     }
 
     public String toString() {
-        String s = "Version: " + mVersion + "\n" +
-                "Type: " + mType + "\n" +
-                "Currency: " + mCurrency + "\n";
-
-        s += "Issuers:" + "\n";
-        for (String issuer : mIssuers) {
-            s += issuer + "\n";
-        }
-
-        s += "Inputs:" + "\n";
-        for (String input : mInputs) {
-            s += input + "\n";
-        }
-
-        s += "Outputs:" + "\n";
-        for (String output : mOutputs) {
-            s += output + "\n";
-        }
-
-        s += "Comment: " + mComment + "\n";
+        String s = unsignedDocument();
 
         for (String signature : mSignatures) {
             s += signature + "\n";

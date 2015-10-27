@@ -8,9 +8,13 @@ import io.ucoin.app.model.http_api.TxHistory;
 public interface UcoinTxs extends SqlTable, Iterable<UcoinTx> {
     UcoinTx add(TxHistory.Tx tx, TxDirection direction);
 
+    UcoinTxs add(TxHistory history);
+
     UcoinTx getById(Long id);
 
     UcoinTx getLastTx();
+
+    UcoinTx getLastConfirmedTx();
 
     UcoinTxs getByState(TxState state);
 

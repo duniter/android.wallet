@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -15,6 +16,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 
 import java.text.DecimalFormat;
 
@@ -25,18 +32,22 @@ import io.ucoin.app.activity.CurrencyActivity;
 import io.ucoin.app.activity.TransferActivity;
 import io.ucoin.app.adapter.OperationSectionCursorAdapter;
 import io.ucoin.app.fragment.dialog.QrCodeDialogFragment;
+import io.ucoin.app.model.UcoinEndpoint;
 import io.ucoin.app.model.UcoinWallet;
+import io.ucoin.app.model.http_api.TxHistory;
 import io.ucoin.app.model.sql.sqlite.Wallet;
 import io.ucoin.app.sqlite.SQLiteTable;
 import io.ucoin.app.sqlite.SQLiteView;
 
 public class WalletFragment extends ListFragment
         implements LoaderManager.LoaderCallbacks<Cursor>,
-        ImageButton.OnClickListener{
+        SwipeRefreshLayout.OnRefreshListener {
 
     private static final String WALLET_ID = "wallet_id";
     private static int WALLET_LOADER_ID = 0;
     private static int OPERATION_LOADER_ID = 1;
+
+    private SwipeRefreshLayout mSwipeLayout;
 
     public static WalletFragment newInstance(Long walletId) {
         Bundle newInstanceArgs = new Bundle();
@@ -49,6 +60,7 @@ public class WalletFragment extends ListFragment
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Long walletId = getArguments().getLong(WALLET_ID);
     }
 
     @Override
@@ -66,13 +78,25 @@ public class WalletFragment extends ListFragment
         setHasOptionsMenu(true);
         ((CurrencyActivity) getActivity()).setDrawerIndicatorEnabled(false);
 
-        getLoaderManager().initLoader(WALLET_LOADER_ID, getArguments(), this);
+        mSwipeLayout = (SwipeRefreshLayout) view.findViewById(R.id.swipe_layout);
+        mSwipeLayout.setOnRefreshListener(this);
 
+        TextView emptyView = (TextView) view.findViewById(android.R.id.empty);
+        emptyView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mSwipeLayout.setRefreshing(true);
+                onRefresh();
+            }
+        });
+
+        getLoaderManager().initLoader(WALLET_LOADER_ID, getArguments(), this);
 
         OperationSectionCursorAdapter operationSectionCursorAdapter
                 = new OperationSectionCursorAdapter(getActivity(), null, 0);
         setListAdapter(operationSectionCursorAdapter);
         getLoaderManager().initLoader(OPERATION_LOADER_ID, getArguments(), this);
+
 
         ImageButton transferButton = (ImageButton) view.findViewById(R.id.transfer_button);
         transferButton.setOnClickListener(new View.OnClickListener() {
@@ -108,31 +132,6 @@ public class WalletFragment extends ListFragment
         return super.onOptionsItemSelected(item);
     }
 
-    private void refreshWalletInfo(Cursor data) {
-        View view = getView();
-        data.moveToNext();
-        TextView alias = (TextView) view.findViewById(R.id.alias);
-        alias.setText(data.getString(data.getColumnIndex(SQLiteView.Wallet.ALIAS)));
-
-        //TextView publicKey = (TextView) view.findViewById(R.id.public_key);
-        TextView quantitativeAmount = (TextView) view.findViewById(R.id.qt_amount);
-        TextView relativeAmount = (TextView) view.findViewById(R.id.relative_amount);
-
-        //publicKey.setText(data.getString(data.getColumnIndex(SQLiteView.Wallet.PUBLIC_KEY)));
-        StringBuilder sb = new StringBuilder();
-        DecimalFormat formatter = new DecimalFormat("#,###");
-        sb.append(formatter.format(data.getLong(data.getColumnIndex(SQLiteView.Wallet.QUANTITATIVE_AMOUNT))));
-        sb.append(" ");
-        sb.append(data.getString(data.getColumnIndex(SQLiteView.Wallet.CURRENCY_NAME)));
-        quantitativeAmount.setText(sb.toString());
-
-        sb.setLength(0);
-        sb.append(String.format("%.8f", data.getDouble(data.getColumnIndex(SQLiteView.Wallet.RELATIVE_AMOUNT))));
-        sb.append(" ");
-        sb.append(getString(R.string.UD));
-        relativeAmount.setText(sb.toString());
-    }
-
     private void showQrCode() {
         Long walletId = getArguments().getLong(WALLET_ID);
         QrCodeDialogFragment fragment = QrCodeDialogFragment.newInstance(walletId);
@@ -166,27 +165,81 @@ public class WalletFragment extends ListFragment
                     null, selection, selectionArgs,
                     SQLiteView.Operation.TIME + " DESC");
         }
-
     }
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         if (loader.getId() == WALLET_LOADER_ID) {
-            refreshWalletInfo(data);
-        } else {
-            ((OperationSectionCursorAdapter)this.getListAdapter()).swapCursor(data);
+
+            View view = getView();
+            data.moveToNext();
+            TextView alias = (TextView) view.findViewById(R.id.alias);
+            alias.setText(data.getString(data.getColumnIndex(SQLiteView.Wallet.ALIAS)));
+
+            //TextView publicKey = (TextView) view.findViewById(R.id.public_key);
+            TextView quantitativeAmount = (TextView) view.findViewById(R.id.qt_amount);
+            TextView relativeAmount = (TextView) view.findViewById(R.id.relative_amount);
+
+            //publicKey.setText(data.getString(data.getColumnIndex(SQLiteView.Wallet.PUBLIC_KEY)));
+            StringBuilder sb = new StringBuilder();
+            DecimalFormat formatter = new DecimalFormat("#,###");
+            sb.append(formatter.format(data.getLong(data.getColumnIndex(SQLiteView.Wallet.QUANTITATIVE_AMOUNT))));
+            sb.append(" ");
+            sb.append(data.getString(data.getColumnIndex(SQLiteView.Wallet.CURRENCY_NAME)));
+            quantitativeAmount.setText(sb.toString());
+
+            sb.setLength(0);
+            sb.append(String.format("%.8f", data.getDouble(data.getColumnIndex(SQLiteView.Wallet.RELATIVE_AMOUNT))));
+            sb.append(" ");
+            sb.append(getString(R.string.UD));
+            relativeAmount.setText(sb.toString());
+        } else if(loader.getId() == OPERATION_LOADER_ID){
+            ((OperationSectionCursorAdapter) this.getListAdapter()).swapCursor(data);
         }
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-        if(loader.getId() == OPERATION_LOADER_ID) {
-            ((OperationSectionCursorAdapter)this.getListAdapter()).swapCursor(null);
+        if (loader.getId() == OPERATION_LOADER_ID) {
+            ((OperationSectionCursorAdapter) this.getListAdapter()).swapCursor(null);
         }
     }
 
     @Override
-    public void onClick(View v) {
-
+    public void onRefresh() {
+        final UcoinWallet wallet = new Wallet(getActivity(), getArguments().getLong(WALLET_ID));
+        UcoinEndpoint endpoint = wallet.currency().peers().at(0).endpoints().at(0);
+        String url = "http://" + endpoint.ipv4() + ":" + endpoint.port() + "/tx/history/";
+        url += wallet.publicKey();
+/*
+        UcoinTx lastTx = wallet.txs().getLastConfirmedTx();
+        if (lastTx != null) {
+            url += "/times/" + lastTx.time() + 1 + "/" + Application.getCurrentTime();
+        }
+*/
+        StringRequest request = new StringRequest(
+                url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        final TxHistory history = TxHistory.fromJson(response);
+                        mSwipeLayout.setRefreshing(false);
+                        Thread t = new Thread() {
+                            @Override
+                            public void run() {
+                                wallet.txs().add(history);
+                            }
+                        };
+                        t.start();
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        mSwipeLayout.setRefreshing(false);
+                        Toast.makeText(getActivity(), error.toString(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+        Volley.newRequestQueue(getActivity()).add(request);
     }
 }

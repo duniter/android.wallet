@@ -24,8 +24,6 @@ public class SQLiteHelper extends SQLiteOpenHelper implements SQLiteTable {
     private static final String DOT = ".";
 
 
-
-
     String CREATE_TABLE_CURRENCY = "CREATE TABLE " + Currency.TABLE_NAME + "(" +
             Currency._ID + " INTEGER PRIMARY KEY AUTOINCREMENT" + COMMA +
             Currency.NAME + TEXT + NOTNULL + UNIQUE + COMMA +
@@ -188,9 +186,9 @@ public class SQLiteHelper extends SQLiteOpenHelper implements SQLiteTable {
             Tx.VERSION + INTEGER + NOTNULL + COMMA +
             Tx.COMMENT + TEXT + NOTNULL + COMMA +
             Tx.DIRECTION + TEXT + NOTNULL + COMMA +
-            Tx.HASH + TEXT + COMMA +
-            Tx.BLOCK + INTEGER + COMMA +
-            Tx.TIME + INTEGER + COMMA +
+            Tx.HASH + TEXT + NOTNULL + COMMA +
+            Tx.BLOCK + INTEGER + NOTNULL + COMMA +
+            Tx.TIME + INTEGER + NOTNULL + COMMA +
             Tx.STATE + TEXT + NOTNULL + COMMA +
             Tx.QUANTITATIVE_AMOUNT + INTEGER + NOTNULL + COMMA +
             "FOREIGN KEY (" + Tx.WALLET_ID + ") REFERENCES " +
@@ -322,17 +320,22 @@ public class SQLiteHelper extends SQLiteOpenHelper implements SQLiteTable {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-            if (oldVersion >= newVersion)
-                    return;
+        if (oldVersion >= newVersion)
+            return;
 
+        String query;
+        if(oldVersion == 1) {
+            query = "DROP TABLE IF EXISTS Identity";
+            db.execSQL(query);
+        }
 
-        String query = "DROP TABLE " + Currency.TABLE_NAME;
+        query = "DROP TABLE " + Currency.TABLE_NAME;
         db.execSQL(query);
 
         query = "DROP TABLE IF EXISTS " + Block.TABLE_NAME;
         db.execSQL(query);
 
-        query = "DROP TABLE IF EXISTS Identity";
+        query = "DROP TABLE IF EXISTS " + Identity.TABLE_NAME;
         db.execSQL(query);
 
         query = "DROP TABLE IF EXISTS " + Member.TABLE_NAME;
@@ -395,6 +398,7 @@ public class SQLiteHelper extends SQLiteOpenHelper implements SQLiteTable {
             db.execSQL("PRAGMA foreign_keys=ON");
             try {
                 db.execSQL("DROP TRIGGER IF EXISTS after_insert_tx");
+                db.execSQL("DROP TRIGGER IF EXISTS after_update_tx");
                 db.execSQL("DROP TRIGGER IF EXISTS after_insert_ud");
                 db.execSQL("DROP VIEW IF EXISTS " + SQLiteView.Currency.VIEW_NAME);
                 db.execSQL("DROP VIEW IF EXISTS " + SQLiteView.Wallet.VIEW_NAME);
@@ -411,7 +415,7 @@ public class SQLiteHelper extends SQLiteOpenHelper implements SQLiteTable {
 
             String TRIGGER_AFTER_INSERT_TX = "CREATE TRIGGER IF NOT EXISTS after_insert_tx AFTER INSERT ON " + Tx.TABLE_NAME +
                     " BEGIN " +
-                    " INSERT INTO " + Operation.TABLE_NAME +  "(" +
+                    " INSERT INTO " + Operation.TABLE_NAME + "(" +
                     Operation.WALLET_ID + COMMA +
                     Operation.TX_ID + COMMA +
                     Operation.DIRECTION + COMMA +
@@ -442,9 +446,26 @@ public class SQLiteHelper extends SQLiteOpenHelper implements SQLiteTable {
                     "); END";
             db.execSQL(TRIGGER_AFTER_INSERT_TX);
 
+            String TRIGGER_AFTER_UPDATE_TX = "CREATE TRIGGER IF NOT EXISTS after_update_tx AFTER UPDATE ON " + Tx.TABLE_NAME +
+                    " BEGIN " +
+                    " UPDATE  " + Operation.TABLE_NAME +
+                    " SET " +
+                    Operation.BLOCK + "=" + "new." + Tx.BLOCK + COMMA +
+                    Operation.TIME + "=" + "new." + Tx.TIME + COMMA +
+                    Operation.STATE + "=" + "new." + Tx.STATE + COMMA +
+                    Operation.YEAR + "=" + "strftime('%Y', datetime(" + "new." + Tx.TIME + ", 'unixepoch', 'localtime'))" + COMMA +
+                    Operation.MONTH + "=" + "strftime('%m', datetime(" + "new." + Tx.TIME + ", 'unixepoch', 'localtime'))" + COMMA +
+                    Operation.DAY + "=" + "strftime('%d', datetime(" + "new." + Tx.TIME + ", 'unixepoch', 'localtime'))" + COMMA +
+                    Operation.DAY_OF_WEEK + "=" + "strftime('%w', datetime(" + "new." + Tx.TIME + ", 'unixepoch', 'localtime'))" + COMMA +
+                    Operation.HOUR + "=" + "strftime('%H:%M:%S', datetime(" + "new." + Tx.TIME + ", 'unixepoch', 'localtime'))" +
+                    " WHERE " +
+                    Operation.TX_ID + "=" + "new." + Tx._ID +
+                    "; END";
+            db.execSQL(TRIGGER_AFTER_UPDATE_TX);
+
             String TRIGGER_AFTER_INSERT_UD = "CREATE TRIGGER IF NOT EXISTS after_insert_ud AFTER INSERT ON " + Ud.TABLE_NAME +
                     " BEGIN " +
-                    " INSERT INTO " + Operation.TABLE_NAME +  "(" +
+                    " INSERT INTO " + Operation.TABLE_NAME + "(" +
                     Operation.WALLET_ID + COMMA +
                     Operation.UD_ID + COMMA +
                     Operation.DIRECTION + COMMA +
@@ -458,7 +479,7 @@ public class SQLiteHelper extends SQLiteOpenHelper implements SQLiteTable {
                     Operation.HOUR +
                     ") VALUES (" +
                     "new." + Ud.WALLET_ID + COMMA +
-                    "new." + Ud._ID  + COMMA +
+                    "new." + Ud._ID + COMMA +
                     "\"" + TxDirection.IN.name() + "\"" + COMMA +
                     "new." + Ud.QUANTITATIVE_AMOUNT + COMMA +
                     "new." + Ud.BLOCK + COMMA +
@@ -638,7 +659,7 @@ public class SQLiteHelper extends SQLiteOpenHelper implements SQLiteTable {
                     " ON " + Wallet.TABLE_NAME + DOT + Wallet._ID + "=" + Operation.TABLE_NAME + DOT + Operation.WALLET_ID +
 
                     " LEFT JOIN " + Currency.TABLE_NAME +
-                    " ON " + Currency.TABLE_NAME + DOT + Currency._ID + "=" + Wallet.TABLE_NAME + DOT + Wallet.CURRENCY_ID  +
+                    " ON " + Currency.TABLE_NAME + DOT + Currency._ID + "=" + Wallet.TABLE_NAME + DOT + Wallet.CURRENCY_ID +
 
                     " LEFT JOIN (SELECT " + Operation.TABLE_NAME + DOT + Operation._ID + COMMA + " MAX(" + Block.TABLE_NAME + DOT + Block.DIVIDEND + ") AS " + Block.DIVIDEND +
                     " FROM " + Operation.TABLE_NAME + "," + Wallet.TABLE_NAME + "," + Block.TABLE_NAME +

@@ -10,9 +10,12 @@ import android.provider.BaseColumns;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import io.ucoin.app.Application;
 import io.ucoin.app.UcoinUris;
+import io.ucoin.app.enumeration.SourceState;
 import io.ucoin.app.enumeration.TxDirection;
 import io.ucoin.app.enumeration.TxState;
+import io.ucoin.app.model.UcoinSource;
 import io.ucoin.app.model.UcoinTx;
 import io.ucoin.app.model.UcoinTxs;
 import io.ucoin.app.model.UcoinWallet;
@@ -71,15 +74,16 @@ final public class Txs extends Table
                 break;
         }
         values.put(SQLiteTable.Tx.QUANTITATIVE_AMOUNT, qtAmount);
+        values.put(SQLiteTable.Tx.HASH, tx.hash);
 
         if (tx instanceof TxHistory.ConfirmedTx) {
-            values.put(SQLiteTable.Tx.HASH, ((TxHistory.ConfirmedTx) tx).hash);
+            values.put(SQLiteTable.Tx.STATE, TxState.CONFIRMED.name());
             values.put(SQLiteTable.Tx.TIME, ((TxHistory.ConfirmedTx) tx).time);
             values.put(SQLiteTable.Tx.BLOCK, ((TxHistory.ConfirmedTx) tx).block_number);
-            values.put(SQLiteTable.Tx.STATE, TxState.CONFIRMED.name());
         } else if (tx instanceof TxHistory.PendingTx) {
-            values.put(SQLiteTable.Tx.HASH, ((TxHistory.PendingTx) tx).hash);
             values.put(SQLiteTable.Tx.STATE, TxState.PENDING.name());
+            values.put(SQLiteTable.Tx.TIME, Application.getCurrentTime());
+            values.put(SQLiteTable.Tx.BLOCK, wallet().currency().blocks().currentBlock().number());
         }
 
 
@@ -151,6 +155,77 @@ final public class Txs extends Table
     }
 
     @Override
+    public UcoinTxs add(TxHistory history) {
+        for (TxHistory.ConfirmedTx tx : history.history.received) {
+            UcoinTx localTx = getByHash(tx.hash);
+            if (localTx == null) {
+                boolean isIssuer = false;
+                for (String issuer : tx.issuers) {
+                    if (issuer.equals(wallet().publicKey())) {
+                        isIssuer = true;
+                        break;
+                    }
+                }
+                if (!isIssuer) {
+                    if (tx.time != null) add(tx, TxDirection.IN);
+                }
+            } else if (localTx.state() == TxState.PENDING) {
+                localTx.setState(TxState.CONFIRMED);
+                localTx.setTime(tx.time);
+                localTx.setBlock(tx.block_number);
+            }
+        }
+
+        for (TxHistory.ConfirmedTx tx : history.history.sent) {
+            UcoinTx localTx = getByHash(tx.hash);
+            if (localTx == null) {
+                boolean isIssuer = false;
+                for (String issuer : tx.issuers) {
+                    if (issuer.equals(wallet().publicKey())) {
+                        isIssuer = true;
+                        break;
+                    }
+                }
+                if (isIssuer) {
+                    if (tx.time != null) add(tx, TxDirection.OUT);
+                }
+            } else if (localTx.state() == TxState.PENDING) {
+                localTx.setState(TxState.CONFIRMED);
+                localTx.setTime(tx.time);
+                localTx.setBlock(tx.block_number);
+            }
+        }
+
+
+        for (TxHistory.PendingTx tx : history.history.pending) {
+            UcoinTx localTx = getByHash(tx.hash);
+            if (localTx == null) {
+                boolean isIssuer = false;
+                for (String issuer : tx.issuers) {
+                    if (issuer.equals(wallet().publicKey())) {
+                        isIssuer = true;
+                        break;
+                    }
+                }
+
+                if (!isIssuer) {
+                    add(tx, TxDirection.IN);
+                } else {
+                    add(tx, TxDirection.OUT);
+                    for (TxHistory.Tx.Input input : tx.inputs) {
+                        UcoinSource source = wallet().sources().getByFingerprint(input.fingerprint);
+                        if (source != null) {
+                            source.setState(SourceState.CONSUMED);
+                        }
+                    }
+                }
+            }
+        }
+
+        return this;
+    }
+
+    @Override
     public UcoinTx getById(Long id) {
         return new Tx(mContext, id);
     }
@@ -159,6 +234,19 @@ final public class Txs extends Table
     public UcoinTx getLastTx() {
         String selection = SQLiteView.Tx.WALLET_ID + "=?";
         String[] selectionArgs = new String[]{mWalletId.toString()};
+        String sortOrder = SQLiteView.Tx.TIME + " DESC LIMIT 1";
+        UcoinTxs txs = new Txs(mContext, mWalletId, selection, selectionArgs, sortOrder);
+        if (txs.iterator().hasNext()) {
+            return txs.iterator().next();
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    public UcoinTx getLastConfirmedTx() {
+        String selection = SQLiteView.Tx.WALLET_ID + "=? AND " + SQLiteView.Tx.STATE + "=?";
+        String[] selectionArgs = new String[]{mWalletId.toString(), TxState.CONFIRMED.name()};
         String sortOrder = SQLiteView.Tx.TIME + " DESC LIMIT 1";
         UcoinTxs txs = new Txs(mContext, mWalletId, selection, selectionArgs, sortOrder);
         if (txs.iterator().hasNext()) {

@@ -25,8 +25,6 @@ public class UcoinUris {
     public final static Uri CONTACT_URI;
     public final static Uri OPERATION_URI;
 
-    public final static Uri SYNC_WALLET_URI;
-
     static {
         CURRENCY_URI = new Uri.Builder().scheme("content").authority(AUTHORITY)
                 .path("currency/").build();
@@ -67,9 +65,5 @@ public class UcoinUris {
                 .path("contact/").build();
         OPERATION_URI = new Uri.Builder().scheme("content").authority(AUTHORITY)
                 .path("operation/").build();
-
-
-        SYNC_WALLET_URI = new Uri.Builder().scheme("sync").authority(AUTHORITY)
-                .path("wallet/").build();
     }
 }

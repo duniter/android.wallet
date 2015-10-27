@@ -15,14 +15,15 @@ public class Application extends android.app.Application{
     public static final int ACTIVITY_CURRENCY_LIST = 0x2;
 
 
-    public static final String EXTRA_CURRENCY_ID= "currency_id";
-    public static final String EXTRA_WALLET_ID= "wallet_id";
+    public static final String EXTRA_CURRENCY_ID = "currency_id";
+    public static final String EXTRA_WALLET_ID = "wallet_id";
+    public static final String EXTRA_SYNC_OP = "sync_op";
 
     private static Context mContext;
     private static RequestQueue mRequestQueue;
 
     @Override
-    public void onCreate(){
+    public void onCreate() {
         super.onCreate();
         mContext = getApplicationContext();
 
@@ -31,7 +32,7 @@ public class Application extends android.app.Application{
         android.accounts.Account[] accounts = accountManager
                 .getAccountsByType(getString(R.string.ACCOUNT_TYPE));
 
-        if (accounts.length <  1) {
+        if (accounts.length < 1) {
             Account account = new Account(
                     getString(R.string.app_name),
                     getString(R.string.ACCOUNT_TYPE));
@@ -64,11 +65,15 @@ public class Application extends android.app.Application{
     }
 
     public static long getCurrentTime() {
-        return (long)Math.floor(System.currentTimeMillis() / 1000);
+        return (long) Math.floor(System.currentTimeMillis() / 1000);
     }
 
     public static void requestSync() {
-        Bundle extras = new Bundle();
+        requestSync(new Bundle());
+
+    }
+
+    public static void requestSync(Bundle extras) {
         extras.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
         extras.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
         AccountManager accountManager = AccountManager.get(mContext);

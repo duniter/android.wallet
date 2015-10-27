@@ -13,7 +13,6 @@ public class UcoinQueue implements RequestQueue.RequestFinishedListener {
     private RequestQueue mQueue;
     private ArrayList<Request> mRequests;
 
-
     public UcoinQueue(Context context) {
         mQueue = Volley.newRequestQueue(context);
         mQueue.addRequestFinishedListener(this);
