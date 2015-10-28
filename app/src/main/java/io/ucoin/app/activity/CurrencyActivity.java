@@ -36,7 +36,7 @@ import java.nio.channels.FileChannel;
 import io.ucoin.app.Application;
 import io.ucoin.app.BuildConfig;
 import io.ucoin.app.R;
-import io.ucoin.app.content.DbProvider;
+import io.ucoin.app.UcoinUris;
 import io.ucoin.app.enumeration.DayOfWeek;
 import io.ucoin.app.enumeration.Month;
 import io.ucoin.app.fragment.currency.BlockListFragment;
@@ -356,7 +356,7 @@ public class CurrencyActivity extends ActionBarActivity
 
         return new CursorLoader(
                 this,
-                DbProvider.CURRENCY_URI,
+                UcoinUris.CURRENCY_URI,
                 null, selection, selectionArgs,
                 null);
     }

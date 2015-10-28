@@ -9,7 +9,7 @@ import android.provider.BaseColumns;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import io.ucoin.app.content.DbProvider;
+import io.ucoin.app.UcoinUris;
 import io.ucoin.app.enumeration.CertificationState;
 import io.ucoin.app.enumeration.CertificationType;
 import io.ucoin.app.model.UcoinCertification;
@@ -32,7 +32,7 @@ final public class Certifications extends Table
     }
 
     private Certifications(Context context, Long identityId, String selection, String[] selectionArgs, String sortOrder) {
-        super(context, DbProvider.CERTIFICATION_URI, selection, selectionArgs, sortOrder);
+        super(context, UcoinUris.CERTIFICATION_URI, selection, selectionArgs, sortOrder);
         mIdentityId = identityId;
     }
 

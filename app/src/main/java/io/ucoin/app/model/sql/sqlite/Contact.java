@@ -2,7 +2,7 @@ package io.ucoin.app.model.sql.sqlite;
 
 import android.content.Context;
 
-import io.ucoin.app.content.DbProvider;
+import io.ucoin.app.UcoinUris;
 import io.ucoin.app.model.UcoinContact;
 import io.ucoin.app.sqlite.SQLiteTable;
 
@@ -10,7 +10,7 @@ public class Contact extends Row
         implements UcoinContact {
 
     public Contact(Context context, Long contactId) {
-        super(context, DbProvider.CONTACT_URI, contactId);
+        super(context, UcoinUris.CONTACT_URI, contactId);
     }
 
     @Override

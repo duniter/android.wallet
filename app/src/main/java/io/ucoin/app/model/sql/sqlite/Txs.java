@@ -10,7 +10,7 @@ import android.provider.BaseColumns;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import io.ucoin.app.content.DbProvider;
+import io.ucoin.app.UcoinUris;
 import io.ucoin.app.enumeration.TxDirection;
 import io.ucoin.app.enumeration.TxState;
 import io.ucoin.app.model.UcoinTx;
@@ -34,7 +34,7 @@ final public class Txs extends Table
     }
 
     private Txs(Context context, Long walletId, String selection, String[] selectionArgs, String sortOrder) {
-        super(context, DbProvider.TX_URI, selection, selectionArgs, sortOrder);
+        super(context, UcoinUris.TX_URI, selection, selectionArgs, sortOrder);
         mWalletId = walletId;
     }
 
@@ -85,7 +85,7 @@ final public class Txs extends Table
 
         //insertion in TX table
         ArrayList<ContentProviderOperation> operations = new ArrayList<>();
-        operations.add(ContentProviderOperation.newInsert(DbProvider.TX_URI)
+        operations.add(ContentProviderOperation.newInsert(UcoinUris.TX_URI)
                 .withValues(values)
                 .build());
 
@@ -95,7 +95,7 @@ final public class Txs extends Table
             values = new ContentValues();
             values.put(SQLiteTable.TxIssuer.PUBLIC_KEY, issuer);
             values.put(SQLiteTable.TxIssuer.ISSUER_ORDER, issuerOrder++);
-            operations.add(ContentProviderOperation.newInsert(DbProvider.TX_ISSUER_URI)
+            operations.add(ContentProviderOperation.newInsert(UcoinUris.TX_ISSUER_URI)
                     .withValues(values)
                     .withValueBackReference(SQLiteTable.TxIssuer.TX_ID, 0)
                     .build());
@@ -109,7 +109,7 @@ final public class Txs extends Table
             values.put(SQLiteTable.TxInput.NUMBER, input.number);
             values.put(SQLiteTable.TxInput.FINGERPRINT, input.fingerprint);
             values.put(SQLiteTable.TxInput.AMOUNT, input.amount);
-            operations.add(ContentProviderOperation.newInsert(DbProvider.TX_INPUT_URI)
+            operations.add(ContentProviderOperation.newInsert(UcoinUris.TX_INPUT_URI)
                     .withValues(values)
                     .withValueBackReference(SQLiteTable.TxInput.TX_ID, 0)
                     .build());
@@ -121,7 +121,7 @@ final public class Txs extends Table
             values.put(SQLiteTable.TxOutput.PUBLIC_KEY, output.publicKey);
             values.put(SQLiteTable.TxOutput.AMOUNT, output.amount);
 
-            operations.add(ContentProviderOperation.newInsert(DbProvider.TX_OUTPUT_URI)
+            operations.add(ContentProviderOperation.newInsert(UcoinUris.TX_OUTPUT_URI)
                     .withValues(values)
                     .withValueBackReference(SQLiteTable.TxOutput.TX_ID, 0)
                     .build());
@@ -134,7 +134,7 @@ final public class Txs extends Table
             values.put(SQLiteTable.TxSignature.VALUE, signature);
             values.put(SQLiteTable.TxSignature.ISSUER_ORDER, issuerOrder++);
 
-            operations.add(ContentProviderOperation.newInsert(DbProvider.TX_SIGNATURE_URI)
+            operations.add(ContentProviderOperation.newInsert(UcoinUris.TX_SIGNATURE_URI)
                     .withValues(values)
                     .withValueBackReference(SQLiteTable.TxSignature.TX_ID, 0)
                     .build());

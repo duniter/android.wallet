@@ -9,7 +9,7 @@ import android.provider.BaseColumns;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import io.ucoin.app.content.DbProvider;
+import io.ucoin.app.UcoinUris;
 import io.ucoin.app.enumeration.EndpointProtocol;
 import io.ucoin.app.model.UcoinEndpoint;
 import io.ucoin.app.model.UcoinEndpoints;
@@ -30,7 +30,7 @@ final public class Endpoints extends Table
     }
 
     private Endpoints(Context context, Long peerId, String selection, String[] selectionArgs, String sortOrder) {
-        super(context, DbProvider.ENDPOINT_URI, selection, selectionArgs, sortOrder);
+        super(context, UcoinUris.ENDPOINT_URI, selection, selectionArgs, sortOrder);
         mPeerId = peerId;
     }
 

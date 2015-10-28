@@ -9,7 +9,7 @@ import android.provider.BaseColumns;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import io.ucoin.app.content.DbProvider;
+import io.ucoin.app.UcoinUris;
 import io.ucoin.app.model.UcoinIdentities;
 import io.ucoin.app.model.UcoinIdentity;
 import io.ucoin.app.model.UcoinWallet;
@@ -30,7 +30,7 @@ final public class Identities extends Table
     }
 
     private Identities(Context context, Long currencyId, String selection, String[] selectionArgs, String sortOrder) {
-        super(context, DbProvider.IDENTITY_URI, selection, selectionArgs, sortOrder);
+        super(context, UcoinUris.IDENTITY_URI, selection, selectionArgs, sortOrder);
         mCurrencyId = currencyId;
     }
 

@@ -3,7 +3,7 @@ package io.ucoin.app.model.sql.sqlite;
 import android.content.ContentValues;
 import android.content.Context;
 
-import io.ucoin.app.content.DbProvider;
+import io.ucoin.app.UcoinUris;
 import io.ucoin.app.model.UcoinBlock;
 import io.ucoin.app.model.UcoinCurrency;
 import io.ucoin.app.sqlite.SQLiteTable;
@@ -12,7 +12,7 @@ public class Block extends Row
         implements UcoinBlock {
 
     public Block(Context context, Long blockId) {
-        super(context, DbProvider.BLOCK_URI, blockId);
+        super(context, UcoinUris.BLOCK_URI, blockId);
     }
 
     @Override

@@ -2,7 +2,7 @@ package io.ucoin.app.model.sql.sqlite;
 
 import android.content.Context;
 
-import io.ucoin.app.content.DbProvider;
+import io.ucoin.app.UcoinUris;
 import io.ucoin.app.model.UcoinTxIssuer;
 import io.ucoin.app.sqlite.SQLiteTable;
 
@@ -10,7 +10,7 @@ public class TxIssuer extends Row
         implements UcoinTxIssuer {
 
     public TxIssuer(Context context, Long IssuerId) {
-        super(context, DbProvider.TX_ISSUER_URI, IssuerId);
+        super(context, UcoinUris.TX_ISSUER_URI, IssuerId);
     }
 
     @Override

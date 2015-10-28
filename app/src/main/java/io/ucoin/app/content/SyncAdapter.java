@@ -5,6 +5,7 @@ import android.content.AbstractThreadedSyncAdapter;
 import android.content.ContentProviderClient;
 import android.content.Context;
 import android.content.SyncResult;
+import android.content.UriMatcher;
 import android.os.Bundle;
 import android.util.Log;
 
@@ -12,11 +13,16 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 
 import io.ucoin.app.BuildConfig;
+import io.ucoin.app.UcoinUris;
 import io.ucoin.app.model.UcoinCurrencies;
 import io.ucoin.app.model.UcoinCurrency;
 import io.ucoin.app.model.sql.sqlite.Currencies;
 
 public class SyncAdapter extends AbstractThreadedSyncAdapter implements RequestQueue.RequestFinishedListener {
+
+    private UriMatcher uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
+
+    private static final int WALLET_ID = 10;
 
     private UcoinQueue mQueue;
 
@@ -26,6 +32,9 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements RequestQ
 
     public SyncAdapter(Context context, boolean autoInitialize, boolean allowParallelSyncs) {
         super(context, autoInitialize, allowParallelSyncs);
+
+        uriMatcher.addURI(UcoinUris.WALLET_URI.getAuthority(), UcoinUris.WALLET_URI.getPath() + "#", WALLET_ID);
+
         mQueue = new UcoinQueue(context);
         mQueue.addRequestFinishedListener(this);
     }

@@ -37,7 +37,7 @@ import java.util.Map;
 
 import io.ucoin.app.Application;
 import io.ucoin.app.R;
-import io.ucoin.app.content.DbProvider;
+import io.ucoin.app.UcoinUris;
 import io.ucoin.app.enumeration.SourceState;
 import io.ucoin.app.model.UcoinEndpoint;
 import io.ucoin.app.model.UcoinSource;
@@ -235,7 +235,7 @@ public class TransferActivity extends ActionBarActivity
 
         return new CursorLoader(
                 this,
-                DbProvider.WALLET_URI,
+                UcoinUris.WALLET_URI,
                 null, selection, selectionArgs,
                 SQLiteTable.Wallet._ID + " ASC");
     }

@@ -2,7 +2,7 @@ package io.ucoin.app.model.sql.sqlite;
 
 import android.content.Context;
 
-import io.ucoin.app.content.DbProvider;
+import io.ucoin.app.UcoinUris;
 import io.ucoin.app.model.UcoinTxSignature;
 import io.ucoin.app.sqlite.SQLiteTable;
 
@@ -10,7 +10,7 @@ public class TxSignature extends Row
         implements UcoinTxSignature {
 
     public TxSignature(Context context, Long signatureId) {
-        super(context, DbProvider.TX_SIGNATURE_URI, signatureId);
+        super(context, UcoinUris.TX_SIGNATURE_URI, signatureId);
     }
 
     @Override

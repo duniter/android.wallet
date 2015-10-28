@@ -22,6 +22,5 @@
     <string name="self_certification_uri">self_certification/</string>
     <string name="contact_uri">contact/</string>
     <string name="operation_uri">operation/</string>
-
     <string name="lookup_uri">lookup/</string>
 </resources>

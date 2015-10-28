@@ -9,10 +9,7 @@ import android.os.Bundle;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.Volley;
 
-import io.ucoin.app.content.DbProvider;
-
 public class Application extends android.app.Application{
-
 
     public static final int ACTIVITY_LOOKUP = 0x1;
     public static final int ACTIVITY_CURRENCY_LIST = 0x2;
@@ -28,8 +25,6 @@ public class Application extends android.app.Application{
     public void onCreate(){
         super.onCreate();
         mContext = getApplicationContext();
-
-        DbProvider.initUris(mContext);
 
         //LOAD account
         AccountManager accountManager = AccountManager.get(this);

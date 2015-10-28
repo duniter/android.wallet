@@ -9,7 +9,7 @@ import android.provider.BaseColumns;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import io.ucoin.app.content.DbProvider;
+import io.ucoin.app.UcoinUris;
 import io.ucoin.app.model.UcoinTxIssuer;
 import io.ucoin.app.model.UcoinTxIssuers;
 import io.ucoin.app.sqlite.SQLiteTable;
@@ -30,7 +30,7 @@ final public class TxIssuers extends Table
     }
 
     private TxIssuers(Context context, Long txId, String selection, String[] selectionArgs, String sortOrder) {
-        super(context, DbProvider.TX_ISSUER_URI, selection, selectionArgs, sortOrder);
+        super(context, UcoinUris.TX_ISSUER_URI, selection, selectionArgs, sortOrder);
         mTxId = txId;
     }
 

@@ -2,7 +2,7 @@ package io.ucoin.app.model.sql.sqlite;
 
 import android.content.Context;
 
-import io.ucoin.app.content.DbProvider;
+import io.ucoin.app.UcoinUris;
 import io.ucoin.app.model.UcoinBlocks;
 import io.ucoin.app.model.UcoinContacts;
 import io.ucoin.app.model.UcoinCurrency;
@@ -18,7 +18,7 @@ public class Currency extends Row
         implements UcoinCurrency {
 
     public Currency(Context context, Long id) {
-        super(context, DbProvider.CURRENCY_URI, id);
+        super(context, UcoinUris.CURRENCY_URI, id);
     }
 
     @Override

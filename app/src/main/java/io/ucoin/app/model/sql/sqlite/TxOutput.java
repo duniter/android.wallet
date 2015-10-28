@@ -2,7 +2,7 @@ package io.ucoin.app.model.sql.sqlite;
 
 import android.content.Context;
 
-import io.ucoin.app.content.DbProvider;
+import io.ucoin.app.UcoinUris;
 import io.ucoin.app.model.UcoinTxOutput;
 import io.ucoin.app.sqlite.SQLiteTable;
 
@@ -10,7 +10,7 @@ public class TxOutput extends Row
         implements UcoinTxOutput {
 
     public TxOutput(Context context, Long outputId) {
-        super(context, DbProvider.TX_OUTPUT_URI, outputId);
+        super(context, UcoinUris.TX_OUTPUT_URI, outputId);
     }
 
     @Override

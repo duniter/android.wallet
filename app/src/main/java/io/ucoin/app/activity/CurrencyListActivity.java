@@ -21,8 +21,8 @@ import android.widget.ListView;
 
 import io.ucoin.app.Application;
 import io.ucoin.app.R;
+import io.ucoin.app.UcoinUris;
 import io.ucoin.app.adapter.CurrencyCursorAdapter;
-import io.ucoin.app.content.DbProvider;
 import io.ucoin.app.fragment.dialog.AddCurrencyDialogFragment;
 
 public class CurrencyListActivity extends ActionBarActivity
@@ -101,7 +101,7 @@ public class CurrencyListActivity extends ActionBarActivity
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         return new CursorLoader(
                 this,
-                DbProvider.CURRENCY_URI,
+                UcoinUris.CURRENCY_URI,
                 null, null, null,
                 BaseColumns._ID + " ASC");
     }

@@ -3,7 +3,7 @@ package io.ucoin.app.model.sql.sqlite;
 import android.content.ContentValues;
 import android.content.Context;
 
-import io.ucoin.app.content.DbProvider;
+import io.ucoin.app.UcoinUris;
 import io.ucoin.app.enumeration.DayOfWeek;
 import io.ucoin.app.enumeration.MembershipType;
 import io.ucoin.app.model.UcoinCertifications;
@@ -21,7 +21,7 @@ public class Identity extends Row
 
 
     public Identity(Context context, Long identityId) {
-        super(context, DbProvider.IDENTITY_URI, identityId);
+        super(context, UcoinUris.IDENTITY_URI, identityId);
     }
 
     @Override

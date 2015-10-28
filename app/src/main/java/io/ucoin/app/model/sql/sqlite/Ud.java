@@ -2,7 +2,7 @@ package io.ucoin.app.model.sql.sqlite;
 
 import android.content.Context;
 
-import io.ucoin.app.content.DbProvider;
+import io.ucoin.app.UcoinUris;
 import io.ucoin.app.enumeration.DayOfWeek;
 import io.ucoin.app.enumeration.Month;
 import io.ucoin.app.model.UcoinUd;
@@ -13,7 +13,7 @@ public class Ud extends Row
         implements UcoinUd {
 
     public Ud(Context context, Long udId) {
-        super(context, DbProvider.UD_URI, udId);
+        super(context, UcoinUris.UD_URI, udId);
     }
 
     @Override

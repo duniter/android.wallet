@@ -15,8 +15,8 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import io.ucoin.app.R;
+import io.ucoin.app.UcoinUris;
 import io.ucoin.app.adapter.SourceCursorAdapter;
-import io.ucoin.app.content.DbProvider;
 import io.ucoin.app.sqlite.SQLiteTable;
 
 
@@ -69,7 +69,7 @@ public class SourceListFragment extends ListFragment
 
         return new CursorLoader(
                 getActivity(),
-                DbProvider.SOURCE_URI,
+                UcoinUris.SOURCE_URI,
                 null, selection, selectionArgs,
                 SQLiteTable.Source.NUMBER +" DESC");
     }

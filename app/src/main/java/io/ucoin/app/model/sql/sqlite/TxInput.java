@@ -2,7 +2,7 @@ package io.ucoin.app.model.sql.sqlite;
 
 import android.content.Context;
 
-import io.ucoin.app.content.DbProvider;
+import io.ucoin.app.UcoinUris;
 import io.ucoin.app.enumeration.SourceType;
 import io.ucoin.app.model.UcoinTxInput;
 import io.ucoin.app.sqlite.SQLiteTable;
@@ -11,7 +11,7 @@ public class TxInput extends Row
         implements UcoinTxInput {
 
     public TxInput(Context context, Long inputId) {
-        super(context, DbProvider.TX_INPUT_URI, inputId);
+        super(context, UcoinUris.TX_INPUT_URI, inputId);
     }
 
     @Override

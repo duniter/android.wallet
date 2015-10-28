@@ -3,7 +3,7 @@ package io.ucoin.app.model.sql.sqlite;
 import android.content.ContentValues;
 import android.content.Context;
 
-import io.ucoin.app.content.DbProvider;
+import io.ucoin.app.UcoinUris;
 import io.ucoin.app.enumeration.SourceState;
 import io.ucoin.app.enumeration.SourceType;
 import io.ucoin.app.model.UcoinSource;
@@ -13,7 +13,7 @@ public class Source extends Row
         implements UcoinSource {
 
     protected Source(Context context, Long sourceId) {
-        super(context, DbProvider.SOURCE_URI, sourceId);
+        super(context, UcoinUris.SOURCE_URI, sourceId);
     }
 
     @Override

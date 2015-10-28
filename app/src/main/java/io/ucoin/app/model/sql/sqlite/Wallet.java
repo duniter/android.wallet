@@ -3,7 +3,7 @@ package io.ucoin.app.model.sql.sqlite;
 import android.content.ContentValues;
 import android.content.Context;
 
-import io.ucoin.app.content.DbProvider;
+import io.ucoin.app.UcoinUris;
 import io.ucoin.app.model.UcoinCurrency;
 import io.ucoin.app.model.UcoinSources;
 import io.ucoin.app.model.UcoinTxs;
@@ -16,7 +16,7 @@ public class Wallet extends Row
         implements UcoinWallet {
 
     public Wallet(Context context, Long walletId) {
-        super(context, DbProvider.WALLET_URI, walletId);
+        super(context, UcoinUris.WALLET_URI, walletId);
     }
 
     @Override

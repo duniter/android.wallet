@@ -20,10 +20,10 @@ import java.text.DecimalFormat;
 
 import io.ucoin.app.Application;
 import io.ucoin.app.R;
+import io.ucoin.app.UcoinUris;
 import io.ucoin.app.activity.CurrencyActivity;
 import io.ucoin.app.activity.TransferActivity;
 import io.ucoin.app.adapter.OperationSectionCursorAdapter;
-import io.ucoin.app.content.DbProvider;
 import io.ucoin.app.fragment.dialog.QrCodeDialogFragment;
 import io.ucoin.app.model.UcoinWallet;
 import io.ucoin.app.model.sql.sqlite.Wallet;
@@ -151,7 +151,7 @@ public class WalletFragment extends ListFragment
 
             return new CursorLoader(
                     getActivity(),
-                    DbProvider.WALLET_URI,
+                    UcoinUris.WALLET_URI,
                     null, selection, selectionArgs,
                     null);
         } else {
@@ -162,7 +162,7 @@ public class WalletFragment extends ListFragment
 
             return new CursorLoader(
                     getActivity(),
-                    DbProvider.OPERATION_URI,
+                    UcoinUris.OPERATION_URI,
                     null, selection, selectionArgs,
                     SQLiteView.Operation.TIME + " DESC");
         }

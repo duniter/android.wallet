@@ -32,8 +32,8 @@ import java.util.Map;
 
 import io.ucoin.app.Application;
 import io.ucoin.app.R;
+import io.ucoin.app.UcoinUris;
 import io.ucoin.app.adapter.SelfCertificationCursorAdapter;
-import io.ucoin.app.content.DbProvider;
 import io.ucoin.app.model.UcoinEndpoint;
 import io.ucoin.app.model.UcoinIdentity;
 import io.ucoin.app.model.UcoinSelfCertification;
@@ -136,7 +136,7 @@ public class SelfCertificationListFragment extends ListFragment
 
         return new CursorLoader(
                 getActivity(),
-                DbProvider.SELF_CERTIFICATION_URI,
+                UcoinUris.SELF_CERTIFICATION_URI,
                 null, selection, selectionArgs,
                 SQLiteTable.Source._ID + " DESC");
     }

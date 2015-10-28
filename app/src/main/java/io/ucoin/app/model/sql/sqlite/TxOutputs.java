@@ -9,7 +9,7 @@ import android.provider.BaseColumns;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import io.ucoin.app.content.DbProvider;
+import io.ucoin.app.UcoinUris;
 import io.ucoin.app.model.UcoinTxOutput;
 import io.ucoin.app.model.UcoinTxOutputs;
 import io.ucoin.app.model.http_api.TxHistory;
@@ -31,7 +31,7 @@ final public class TxOutputs extends Table
     }
 
     private TxOutputs(Context context, Long txId, String selection, String[] selectionArgs, String sortOrder) {
-        super(context, DbProvider.TX_OUTPUT_URI, selection, selectionArgs, sortOrder);
+        super(context, UcoinUris.TX_OUTPUT_URI, selection, selectionArgs, sortOrder);
         mTxId = txId;
     }
 

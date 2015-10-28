@@ -30,9 +30,9 @@ import java.util.Map;
 
 import io.ucoin.app.Application;
 import io.ucoin.app.R;
+import io.ucoin.app.UcoinUris;
 import io.ucoin.app.activity.LookupActivity;
 import io.ucoin.app.adapter.MemberCursorAdapter;
-import io.ucoin.app.content.DbProvider;
 import io.ucoin.app.model.UcoinBlock;
 import io.ucoin.app.model.UcoinEndpoint;
 import io.ucoin.app.model.UcoinIdentity;
@@ -190,7 +190,7 @@ public class MemberListFragment extends ListFragment
 
         return new CursorLoader(
                 getActivity(),
-                DbProvider.MEMBER_URI,
+                UcoinUris.MEMBER_URI,
                 null, selection, selectionArgs,
                 SQLiteView.Member.UID + " COLLATE NOCASE ASC");
     }

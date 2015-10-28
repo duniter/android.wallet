@@ -9,7 +9,7 @@ import android.provider.BaseColumns;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import io.ucoin.app.content.DbProvider;
+import io.ucoin.app.UcoinUris;
 import io.ucoin.app.model.UcoinMember;
 import io.ucoin.app.model.UcoinMembers;
 import io.ucoin.app.model.http_api.WotCertification;
@@ -30,7 +30,7 @@ public class Members extends Table
     }
 
     private Members(Context context, Long currencyId, String selection, String[] selectionArgs, String sortOrder) {
-        super(context, DbProvider.MEMBER_URI, selection, selectionArgs, sortOrder);
+        super(context, UcoinUris.MEMBER_URI, selection, selectionArgs, sortOrder);
         mCurrencyId = currencyId;
     }
 

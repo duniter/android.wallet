@@ -21,7 +21,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import io.ucoin.app.R;
-import io.ucoin.app.content.DbProvider;
+import io.ucoin.app.UcoinUris;
 import io.ucoin.app.sqlite.SQLiteTable;
 import io.ucoin.app.task.GenerateQRCodeTask;
 
@@ -80,7 +80,7 @@ public class QrCodeDialogFragment extends DialogFragment
 
         return new CursorLoader(
                 getActivity(),
-                DbProvider.WALLET_URI,
+                UcoinUris.WALLET_URI,
                 null, selection, selectionArgs,
                 null);
     }

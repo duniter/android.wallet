@@ -24,10 +24,10 @@ import java.util.Arrays;
 
 import io.ucoin.app.Application;
 import io.ucoin.app.R;
+import io.ucoin.app.UcoinUris;
 import io.ucoin.app.activity.AddContactActivity;
 import io.ucoin.app.activity.CurrencyActivity;
 import io.ucoin.app.adapter.ContactSectionCursorAdapter;
-import io.ucoin.app.content.DbProvider;
 import io.ucoin.app.sqlite.SQLiteTable;
 
 public class ContactListFragment extends ListFragment
@@ -127,7 +127,7 @@ SearchView.OnQueryTextListener{
 
         return new CursorLoader(
                 getActivity(),
-                DbProvider.CONTACT_URI,
+                UcoinUris.CONTACT_URI,
                 null, selection, selectionArgs,
                 SQLiteTable.Contact.NAME + " COLLATE NOCASE ASC");
     }

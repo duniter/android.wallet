@@ -10,7 +10,7 @@ import android.provider.BaseColumns;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import io.ucoin.app.content.DbProvider;
+import io.ucoin.app.UcoinUris;
 import io.ucoin.app.model.UcoinPeer;
 import io.ucoin.app.model.UcoinPeers;
 import io.ucoin.app.model.http_api.NetworkPeering;
@@ -30,7 +30,7 @@ final public class Peers extends Table
     }
 
     private Peers(Context context, Long currencyId, String selection, String[] selectionArgs, String sortOrder) {
-        super(context, DbProvider.PEER_URI, selection, selectionArgs, sortOrder);
+        super(context, UcoinUris.PEER_URI, selection, selectionArgs, sortOrder);
         mCurrencyId = currencyId;
     }
 
@@ -42,7 +42,7 @@ final public class Peers extends Table
         values.put(SQLiteTable.Peer.SIGNATURE, networkPeering.signature);
 
         ArrayList<ContentProviderOperation> operations = new ArrayList<>();
-        operations.add(ContentProviderOperation.newInsert(DbProvider.PEER_URI)
+        operations.add(ContentProviderOperation.newInsert(UcoinUris.PEER_URI)
                 .withValues(values)
                 .build());
 
@@ -54,7 +54,7 @@ final public class Peers extends Table
             values.put(SQLiteTable.Endpoint.IPV6, endpoint.ipv6);
             values.put(SQLiteTable.Endpoint.PORT, endpoint.port);
 
-            operations.add(ContentProviderOperation.newInsert(DbProvider.ENDPOINT_URI)
+            operations.add(ContentProviderOperation.newInsert(UcoinUris.ENDPOINT_URI)
                     .withValues(values)
                     .withValueBackReference(SQLiteTable.Endpoint.PEER_ID, 0)
                     .build());

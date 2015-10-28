@@ -21,9 +21,9 @@ import android.widget.ListView;
 
 import io.ucoin.app.Application;
 import io.ucoin.app.R;
+import io.ucoin.app.UcoinUris;
 import io.ucoin.app.activity.CurrencyActivity;
 import io.ucoin.app.adapter.WalletCursorAdapter;
-import io.ucoin.app.content.DbProvider;
 import io.ucoin.app.fragment.dialog.AddWalletDialogFragment;
 import io.ucoin.app.fragment.wallet.WalletFragment;
 import io.ucoin.app.sqlite.SQLiteTable;
@@ -119,7 +119,7 @@ public class WalletListFragment extends ListFragment
 
         return new CursorLoader(
                 getActivity(),
-                DbProvider.WALLET_URI,
+                UcoinUris.WALLET_URI,
                 null, selection, selectionArgs,
                 SQLiteTable.Wallet._ID + " ASC");
 

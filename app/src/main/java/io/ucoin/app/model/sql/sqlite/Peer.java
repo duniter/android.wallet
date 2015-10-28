@@ -2,7 +2,7 @@ package io.ucoin.app.model.sql.sqlite;
 
 import android.content.Context;
 
-import io.ucoin.app.content.DbProvider;
+import io.ucoin.app.UcoinUris;
 import io.ucoin.app.model.UcoinEndpoints;
 import io.ucoin.app.model.UcoinPeer;
 import io.ucoin.app.sqlite.SQLiteTable;
@@ -12,7 +12,7 @@ public class Peer extends Row
 
 
     public Peer(Context context, Long peerId) {
-        super(context, DbProvider.PEER_URI, peerId);
+        super(context, UcoinUris.PEER_URI, peerId);
     }
 
     @Override

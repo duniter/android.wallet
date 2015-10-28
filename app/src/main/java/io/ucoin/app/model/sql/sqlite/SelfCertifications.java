@@ -9,7 +9,7 @@ import android.provider.BaseColumns;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import io.ucoin.app.content.DbProvider;
+import io.ucoin.app.UcoinUris;
 import io.ucoin.app.enumeration.SelfCertificationState;
 import io.ucoin.app.model.UcoinSelfCertification;
 import io.ucoin.app.model.UcoinSelfCertifications;
@@ -30,7 +30,7 @@ final public class SelfCertifications extends Table
     }
 
     private SelfCertifications(Context context, Long identityId, String selection, String[] selectionArgs, String sortOrder) {
-        super(context, DbProvider.SELF_CERTIFICATION_URI, selection, selectionArgs, sortOrder);
+        super(context, UcoinUris.SELF_CERTIFICATION_URI, selection, selectionArgs, sortOrder);
         mIdentityId = identityId;
     }
 

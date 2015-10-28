@@ -2,7 +2,7 @@ package io.ucoin.app.model.sql.sqlite;
 
 import android.content.Context;
 
-import io.ucoin.app.content.DbProvider;
+import io.ucoin.app.UcoinUris;
 import io.ucoin.app.enumeration.EndpointProtocol;
 import io.ucoin.app.model.UcoinEndpoint;
 import io.ucoin.app.sqlite.SQLiteTable;
@@ -11,7 +11,7 @@ public class Endpoint extends Row
         implements UcoinEndpoint {
 
     public Endpoint(Context context, Long endpointId) {
-        super(context, DbProvider.ENDPOINT_URI, endpointId);
+        super(context, UcoinUris.ENDPOINT_URI, endpointId);
     }
 
     @Override

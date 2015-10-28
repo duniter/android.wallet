@@ -9,7 +9,7 @@ import android.provider.BaseColumns;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import io.ucoin.app.content.DbProvider;
+import io.ucoin.app.UcoinUris;
 import io.ucoin.app.model.UcoinContact;
 import io.ucoin.app.model.UcoinContacts;
 import io.ucoin.app.sqlite.SQLiteTable;
@@ -28,7 +28,7 @@ public class Contacts extends Table
     }
 
     private Contacts(Context context, Long currencyId, String selection, String[] selectionArgs, String sortOrder) {
-        super(context, DbProvider.CONTACT_URI, selection, selectionArgs, sortOrder);
+        super(context, UcoinUris.CONTACT_URI, selection, selectionArgs, sortOrder);
         mCurrencyId = currencyId;
     }
 

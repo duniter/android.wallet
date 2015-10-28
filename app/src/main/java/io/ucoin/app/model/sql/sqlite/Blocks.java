@@ -8,7 +8,7 @@ import android.net.Uri;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import io.ucoin.app.content.DbProvider;
+import io.ucoin.app.UcoinUris;
 import io.ucoin.app.model.UcoinBlock;
 import io.ucoin.app.model.UcoinBlocks;
 import io.ucoin.app.model.http_api.BlockchainBlock;
@@ -28,7 +28,7 @@ final public class Blocks extends Table
     }
 
     public Blocks(Context context, Long currencyId, String selection, String[] selectionArgs, String sortOrder) {
-        super(context, DbProvider.BLOCK_URI, selection, selectionArgs, sortOrder);
+        super(context, UcoinUris.BLOCK_URI, selection, selectionArgs, sortOrder);
         mCurrencyId = currencyId;
     }
 

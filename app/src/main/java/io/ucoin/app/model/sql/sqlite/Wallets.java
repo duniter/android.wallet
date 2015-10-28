@@ -9,7 +9,7 @@ import android.provider.BaseColumns;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import io.ucoin.app.content.DbProvider;
+import io.ucoin.app.UcoinUris;
 import io.ucoin.app.model.UcoinWallet;
 import io.ucoin.app.model.UcoinWallets;
 import io.ucoin.app.sqlite.SQLiteTable;
@@ -28,7 +28,7 @@ final public class Wallets extends Table
     }
 
     private Wallets(Context context, Long currencyId, String selection, String[] selectionArgs, String sortOrder) {
-        super(context, DbProvider.WALLET_URI, selection, selectionArgs, sortOrder);
+        super(context, UcoinUris.WALLET_URI, selection, selectionArgs, sortOrder);
         mCurrencyId = currencyId;
     }
 

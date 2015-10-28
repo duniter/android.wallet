@@ -17,8 +17,8 @@ import android.widget.Button;
 import android.widget.ListView;
 
 import io.ucoin.app.R;
+import io.ucoin.app.UcoinUris;
 import io.ucoin.app.adapter.SelfCertificationCursorAdapter;
-import io.ucoin.app.content.DbProvider;
 import io.ucoin.app.enumeration.MembershipType;
 import io.ucoin.app.enumeration.SelfCertificationState;
 import io.ucoin.app.fragment.identity.MembershipListFragment;
@@ -107,7 +107,7 @@ public class SelectSelfDialogFragment extends DialogFragment
 
         return new CursorLoader(
                 getActivity(),
-                DbProvider.SELF_CERTIFICATION_URI,
+                UcoinUris.SELF_CERTIFICATION_URI,
                 null, selection, selectionArgs,
                 SQLiteTable.Source._ID + " DESC");
     }

@@ -16,13 +16,14 @@ import android.provider.BaseColumns;
 import java.util.ArrayList;
 
 import io.ucoin.app.R;
+import io.ucoin.app.UcoinUris;
 import io.ucoin.app.sqlite.SQLiteHelper;
 import io.ucoin.app.sqlite.SQLiteTable;
 import io.ucoin.app.sqlite.SQLiteView;
 
 public class DbProvider extends ContentProvider implements SQLiteTable {
+    private UriMatcher uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 
-    public static final UriMatcher uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
     private static final int CURRENCY = 10;
     private static final int CURRENCY_ID = 11;
     private static final int IDENTITY = 20;
@@ -63,134 +64,67 @@ public class DbProvider extends ContentProvider implements SQLiteTable {
     private static final int OPERATION = 200;
     private static final int OPERATION_ID = 201;
 
-
-    public static Uri CURRENCY_URI;
-    public static Uri IDENTITY_URI;
-    public static Uri PEER_URI;
-    public static Uri ENDPOINT_URI;
-    public static Uri WALLET_URI;
-    public static Uri SOURCE_URI;
-    public static Uri TX_URI;
-    public static Uri TX_ISSUER_URI;
-    public static Uri TX_INPUT_URI;
-    public static Uri TX_OUTPUT_URI;
-    public static Uri TX_SIGNATURE_URI;
-    public static Uri MEMBER_URI;
-    public static Uri CERTIFICATION_URI;
-    public static Uri BLOCK_URI;
-    public static Uri UD_URI;
-    public static Uri MEMBERSHIP_URI;
-    public static Uri SELF_CERTIFICATION_URI;
-    public static Uri CONTACT_URI;
-    public static Uri OPERATION_URI;
-
     private SQLiteHelper mSQLiteHelper;
-
-    public static void initUris(Context context) {
-
-        String AUTHORITY = context.getString(R.string.AUTHORITY);
-
-        CURRENCY_URI = new Uri.Builder().scheme("content").authority(AUTHORITY)
-                .path(context.getString(R.string.currency_uri)).build();
-        IDENTITY_URI = new Uri.Builder().scheme("content").authority(AUTHORITY)
-                .path(context.getString(R.string.identity_uri)).build();
-        PEER_URI = new Uri.Builder().scheme("content").authority(AUTHORITY)
-                .path(context.getString(R.string.peer_uri)).build();
-        ENDPOINT_URI = new Uri.Builder().scheme("content").authority(AUTHORITY)
-                .path(context.getString(R.string.endpoint_uri)).build();
-        WALLET_URI = new Uri.Builder().scheme("content").authority(AUTHORITY)
-                .path(context.getString(R.string.wallet_uri)).build();
-        SOURCE_URI = new Uri.Builder().scheme("content").authority(AUTHORITY)
-                .path(context.getString(R.string.source_uri)).build();
-        TX_URI = new Uri.Builder().scheme("content").authority(AUTHORITY)
-                .path(context.getString(R.string.tx_uri)).build();
-        TX_ISSUER_URI = new Uri.Builder().scheme("content").authority(AUTHORITY)
-                .path(context.getString(R.string.tx_issuer_uri)).build();
-        TX_INPUT_URI = new Uri.Builder().scheme("content").authority(AUTHORITY)
-                .path(context.getString(R.string.tx_input_uri)).build();
-        TX_OUTPUT_URI = new Uri.Builder().scheme("content").authority(AUTHORITY)
-                .path(context.getString(R.string.tx_output_uri)).build();
-        TX_SIGNATURE_URI = new Uri.Builder().scheme("content").authority(AUTHORITY)
-                .path(context.getString(R.string.tx_signature_uri)).build();
-        MEMBER_URI = new Uri.Builder().scheme("content").authority(AUTHORITY)
-                .path(context.getString(R.string.member_uri)).build();
-        CERTIFICATION_URI = new Uri.Builder().scheme("content").authority(AUTHORITY)
-                .path(context.getString(R.string.certification_uri)).build();
-
-        BLOCK_URI = new Uri.Builder().scheme("content").authority(AUTHORITY)
-                .path(context.getString(R.string.block_uri)).build();
-        UD_URI = new Uri.Builder().scheme("content").authority(AUTHORITY)
-                .path(context.getString(R.string.ud_uri)).build();
-        MEMBERSHIP_URI = new Uri.Builder().scheme("content").authority(AUTHORITY)
-                .path(context.getString(R.string.membership_uri)).build();
-        SELF_CERTIFICATION_URI = new Uri.Builder().scheme("content").authority(AUTHORITY)
-                .path(context.getString(R.string.self_certification_uri)).build();
-        CONTACT_URI = new Uri.Builder().scheme("content").authority(AUTHORITY)
-                .path(context.getString(R.string.contact_uri)).build();
-        OPERATION_URI = new Uri.Builder().scheme("content").authority(AUTHORITY)
-                .path(context.getString(R.string.operation_uri)).build();
-
-
-        uriMatcher.addURI(AUTHORITY, context.getString(R.string.currency_uri), CURRENCY);
-        uriMatcher.addURI(AUTHORITY, context.getString(R.string.currency_uri) + "#", CURRENCY_ID);
-
-        uriMatcher.addURI(AUTHORITY, context.getString(R.string.identity_uri), IDENTITY);
-        uriMatcher.addURI(AUTHORITY, context.getString(R.string.identity_uri) + "#", IDENTITY_ID);
-
-        uriMatcher.addURI(AUTHORITY, context.getString(R.string.peer_uri), PEER);
-        uriMatcher.addURI(AUTHORITY, context.getString(R.string.peer_uri) + "#", PEER_ID);
-
-        uriMatcher.addURI(AUTHORITY, context.getString(R.string.endpoint_uri), ENDPOINT);
-        uriMatcher.addURI(AUTHORITY, context.getString(R.string.endpoint_uri) + "#", ENDPOINT_ID);
-
-        uriMatcher.addURI(AUTHORITY, context.getString(R.string.wallet_uri), WALLET);
-        uriMatcher.addURI(AUTHORITY, context.getString(R.string.wallet_uri) + "#", WALLET_ID);
-
-        uriMatcher.addURI(AUTHORITY, context.getString(R.string.source_uri), SOURCE);
-        uriMatcher.addURI(AUTHORITY, context.getString(R.string.source_uri) + "#", SOURCE_ID);
-
-        uriMatcher.addURI(AUTHORITY, context.getString(R.string.tx_uri), TX);
-        uriMatcher.addURI(AUTHORITY, context.getString(R.string.tx_uri) + "#", TX_ID);
-
-        uriMatcher.addURI(AUTHORITY, context.getString(R.string.tx_issuer_uri), TX_ISSUER);
-        uriMatcher.addURI(AUTHORITY, context.getString(R.string.tx_issuer_uri) + "#", TX_ISSUER_ID);
-        uriMatcher.addURI(AUTHORITY, context.getString(R.string.tx_input_uri), TX_INPUT);
-        uriMatcher.addURI(AUTHORITY, context.getString(R.string.tx_input_uri) + "#", TX_INPUT_ID);
-        uriMatcher.addURI(AUTHORITY, context.getString(R.string.tx_output_uri), TX_OUTPUT);
-        uriMatcher.addURI(AUTHORITY, context.getString(R.string.tx_output_uri) + "#", TX_OUTPUT_ID);
-        uriMatcher.addURI(AUTHORITY, context.getString(R.string.tx_signature_uri), TX_SIGNATURE);
-        uriMatcher.addURI(AUTHORITY, context.getString(R.string.tx_signature_uri) + "#", TX_SIGNATURE_ID);
-
-        uriMatcher.addURI(AUTHORITY, context.getString(R.string.member_uri), MEMBER);
-        uriMatcher.addURI(AUTHORITY, context.getString(R.string.member_uri) + "#", MEMBER_ID);
-
-        uriMatcher.addURI(AUTHORITY, context.getString(R.string.certification_uri), CERTIFICATION);
-        uriMatcher.addURI(AUTHORITY, context.getString(R.string.certification_uri) + "#", CERTIFICATION_ID);
-
-        uriMatcher.addURI(AUTHORITY, context.getString(R.string.block_uri), BLOCK);
-        uriMatcher.addURI(AUTHORITY, context.getString(R.string.block_uri) + "#", BLOCK_ID);
-
-        uriMatcher.addURI(AUTHORITY, context.getString(R.string.ud_uri), UD);
-        uriMatcher.addURI(AUTHORITY, context.getString(R.string.ud_uri) + "#", UD_ID);
-
-        uriMatcher.addURI(AUTHORITY, context.getString(R.string.membership_uri), MEMBERSHIP);
-        uriMatcher.addURI(AUTHORITY, context.getString(R.string.membership_uri) + "#", MEMBERSHIP_ID);
-
-        uriMatcher.addURI(AUTHORITY, context.getString(R.string.self_certification_uri), SELF_CERTIFICATION);
-        uriMatcher.addURI(AUTHORITY, context.getString(R.string.self_certification_uri) + "#", SELF_CERTIFICATION_ID);
-
-        uriMatcher.addURI(AUTHORITY, context.getString(R.string.contact_uri), CONTACT);
-        uriMatcher.addURI(AUTHORITY, context.getString(R.string.contact_uri) + "#", CONTACT_ID);
-
-        uriMatcher.addURI(AUTHORITY, context.getString(R.string.operation_uri), OPERATION);
-        uriMatcher.addURI(AUTHORITY, context.getString(R.string.operation_uri) + "#", OPERATION_ID);
-    }
 
     @Override
     public boolean onCreate() {
         Context context = getContext();
+
         mSQLiteHelper = new SQLiteHelper(context, context.getString(R.string.DBNAME),
                 null, context.getResources().getInteger(R.integer.DBVERSION));
+        uriMatcher.addURI(UcoinUris.CURRENCY_URI.getAuthority(), UcoinUris.CURRENCY_URI.getPath(), CURRENCY);
+        uriMatcher.addURI(UcoinUris.CURRENCY_URI.getAuthority(), UcoinUris.CURRENCY_URI.getPath() + "#", CURRENCY_ID);
+
+        uriMatcher.addURI(UcoinUris.IDENTITY_URI.getAuthority(), UcoinUris.IDENTITY_URI.getPath(), IDENTITY);
+        uriMatcher.addURI(UcoinUris.IDENTITY_URI.getAuthority(), UcoinUris.IDENTITY_URI.getPath() + "#", IDENTITY_ID);
+
+        uriMatcher.addURI(UcoinUris.PEER_URI.getAuthority(), UcoinUris.PEER_URI.getPath(), PEER);
+        uriMatcher.addURI(UcoinUris.PEER_URI.getAuthority(), UcoinUris.PEER_URI.getPath() + "#", PEER_ID);
+
+        uriMatcher.addURI(UcoinUris.ENDPOINT_URI.getAuthority(), UcoinUris.ENDPOINT_URI.getPath(), ENDPOINT);
+        uriMatcher.addURI(UcoinUris.ENDPOINT_URI.getAuthority(), UcoinUris.ENDPOINT_URI.getPath() + "#", ENDPOINT_ID);
+
+        uriMatcher.addURI(UcoinUris.WALLET_URI.getAuthority(), UcoinUris.WALLET_URI.getPath(), WALLET);
+        uriMatcher.addURI(UcoinUris.WALLET_URI.getAuthority(), UcoinUris.WALLET_URI.getPath() + "#", WALLET_ID);
+
+        uriMatcher.addURI(UcoinUris.SOURCE_URI.getAuthority(), UcoinUris.SOURCE_URI.getPath(), SOURCE);
+        uriMatcher.addURI(UcoinUris.SOURCE_URI.getAuthority(), UcoinUris.SOURCE_URI.getPath() + "#", SOURCE_ID);
+
+        uriMatcher.addURI(UcoinUris.TX_URI.getAuthority(), UcoinUris.TX_URI.getPath(), TX);
+        uriMatcher.addURI(UcoinUris.TX_URI.getAuthority(), UcoinUris.TX_URI.getPath() + "#", TX_ID);
+
+        uriMatcher.addURI(UcoinUris.TX_ISSUER_URI.getAuthority(), UcoinUris.TX_ISSUER_URI.getPath(), TX_ISSUER);
+        uriMatcher.addURI(UcoinUris.TX_ISSUER_URI.getAuthority(), UcoinUris.TX_ISSUER_URI.getPath() + "#", TX_ISSUER_ID);
+        uriMatcher.addURI(UcoinUris.TX_INPUT_URI.getAuthority(), UcoinUris.TX_INPUT_URI.getPath(), TX_INPUT);
+        uriMatcher.addURI(UcoinUris.TX_INPUT_URI.getAuthority(), UcoinUris.TX_INPUT_URI.getPath() + "#", TX_INPUT_ID);
+        uriMatcher.addURI(UcoinUris.TX_OUTPUT_URI.getAuthority(), UcoinUris.TX_OUTPUT_URI.getPath(), TX_OUTPUT);
+        uriMatcher.addURI(UcoinUris.TX_OUTPUT_URI.getAuthority(), UcoinUris.TX_OUTPUT_URI.getPath() + "#", TX_OUTPUT_ID);
+        uriMatcher.addURI(UcoinUris.TX_SIGNATURE_URI.getAuthority(), UcoinUris.TX_SIGNATURE_URI.getPath(), TX_SIGNATURE);
+        uriMatcher.addURI(UcoinUris.TX_SIGNATURE_URI.getAuthority(), UcoinUris.TX_SIGNATURE_URI.getPath() + "#", TX_SIGNATURE_ID);
+
+        uriMatcher.addURI(UcoinUris.MEMBER_URI.getAuthority(), UcoinUris.MEMBER_URI.getPath(), MEMBER);
+        uriMatcher.addURI(UcoinUris.MEMBER_URI.getAuthority(), UcoinUris.MEMBER_URI.getPath() + "#", MEMBER_ID);
+
+        uriMatcher.addURI(UcoinUris.CERTIFICATION_URI.getAuthority(), UcoinUris.CERTIFICATION_URI.getPath(), CERTIFICATION);
+        uriMatcher.addURI(UcoinUris.CERTIFICATION_URI.getAuthority(), UcoinUris.CERTIFICATION_URI.getPath() + "#", CERTIFICATION_ID);
+
+        uriMatcher.addURI(UcoinUris.BLOCK_URI.getAuthority(), UcoinUris.BLOCK_URI.getPath(), BLOCK);
+        uriMatcher.addURI(UcoinUris.BLOCK_URI.getAuthority(), UcoinUris.BLOCK_URI.getPath() + "#", BLOCK_ID);
+
+        uriMatcher.addURI(UcoinUris.UD_URI.getAuthority(), UcoinUris.UD_URI.getPath(), UD);
+        uriMatcher.addURI(UcoinUris.UD_URI.getAuthority(), UcoinUris.UD_URI.getPath() + "#", UD_ID);
+
+        uriMatcher.addURI(UcoinUris.MEMBERSHIP_URI.getAuthority(), UcoinUris.MEMBERSHIP_URI.getPath(), MEMBERSHIP);
+        uriMatcher.addURI(UcoinUris.MEMBERSHIP_URI.getAuthority(), UcoinUris.MEMBERSHIP_URI.getPath() + "#", MEMBERSHIP_ID);
+
+        uriMatcher.addURI(UcoinUris.SELF_CERTIFICATION_URI.getAuthority(), UcoinUris.SELF_CERTIFICATION_URI.getPath(), SELF_CERTIFICATION);
+        uriMatcher.addURI(UcoinUris.SELF_CERTIFICATION_URI.getAuthority(), UcoinUris.SELF_CERTIFICATION_URI.getPath() + "#", SELF_CERTIFICATION_ID);
+
+        uriMatcher.addURI(UcoinUris.CONTACT_URI.getAuthority(), UcoinUris.CONTACT_URI.getPath(), CONTACT);
+        uriMatcher.addURI(UcoinUris.CONTACT_URI.getAuthority(), UcoinUris.CONTACT_URI.getPath() + "#", CONTACT_ID);
+
+        uriMatcher.addURI(UcoinUris.OPERATION_URI.getAuthority(), UcoinUris.OPERATION_URI.getPath(), OPERATION);
+        uriMatcher.addURI(UcoinUris.OPERATION_URI.getAuthority(), UcoinUris.OPERATION_URI.getPath() + "#", OPERATION_ID);
 
         return true;
     }
@@ -459,75 +393,75 @@ public class DbProvider extends ContentProvider implements SQLiteTable {
         switch (uriType) {
             case CURRENCY:
                 id = db.insertWithOnConflict(Currency.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_IGNORE);
-                uri = Uri.parse(CURRENCY_URI + Long.toString(id));
+                uri = Uri.parse(UcoinUris.CURRENCY_URI + Long.toString(id));
                 break;
             case IDENTITY:
                 id = db.insert(Identity.TABLE_NAME, null, values);
-                uri = Uri.parse(IDENTITY_URI + Long.toString(id));
+                uri = Uri.parse(UcoinUris.IDENTITY_URI + Long.toString(id));
                 break;
             case PEER:
                 id = db.insertWithOnConflict(Peer.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_REPLACE);
-                uri = Uri.parse(PEER_URI + Long.toString(id));
+                uri = Uri.parse(UcoinUris.PEER_URI + Long.toString(id));
                 break;
             case ENDPOINT:
                 id = db.insertWithOnConflict(Endpoint.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_REPLACE);
-                uri = Uri.parse(ENDPOINT_URI + Long.toString(id));
+                uri = Uri.parse(UcoinUris.ENDPOINT_URI + Long.toString(id));
                 break;
             case WALLET:
                 id = db.insertWithOnConflict(Wallet.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_IGNORE);
-                uri = Uri.parse(WALLET_URI + Long.toString(id));
+                uri = Uri.parse(UcoinUris.WALLET_URI + Long.toString(id));
                 break;
             case SOURCE:
                 id = db.insertWithOnConflict(Source.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_IGNORE);
-                uri = Uri.parse(SOURCE_URI + Long.toString(id));
+                uri = Uri.parse(UcoinUris.SOURCE_URI + Long.toString(id));
                 break;
             case MEMBER:
                 id = db.insertWithOnConflict(Member.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_IGNORE);
-                uri = Uri.parse(MEMBER_URI + Long.toString(id));
+                uri = Uri.parse(UcoinUris.MEMBER_URI + Long.toString(id));
                 break;
             case CERTIFICATION:
                 id = db.insertWithOnConflict(Certification.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_IGNORE);
-                uri = Uri.parse(CERTIFICATION_URI + Long.toString(id));
+                uri = Uri.parse(UcoinUris.CERTIFICATION_URI + Long.toString(id));
                 break;
             case BLOCK:
                 id = db.insertWithOnConflict(Block.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_IGNORE);
-                uri = Uri.parse(BLOCK_URI + Long.toString(id));
+                uri = Uri.parse(UcoinUris.BLOCK_URI + Long.toString(id));
                 break;
             case TX:
                 id = db.insertWithOnConflict(Tx.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_IGNORE);
-                uri = Uri.parse(TX_URI + Long.toString(id));
+                uri = Uri.parse(UcoinUris.TX_URI + Long.toString(id));
                 break;
             case TX_ISSUER:
                 id = db.insertWithOnConflict(TxIssuer.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_FAIL);
-                uri = Uri.parse(TX_ISSUER_URI + Long.toString(id));
+                uri = Uri.parse(UcoinUris.TX_ISSUER_URI + Long.toString(id));
                 break;
             case TX_INPUT:
                 id = db.insertWithOnConflict(TxInput.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_FAIL);
-                uri = Uri.parse(TX_INPUT_URI + Long.toString(id));
+                uri = Uri.parse(UcoinUris.TX_INPUT_URI + Long.toString(id));
                 break;
             case TX_OUTPUT:
                 id = db.insertWithOnConflict(TxOutput.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_FAIL);
-                uri = Uri.parse(TX_OUTPUT_URI + Long.toString(id));
+                uri = Uri.parse(UcoinUris.TX_OUTPUT_URI + Long.toString(id));
                 break;
             case TX_SIGNATURE:
                 id = db.insertWithOnConflict(TxSignature.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_FAIL);
-                uri = Uri.parse(TX_SIGNATURE_URI + Long.toString(id));
+                uri = Uri.parse(UcoinUris.TX_SIGNATURE_URI + Long.toString(id));
                 break;
             case UD:
                 id = db.insertWithOnConflict(Ud.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_IGNORE);
-                uri = Uri.parse(UD_URI + Long.toString(id));
+                uri = Uri.parse(UcoinUris.UD_URI + Long.toString(id));
                 break;
             case MEMBERSHIP:
                 id = db.insertWithOnConflict(Membership.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_IGNORE);
-                uri = Uri.parse(MEMBERSHIP_URI + Long.toString(id));
+                uri = Uri.parse(UcoinUris.MEMBERSHIP_URI + Long.toString(id));
                 break;
             case SELF_CERTIFICATION:
                 id = db.insertWithOnConflict(SelfCertification.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_IGNORE);
-                uri = Uri.parse(SELF_CERTIFICATION_URI + Long.toString(id));
+                uri = Uri.parse(UcoinUris.SELF_CERTIFICATION_URI + Long.toString(id));
                 break;
             case CONTACT:
                 id = db.insertWithOnConflict(Contact.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_IGNORE);
-                uri = Uri.parse(CONTACT_URI + Long.toString(id));
+                uri = Uri.parse(UcoinUris.CONTACT_URI + Long.toString(id));
                 break;
 
             default:
@@ -808,31 +742,31 @@ public class DbProvider extends ContentProvider implements SQLiteTable {
         switch (uriType) {
             case CURRENCY:
             case CURRENCY_ID:
-                getContext().getContentResolver().notifyChange(CURRENCY_URI, null);
+                getContext().getContentResolver().notifyChange(UcoinUris.CURRENCY_URI, null);
                 break;
             case IDENTITY:
             case IDENTITY_ID:
-                getContext().getContentResolver().notifyChange(IDENTITY_URI, null);
+                getContext().getContentResolver().notifyChange(UcoinUris.IDENTITY_URI, null);
                 notifyChange(CURRENCY);
                 break;
             case PEER:
             case PEER_ID:
-                getContext().getContentResolver().notifyChange(PEER_URI, null);
+                getContext().getContentResolver().notifyChange(UcoinUris.PEER_URI, null);
                 notifyChange(CURRENCY);
                 break;
             case ENDPOINT:
             case ENDPOINT_ID:
-                getContext().getContentResolver().notifyChange(ENDPOINT_URI, null);
+                getContext().getContentResolver().notifyChange(UcoinUris.ENDPOINT_URI, null);
                 notifyChange(PEER);
                 break;
             case WALLET:
             case WALLET_ID:
-                getContext().getContentResolver().notifyChange(WALLET_URI, null);
+                getContext().getContentResolver().notifyChange(UcoinUris.WALLET_URI, null);
                 notifyChange(CURRENCY);
                 break;
             case SOURCE:
             case SOURCE_ID:
-                getContext().getContentResolver().notifyChange(SOURCE_URI, null);
+                getContext().getContentResolver().notifyChange(UcoinUris.SOURCE_URI, null);
                 notifyChange(WALLET);
                 break;
             case TX:
@@ -845,46 +779,46 @@ public class DbProvider extends ContentProvider implements SQLiteTable {
             case TX_OUTPUT_ID:
             case TX_SIGNATURE:
             case TX_SIGNATURE_ID:
-                getContext().getContentResolver().notifyChange(TX_URI, null);
-                getContext().getContentResolver().notifyChange(OPERATION_URI, null);
+                getContext().getContentResolver().notifyChange(UcoinUris.TX_URI, null);
+                getContext().getContentResolver().notifyChange(UcoinUris.OPERATION_URI, null);
                 notifyChange(WALLET);
                 break;
             case MEMBER:
             case MEMBER_ID:
-                getContext().getContentResolver().notifyChange(MEMBER_URI, null);
+                getContext().getContentResolver().notifyChange(UcoinUris.MEMBER_URI, null);
                 notifyChange(CERTIFICATION);
                 notifyChange(CURRENCY);
                 break;
             case CERTIFICATION:
             case CERTIFICATION_ID:
-                getContext().getContentResolver().notifyChange(CERTIFICATION_URI, null);
-                getContext().getContentResolver().notifyChange(IDENTITY_URI, null);
+                getContext().getContentResolver().notifyChange(UcoinUris.CERTIFICATION_URI, null);
+                getContext().getContentResolver().notifyChange(UcoinUris.IDENTITY_URI, null);
                 break;
             case BLOCK:
             case BLOCK_ID:
-                getContext().getContentResolver().notifyChange(UD_URI, null);
-                getContext().getContentResolver().notifyChange(CURRENCY_URI, null);
-                getContext().getContentResolver().notifyChange(WALLET_URI, null);
-                getContext().getContentResolver().notifyChange(BLOCK_URI, null);
+                getContext().getContentResolver().notifyChange(UcoinUris.UD_URI, null);
+                getContext().getContentResolver().notifyChange(UcoinUris.CURRENCY_URI, null);
+                getContext().getContentResolver().notifyChange(UcoinUris.WALLET_URI, null);
+                getContext().getContentResolver().notifyChange(UcoinUris.BLOCK_URI, null);
                 notifyChange(CURRENCY);
                 break;
             case UD:
             case UD_ID:
-                getContext().getContentResolver().notifyChange(UD_URI, null);
-                getContext().getContentResolver().notifyChange(OPERATION_URI, null);
+                getContext().getContentResolver().notifyChange(UcoinUris.UD_URI, null);
+                getContext().getContentResolver().notifyChange(UcoinUris.OPERATION_URI, null);
                 notifyChange(WALLET);
                 break;
             case MEMBERSHIP:
             case MEMBERSHIP_ID:
-                getContext().getContentResolver().notifyChange(MEMBERSHIP_URI, null);
+                getContext().getContentResolver().notifyChange(UcoinUris.MEMBERSHIP_URI, null);
                 break;
             case SELF_CERTIFICATION:
             case SELF_CERTIFICATION_ID:
-                getContext().getContentResolver().notifyChange(SELF_CERTIFICATION_URI, null);
+                getContext().getContentResolver().notifyChange(UcoinUris.SELF_CERTIFICATION_URI, null);
                 break;
             case CONTACT:
             case CONTACT_ID:
-                getContext().getContentResolver().notifyChange(CONTACT_URI, null);
+                getContext().getContentResolver().notifyChange(UcoinUris.CONTACT_URI, null);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown URI type: " + uriType);

@@ -9,7 +9,7 @@ import android.provider.BaseColumns;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import io.ucoin.app.content.DbProvider;
+import io.ucoin.app.UcoinUris;
 import io.ucoin.app.model.UcoinCurrencies;
 import io.ucoin.app.model.UcoinCurrency;
 import io.ucoin.app.model.http_api.BlockchainParameter;
@@ -28,7 +28,7 @@ final public class Currencies extends Table
     }
 
     private Currencies(Context context, String selection, String[] selectionArgs, String sortOrder) {
-        super(context, DbProvider.CURRENCY_URI, selection, selectionArgs, sortOrder);
+        super(context, UcoinUris.CURRENCY_URI, selection, selectionArgs, sortOrder);
     }
 
     @Override

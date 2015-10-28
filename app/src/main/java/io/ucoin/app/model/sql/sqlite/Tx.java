@@ -3,7 +3,7 @@ package io.ucoin.app.model.sql.sqlite;
 import android.content.ContentValues;
 import android.content.Context;
 
-import io.ucoin.app.content.DbProvider;
+import io.ucoin.app.UcoinUris;
 import io.ucoin.app.enumeration.DayOfWeek;
 import io.ucoin.app.enumeration.Month;
 import io.ucoin.app.enumeration.TxDirection;
@@ -21,7 +21,7 @@ public class Tx extends Row
         implements UcoinTx {
 
     public Tx(Context context, Long txId) {
-        super(context, DbProvider.TX_URI, txId);
+        super(context, UcoinUris.TX_URI, txId);
     }
 
     @Override

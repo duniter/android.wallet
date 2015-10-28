@@ -31,8 +31,8 @@ import java.util.Map;
 
 import io.ucoin.app.Application;
 import io.ucoin.app.R;
+import io.ucoin.app.UcoinUris;
 import io.ucoin.app.adapter.MembershipCursorAdapter;
-import io.ucoin.app.content.DbProvider;
 import io.ucoin.app.enumeration.MembershipType;
 import io.ucoin.app.fragment.dialog.SelectSelfDialogFragment;
 import io.ucoin.app.model.UcoinBlock;
@@ -151,7 +151,7 @@ public class MembershipListFragment extends ListFragment
 
             return new CursorLoader(
                     getActivity(),
-                    DbProvider.MEMBERSHIP_URI,
+                    UcoinUris.MEMBERSHIP_URI,
                     null, selection, selectionArgs,
                     SQLiteView.Membership.TIME + " DESC");
         } else {
@@ -162,7 +162,7 @@ public class MembershipListFragment extends ListFragment
 
             return new CursorLoader(
                     getActivity(),
-                    DbProvider.IDENTITY_URI,
+                    UcoinUris.IDENTITY_URI,
                     null, selection, selectionArgs,
                     null);
         }

@@ -22,8 +22,8 @@ import android.widget.ImageButton;
 
 import io.ucoin.app.BuildConfig;
 import io.ucoin.app.R;
+import io.ucoin.app.UcoinUris;
 import io.ucoin.app.adapter.PeerCursorTreeAdapter;
-import io.ucoin.app.content.DbProvider;
 import io.ucoin.app.fragment.dialog.AddPeerDialogFragment;
 import io.ucoin.app.model.sql.sqlite.Peer;
 import io.ucoin.app.sqlite.SQLiteTable;
@@ -105,7 +105,7 @@ public class PeerListFragment extends Fragment
             String selectionArgs[] = new String[]{currencyId.toString()};
             return new CursorLoader(
                     getActivity(),
-                    DbProvider.PEER_URI,
+                    UcoinUris.PEER_URI,
                     null, selection, selectionArgs,
                     BaseColumns._ID + " ASC");
         } else {
@@ -114,7 +114,7 @@ public class PeerListFragment extends Fragment
             String selectionArgs[] = new String[]{peerId.toString()};
             return new CursorLoader(
                     getActivity(),
-                    DbProvider.ENDPOINT_URI,
+                    UcoinUris.ENDPOINT_URI,
                     null, selection, selectionArgs,
                     BaseColumns._ID + " ASC ");
         }

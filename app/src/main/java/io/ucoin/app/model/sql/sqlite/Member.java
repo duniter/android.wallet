@@ -3,7 +3,7 @@ package io.ucoin.app.model.sql.sqlite;
 import android.content.ContentValues;
 import android.content.Context;
 
-import io.ucoin.app.content.DbProvider;
+import io.ucoin.app.UcoinUris;
 import io.ucoin.app.model.UcoinIdentity;
 import io.ucoin.app.model.UcoinMember;
 import io.ucoin.app.sqlite.SQLiteTable;
@@ -12,7 +12,7 @@ public class Member extends Row
         implements UcoinMember {
 
     public Member(Context context, Long memberId) {
-        super(context, DbProvider.MEMBER_URI, memberId);
+        super(context, UcoinUris.MEMBER_URI, memberId);
     }
 
     @Override

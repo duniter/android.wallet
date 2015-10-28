@@ -9,7 +9,7 @@ import android.provider.BaseColumns;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import io.ucoin.app.content.DbProvider;
+import io.ucoin.app.UcoinUris;
 import io.ucoin.app.model.UcoinUd;
 import io.ucoin.app.model.UcoinUds;
 import io.ucoin.app.model.http_api.UdHistory;
@@ -29,7 +29,7 @@ final public class Uds extends Table
     }
 
     private Uds(Context context, Long walletId, String selection, String[] selectionArgs, String sortOrder) {
-        super(context, DbProvider.UD_URI, selection, selectionArgs, sortOrder);
+        super(context, UcoinUris.UD_URI, selection, selectionArgs, sortOrder);
         mWalletId = walletId;
     }
 

@@ -21,8 +21,8 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import io.ucoin.app.R;
+import io.ucoin.app.UcoinUris;
 import io.ucoin.app.activity.CurrencyActivity;
-import io.ucoin.app.content.DbProvider;
 import io.ucoin.app.fragment.dialog.AddIdentityDialogFragment;
 import io.ucoin.app.fragment.identity.MemberListFragment;
 import io.ucoin.app.fragment.identity.MembershipListFragment;
@@ -127,7 +127,7 @@ public class IdentityFragment extends Fragment
 
         return new CursorLoader(
                 getActivity(),
-                DbProvider.IDENTITY_URI,
+                UcoinUris.IDENTITY_URI,
                 null, selection, selectionArgs,
                 BaseColumns._ID + " ASC");
     }

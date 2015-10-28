@@ -10,7 +10,7 @@ import android.provider.BaseColumns;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import io.ucoin.app.content.DbProvider;
+import io.ucoin.app.UcoinUris;
 import io.ucoin.app.enumeration.SourceState;
 import io.ucoin.app.enumeration.SourceType;
 import io.ucoin.app.model.UcoinSource;
@@ -32,7 +32,7 @@ final public class Sources extends Table
     }
 
     private Sources(Context context, Long walletId, String selection, String selectionsArgs[], String sortOrder) {
-        super(context, DbProvider.SOURCE_URI, selection, selectionsArgs, sortOrder);
+        super(context, UcoinUris.SOURCE_URI, selection, selectionsArgs, sortOrder);
         mWalletId = walletId;
     }
 
@@ -57,13 +57,13 @@ final public class Sources extends Table
     @Override
     public UcoinSources set(TxSources sources) {
         ArrayList<ContentProviderOperation> operations = new ArrayList<>();
-        operations.add(ContentProviderOperation.newDelete(DbProvider.SOURCE_URI)
+        operations.add(ContentProviderOperation.newDelete(UcoinUris.SOURCE_URI)
                         .withSelection(SQLiteTable.Source.WALLET_ID + "=?", new String[]{mWalletId.toString()})
                         .build()
         );
 
         for (TxSources.Source source : sources.sources) {
-            operations.add(ContentProviderOperation.newInsert(DbProvider.SOURCE_URI)
+            operations.add(ContentProviderOperation.newInsert(UcoinUris.SOURCE_URI)
                     .withValue(SQLiteTable.Source.WALLET_ID, mWalletId)
                     .withValue(SQLiteTable.Source.TYPE, source.type.name())
                     .withValue(SQLiteTable.Source.FINGERPRINT, source.fingerprint)

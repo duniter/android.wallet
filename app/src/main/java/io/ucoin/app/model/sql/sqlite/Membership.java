@@ -3,7 +3,7 @@ package io.ucoin.app.model.sql.sqlite;
 import android.content.ContentValues;
 import android.content.Context;
 
-import io.ucoin.app.content.DbProvider;
+import io.ucoin.app.UcoinUris;
 import io.ucoin.app.enumeration.DayOfWeek;
 import io.ucoin.app.enumeration.MembershipState;
 import io.ucoin.app.enumeration.MembershipType;
@@ -17,7 +17,7 @@ public class Membership extends Row
         implements UcoinMembership {
 
     public Membership(Context context, Long membershipId) {
-        super(context, DbProvider.MEMBERSHIP_URI, membershipId);
+        super(context, UcoinUris.MEMBERSHIP_URI, membershipId);
     }
 
     @Override

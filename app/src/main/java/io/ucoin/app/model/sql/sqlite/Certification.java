@@ -3,7 +3,7 @@ package io.ucoin.app.model.sql.sqlite;
 import android.content.ContentValues;
 import android.content.Context;
 
-import io.ucoin.app.content.DbProvider;
+import io.ucoin.app.UcoinUris;
 import io.ucoin.app.enumeration.CertificationState;
 import io.ucoin.app.enumeration.CertificationType;
 import io.ucoin.app.model.UcoinCertification;
@@ -15,7 +15,7 @@ public class Certification extends Row
         implements UcoinCertification {
 
     public Certification(Context context, Long certificationId) {
-        super(context, DbProvider.CERTIFICATION_URI, certificationId);
+        super(context, UcoinUris.CERTIFICATION_URI, certificationId);
     }
 
     @Override

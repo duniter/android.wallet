@@ -9,7 +9,7 @@ import android.provider.BaseColumns;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import io.ucoin.app.content.DbProvider;
+import io.ucoin.app.UcoinUris;
 import io.ucoin.app.enumeration.MembershipState;
 import io.ucoin.app.enumeration.MembershipType;
 import io.ucoin.app.model.UcoinMembership;
@@ -31,7 +31,7 @@ final public class Memberships extends Table
     }
 
     private Memberships(Context context, Long identityId, String selection, String[] selectionArgs, String sortOrder) {
-        super(context, DbProvider.MEMBERSHIP_URI, selection, selectionArgs, sortOrder);
+        super(context, UcoinUris.MEMBERSHIP_URI, selection, selectionArgs, sortOrder);
         mIdentityId = identityId;
     }
 

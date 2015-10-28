@@ -14,8 +14,8 @@ import android.view.ViewGroup;
 import android.widget.ListView;
 
 import io.ucoin.app.R;
+import io.ucoin.app.UcoinUris;
 import io.ucoin.app.adapter.BlockCursorAdapter;
-import io.ucoin.app.content.DbProvider;
 import io.ucoin.app.sqlite.SQLiteTable;
 
 public class BlockListFragment extends ListFragment
@@ -70,7 +70,7 @@ public class BlockListFragment extends ListFragment
 
         return new CursorLoader(
                 getActivity(),
-                DbProvider.BLOCK_URI,
+                UcoinUris.BLOCK_URI,
                 null, selection, selectionArgs,
                 SQLiteTable.Block.NUMBER + " ASC");
     }

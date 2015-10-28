@@ -9,7 +9,7 @@ import android.provider.BaseColumns;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import io.ucoin.app.content.DbProvider;
+import io.ucoin.app.UcoinUris;
 import io.ucoin.app.model.UcoinTxSignature;
 import io.ucoin.app.model.UcoinTxSignatures;
 import io.ucoin.app.sqlite.SQLiteTable;
@@ -31,7 +31,7 @@ final public class TxSignatures extends Table
     }
 
     private TxSignatures(Context context, Long txId, String selection, String[] selectionArgs, String sortOrder) {
-        super(context, DbProvider.TX_SIGNATURE_URI, selection, selectionArgs, sortOrder);
+        super(context, UcoinUris.TX_SIGNATURE_URI, selection, selectionArgs, sortOrder);
         mTxId = txId;
     }
 
