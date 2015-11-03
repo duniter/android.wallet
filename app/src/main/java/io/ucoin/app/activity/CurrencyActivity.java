@@ -409,23 +409,18 @@ public class CurrencyActivity extends ActionBarActivity
         switch (v.getId()) {
             case R.id.drawer_wallets:
                 fragment = WalletListFragment.newInstance(currencyId);
-                fragment.setHasOptionsMenu(true);
                 break;
             case R.id.drawer_contacts:
                 fragment = ContactListFragment.newInstance(currencyId);
-                fragment.setHasOptionsMenu(true);
                 break;
             case R.id.drawer_identity:
                 fragment = IdentityFragment.newInstance(currencyId);
-                fragment.setHasOptionsMenu(false);
                 break;
             case R.id.drawer_peers:
                 fragment = PeerListFragment.newInstance(currencyId);
-                fragment.setHasOptionsMenu(true);
                 break;
             case R.id.drawer_blocks:
                 fragment = BlockListFragment.newInstance(currencyId);
-                fragment.setHasOptionsMenu(true);
                 break;
         }
 

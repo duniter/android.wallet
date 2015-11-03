@@ -63,6 +63,7 @@ SearchView.OnQueryTextListener{
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         getActivity().setTitle(getString(R.string.contacts));
+        setHasOptionsMenu(true);
 
         final Long currencyId = getArguments().getLong(CURRENCY_ID);
 

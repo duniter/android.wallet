@@ -61,6 +61,7 @@ public class WalletListFragment extends ListFragment
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         getActivity().setTitle(getString(R.string.wallet));
+        setHasOptionsMenu(true);
 
         WalletCursorAdapter walletCursorAdapter
                 = new WalletCursorAdapter(getActivity(), null, 0);

@@ -369,6 +369,7 @@ public class TransferActivity extends ActionBarActivity
                                     Toast.LENGTH_LONG).show();
                         } else {
                             Toast.makeText(Application.getContext(), error.toString(), Toast.LENGTH_LONG).show();
+                            Log.d("TRANSFERACTIVITY", new String(error.networkResponse.data));
                         }
                     }
                 }) {

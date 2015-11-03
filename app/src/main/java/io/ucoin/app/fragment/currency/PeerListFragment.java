@@ -23,6 +23,7 @@ import android.widget.ImageButton;
 import io.ucoin.app.BuildConfig;
 import io.ucoin.app.R;
 import io.ucoin.app.UcoinUris;
+import io.ucoin.app.activity.CurrencyActivity;
 import io.ucoin.app.adapter.PeerCursorTreeAdapter;
 import io.ucoin.app.fragment.dialog.AddPeerDialogFragment;
 import io.ucoin.app.model.sql.sqlite.Peer;
@@ -64,6 +65,9 @@ public class PeerListFragment extends Fragment
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         getActivity().setTitle(getString(R.string.peers));
+        setHasOptionsMenu(true);
+
+        ((CurrencyActivity) getActivity()).setDrawerIndicatorEnabled(true);
 
         mButton = (ImageButton) view.findViewById(R.id.add_peer_button);
         if(!BuildConfig.DEBUG) {

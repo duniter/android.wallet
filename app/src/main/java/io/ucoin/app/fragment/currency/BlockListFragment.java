@@ -46,6 +46,7 @@ public class BlockListFragment extends ListFragment
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         getActivity().setTitle(getString(R.string.blocks));
+        setHasOptionsMenu(true);
 
         BlockCursorAdapter blockCursorAdapter
                 = new BlockCursorAdapter(getActivity(), null, 0);
