@@ -130,17 +130,16 @@ public class CurrencyActivity extends ActionBarActivity
                     exportDB();
                 }
             });
-
-
-            TextView requestSync = (TextView) findViewById(R.id.request_sync);
-            requestSync.setVisibility(View.VISIBLE);
-            requestSync.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Application.requestSync();
-                }
-            });
         }
+        TextView requestSync = (TextView) findViewById(R.id.request_sync);
+        requestSync.setVisibility(View.VISIBLE);
+        requestSync.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Application.requestSync();
+            }
+        });
+
 
         Long currencyId = getIntent().getExtras().getLong(Application.EXTRA_CURRENCY_ID);
         Fragment fragment = WalletListFragment.newInstance(currencyId);

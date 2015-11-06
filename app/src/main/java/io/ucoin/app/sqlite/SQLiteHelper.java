@@ -324,10 +324,6 @@ public class SQLiteHelper extends SQLiteOpenHelper implements SQLiteTable {
             return;
 
         String query;
-        if(oldVersion == 1) {
-            query = "DROP TABLE IF EXISTS Identity";
-            db.execSQL(query);
-        }
 
         query = "DROP TABLE " + Currency.TABLE_NAME;
         db.execSQL(query);

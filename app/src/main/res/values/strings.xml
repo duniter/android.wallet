@@ -264,6 +264,7 @@
     <string name="certification">Certification</string>
     <string name="no_connection">No connection</string>
     <string name="leave_currency">Leave currency</string>
+    <string name="force_sync">force sync</string>
 
     <string-array name="drawer_items">
         <item>@string/wallets</item>

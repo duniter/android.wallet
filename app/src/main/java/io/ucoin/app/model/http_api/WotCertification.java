@@ -49,7 +49,7 @@ public class WotCertification implements Serializable {
         public Boolean isMember;
         public Boolean wasMember;
         public CertTime cert_time;
-        public Boolean written;
+        public Written written;
         public String signature;
 
     }
@@ -57,5 +57,10 @@ public class WotCertification implements Serializable {
     public class CertTime implements Serializable {
         public Long block;
         public Long medianTime;
+    }
+
+    public class Written implements Serializable {
+        public Long number;
+        public String hash;
     }
 }
