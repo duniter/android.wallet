@@ -13,6 +13,8 @@ public interface UcoinWallet extends SqlRow {
 
     Double relativeAmount();
 
+    Double timeAmount();
+
     Long quantitativeAmount();
 
     Long syncBlock();

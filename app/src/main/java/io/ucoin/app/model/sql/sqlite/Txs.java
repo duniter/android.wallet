@@ -49,7 +49,7 @@ final public class Txs extends Table
         values.put(SQLiteTable.Tx.COMMENT, tx.comment);
         values.put(SQLiteTable.Tx.DIRECTION, direction.name());
 
-        //calculate qtAmount once
+        //calculate defaultAmount once
         Long qtAmount = (long) 0;
         switch (direction) {
             case IN:

@@ -21,10 +21,12 @@ public class Contacts extends Table
 
     public Contacts(Context context, Long currencyId) {
         this(context, currencyId, SQLiteTable.Contact.CURRENCY_ID + "=?", new String[]{currencyId.toString()});
+        mCurrencyId = currencyId;
     }
 
     private Contacts(Context context, Long currencyId, String selection, String[] selectionArgs) {
         this(context, currencyId, selection, selectionArgs, null);
+        mCurrencyId = currencyId;
     }
 
     private Contacts(Context context, Long currencyId, String selection, String[] selectionArgs, String sortOrder) {
@@ -35,11 +37,21 @@ public class Contacts extends Table
     @Override
     public UcoinContact add(String name, String publicKey) {
         ContentValues values = new ContentValues();
-        values.put(SQLiteTable.Contact.CURRENCY_ID, mCurrencyId);;
-        values.put(SQLiteTable.Contact.NAME, name);;
-        values.put(SQLiteTable.Contact.PUBLIC_KEY, publicKey);;
+        UcoinContact contact;
 
+        contact = getByName(name);
+        if(contact != null){
+            delete(contact.id());
+        }
+        contact = getByPublicKey(publicKey);
+        if(contact != null){
+            delete(contact.id());
+        }
+        values.put(SQLiteTable.Contact.CURRENCY_ID, mCurrencyId);
+        values.put(SQLiteTable.Contact.NAME, name);
+        values.put(SQLiteTable.Contact.PUBLIC_KEY, publicKey);
         Uri uri = insert(values);
+
         return new Contact(mContext, Long.parseLong(uri.getLastPathSegment()));
     }
 
@@ -70,6 +82,19 @@ public class Contacts extends Table
         } else {
             return null;
         }
+    }
+
+    @Override
+    public Cursor getbyCurrency() {
+        String selection = SQLiteTable.Contact.CURRENCY_ID + "=?";
+        String[] selectionArgs = new String[]{mCurrencyId.toString()};
+        UcoinContacts contacts;
+        if (mCurrencyId.equals(Long.valueOf(-1))){
+            contacts = new Contacts(mContext, mCurrencyId, null, null);
+        }else {
+            contacts = new Contacts(mContext, mCurrencyId, selection, selectionArgs);
+        }
+        return ((Table)contacts).fetch();
     }
 
     @Override

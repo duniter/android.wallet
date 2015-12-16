@@ -48,7 +48,7 @@ public class WalletSpinnerAdapter extends CursorAdapter implements SpinnerAdapte
         int aliasIndex = cursor.getColumnIndex(SQLiteTable.Wallet.ALIAS);
         alias.setText(cursor.getString(aliasIndex));
 
-        TextView qAmount = (TextView) view.findViewById(R.id.qt_amount);
+        TextView qAmount = (TextView) view.findViewById(R.id.default_amount);
         int qtAmountIndex = cursor.getColumnIndex(SQLiteView.Wallet.QUANTITATIVE_AMOUNT);
         DecimalFormat formatter = new DecimalFormat("#,###");
 

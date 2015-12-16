@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -23,8 +24,6 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
-import java.text.DecimalFormat;
-
 import io.ucoin.app.Application;
 import io.ucoin.app.R;
 import io.ucoin.app.UcoinUris;
@@ -36,6 +35,7 @@ import io.ucoin.app.model.UcoinEndpoint;
 import io.ucoin.app.model.UcoinWallet;
 import io.ucoin.app.model.http_api.TxHistory;
 import io.ucoin.app.model.sql.sqlite.Wallet;
+import io.ucoin.app.service.UnitFormat;
 import io.ucoin.app.sqlite.SQLiteTable;
 import io.ucoin.app.sqlite.SQLiteView;
 
@@ -68,8 +68,18 @@ public class WalletFragment extends ListFragment
                              Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
 
+        if(savedInstanceState!=null){
+            getArguments().putLong(WALLET_ID,savedInstanceState.getLong(WALLET_ID));
+        }
+
         return inflater.inflate(R.layout.fragment_wallet,
                 container, false);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putLong(WALLET_ID,getArguments().getLong(WALLET_ID));
     }
 
     @Override
@@ -104,6 +114,8 @@ public class WalletFragment extends ListFragment
             public void onClick(View v) {
                 Intent intent = new Intent(getActivity(), TransferActivity.class);
                 UcoinWallet wallet = new Wallet(getActivity(), getArguments().getLong(WALLET_ID));
+                Long currencyId = getActivity().getIntent().getExtras().getLong(Application.EXTRA_CURRENCY_ID);
+                intent.putExtra(Application.EXTRA_CURRENCY_ID, currencyId);
                 intent.putExtra(Application.EXTRA_WALLET_ID, wallet.id());
                 startActivity(intent);
             }
@@ -177,22 +189,19 @@ public class WalletFragment extends ListFragment
             alias.setText(data.getString(data.getColumnIndex(SQLiteView.Wallet.ALIAS)));
 
             //TextView publicKey = (TextView) view.findViewById(R.id.public_key);
-            TextView quantitativeAmount = (TextView) view.findViewById(R.id.qt_amount);
-            TextView relativeAmount = (TextView) view.findViewById(R.id.relative_amount);
+            TextView defaultAmount = (TextView) view.findViewById(R.id.default_amount);
+            TextView amount = (TextView) view.findViewById(R.id.relative_amount);
 
             //publicKey.setText(data.getString(data.getColumnIndex(SQLiteView.Wallet.PUBLIC_KEY)));
             StringBuilder sb = new StringBuilder();
-            DecimalFormat formatter = new DecimalFormat("#,###");
-            sb.append(formatter.format(data.getLong(data.getColumnIndex(SQLiteView.Wallet.QUANTITATIVE_AMOUNT))));
-            sb.append(" ");
-            sb.append(data.getString(data.getColumnIndex(SQLiteView.Wallet.CURRENCY_NAME)));
-            quantitativeAmount.setText(sb.toString());
 
-            sb.setLength(0);
-            sb.append(String.format("%.8f", data.getDouble(data.getColumnIndex(SQLiteView.Wallet.RELATIVE_AMOUNT))));
-            sb.append(" ");
-            sb.append(getString(R.string.UD));
-            relativeAmount.setText(sb.toString());
+            UnitFormat.changeUnit(getActivity(),
+                    data.getDouble(data.getColumnIndex(SQLiteView.Wallet.QUANTITATIVE_AMOUNT)),
+                    data.getDouble(data.getColumnIndex(SQLiteView.Wallet.RELATIVE_AMOUNT)),
+                    data.getDouble(data.getColumnIndex(SQLiteView.Wallet.TIME_AMOUNT)),
+                    PreferenceManager.getDefaultSharedPreferences(getActivity()),
+                    amount,
+                    defaultAmount,"");
         } else if(loader.getId() == OPERATION_LOADER_ID){
             ((OperationSectionCursorAdapter) this.getListAdapter()).swapCursor(data);
         }

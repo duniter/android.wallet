@@ -24,6 +24,7 @@ public interface SQLiteView {
         public static final String CURRENCY_NAME = "currency_name";
         public static final String QUANTITATIVE_AMOUNT = "quantitative_amount";
         public static final String RELATIVE_AMOUNT = "relative_amount";
+        public static final String TIME_AMOUNT = "time_amount";
         public static final String UD_VALUE = "ud_amount";
     }
 
@@ -31,6 +32,7 @@ public interface SQLiteView {
     final class Member extends SQLiteTable.Member {
         public static final String VIEW_NAME = "member_view";
         public static final String UID = "uid";
+        public static final String PUBLIC_KEY = "public_key";
         public static final String CERT_BY_YEAR = "cert_by_year";
         public static final String CERT_BY_MONTH = "cert_by_month";
         public static final String CERT_BY_DAY = "cert_by_day";
@@ -117,5 +119,6 @@ public interface SQLiteView {
     final class Operation extends SQLiteTable.Operation {
         public static final String VIEW_NAME = "operation_view";
         public static final String RELATIVE_AMOUNT_THEN = "relative_amount_then";
+        public static final String TIME_AMOUNT_THEN = "time_amount_then";
     }
 }

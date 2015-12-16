@@ -23,6 +23,28 @@ public class WotLookup implements Serializable {
         return gson.fromJson(json, WotLookup.class);
     }
 
+    public void add (Result[] res, Long currencyId){
+        if(this.results==null){
+            results = new Result[res.length];
+            for(int i=0;i<res.length;i++){
+                res[i].id = currencyId;
+                results[i]=res[i];
+            }
+        }else {
+
+            Result[] r = new Result[results.length + res.length];
+            for (int i = 0; i < r.length; i++) {
+                if (i < results.length) {
+                    r[i] = results[i];
+                } else {
+                    res[i - results.length].id = currencyId;
+                    r[i] = res[i - results.length];
+                }
+            }
+            results = r;
+        }
+    }
+
     public String toString() {
         String s = "";
         for (Result result : results) {
@@ -39,7 +61,7 @@ public class WotLookup implements Serializable {
     public class Result implements Serializable {
         public String pubkey;
         public Uid[] uids;
-
+        public Long id;
     }
 
     public class Uid implements Serializable {

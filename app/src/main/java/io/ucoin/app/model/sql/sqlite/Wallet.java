@@ -60,6 +60,11 @@ public class Wallet extends Row
     }
 
     @Override
+    public Double timeAmount() {
+        return getDouble(SQLiteView.Wallet.TIME_AMOUNT);
+    }
+
+    @Override
     public UcoinSources sources() {
         return new Sources(mContext, mId);
     }
@@ -96,6 +101,7 @@ public class Wallet extends Row
         s += "\nalias=" + alias();
         s += "\nquantitativeAmount=" + quantitativeAmount();
         s += "\nrelativeAmount=" + relativeAmount();
+        s += "\ntimeAmount=" + timeAmount();
 
         return s;
     }

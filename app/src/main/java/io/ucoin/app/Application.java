@@ -17,7 +17,17 @@ public class Application extends android.app.Application{
 
     public static final String EXTRA_CURRENCY_ID = "currency_id";
     public static final String EXTRA_WALLET_ID = "wallet_id";
+    public static final String EXTRA_CONTACT_ID = "contact_id";
+    public static final String EXTRA_IS_CONTACT = "is_contact";
+    public static final String EXTRA_VALUE_AMOUNT = "value_amount";
     public static final String EXTRA_SYNC_OP = "sync_op";
+    public static final String IDENTITY_LOOKUP = "lookup_for_identity";
+
+    public static final String UNIT = "currency_unit";
+    public static final String UNIT_DEFAULT = "default_currency_unit";
+    public static final int UNIT_CLASSIC = 0;
+    public static final int UNIT_DU = 1;
+    public static final int UNIT_TIME = 2;
 
     private static Context mContext;
     private static RequestQueue mRequestQueue;

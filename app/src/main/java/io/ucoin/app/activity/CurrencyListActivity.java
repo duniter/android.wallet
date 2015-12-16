@@ -16,6 +16,7 @@ import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.RotateAnimation;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ListView;
 
@@ -32,6 +33,7 @@ public class CurrencyListActivity extends ActionBarActivity
         DialogInterface.OnDismissListener {
 
     private ListView mList;
+    private Button mSelectAll;
     private ImageButton mButton;
 
     @Override
@@ -48,6 +50,9 @@ public class CurrencyListActivity extends ActionBarActivity
         mList.setEmptyView(findViewById(R.id.empty));
         mList.setOnItemClickListener(this);
 
+        mSelectAll = (Button) findViewById(R.id.all);
+        mSelectAll.setOnClickListener(this);
+
         mButton = (ImageButton) findViewById(R.id.add_currency_button);
         mButton.setOnClickListener(this);
 
@@ -62,19 +67,26 @@ public class CurrencyListActivity extends ActionBarActivity
     //handle click on add currency floating button
     @Override
     public void onClick(View v) {
-        //block screen rotation
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LOCKED);
+        if(v instanceof ImageButton) {
+            //block screen rotation
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LOCKED);
 
-        //animate button
-        RotateAnimation animation = new RotateAnimation(0, 145, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
-        animation.setDuration(200);
-        animation.setFillAfter(true);
-        mButton.startAnimation(animation);
+            //animate button
+            RotateAnimation animation = new RotateAnimation(0, 145, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+            animation.setDuration(200);
+            animation.setFillAfter(true);
+            mButton.startAnimation(animation);
 
-        //show dialog
-        AddCurrencyDialogFragment fragment = AddCurrencyDialogFragment.newInstance();
-        fragment.setOnDismissListener(this);
-        fragment.show(getFragmentManager(), fragment.getClass().getSimpleName());
+            //show dialog
+            AddCurrencyDialogFragment fragment = AddCurrencyDialogFragment.newInstance();
+            fragment.setOnDismissListener(this);
+            fragment.show(getFragmentManager(), fragment.getClass().getSimpleName());
+        }else if(v instanceof Button){
+            Intent intent = new Intent(this, CurrencyActivity.class);
+            intent.putExtra(Application.EXTRA_CURRENCY_ID, new Long(-1));
+            setResult(RESULT_OK, intent);
+            finish();
+        }
     }
 
     //handles click on currency list item
@@ -108,6 +120,13 @@ public class CurrencyListActivity extends ActionBarActivity
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        switch (data.getCount()){
+            case 1:
+                mSelectAll.setVisibility(View.GONE);
+                break;
+            default:
+                mSelectAll.setVisibility(View.VISIBLE);
+        }
         ((CurrencyCursorAdapter) mList.getAdapter()).swapCursor(data);
     }
 

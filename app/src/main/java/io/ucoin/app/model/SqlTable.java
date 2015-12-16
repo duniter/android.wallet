@@ -18,6 +18,5 @@ public interface SqlTable {
     Cursor query(String[] projection, String selection, String[] selectionArgs, String sortOrder);
 
     Uri insert(ContentValues values);
-
     ContentProviderResult[] applyBatch (ArrayList<ContentProviderOperation> operations) throws RemoteException, OperationApplicationException;
 }

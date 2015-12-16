@@ -31,6 +31,8 @@
     <string name="receiver_uid">Receiver uid</string>
     <string name="amount">Amount</string>
     <string name="UD">UD</string>
+    <string name="universal_dividende">Universal Dividende</string>
+    <string name="mutual_credit">Mutual Credit</string>
     <string name="unit_coins_label">coins</string>
     <string name="wallet">Wallet</string>
     <string name="comment_hint">Comment</string>
@@ -60,12 +62,15 @@
     <string name="node_address">Node address</string>
     <string name="node_port">Node port</string>
     <string name="rules">Rules</string>
+    <string name="list_rules">Rules of Currency</string>
     <string name="growth">Growth</string>
     <string name="currency">Currency</string>
     <string name="no_currency">No currency</string>
     <string name="no_transfer">No transfer</string>
     <string name="currencies">Currencies</string>
     <string name="members">Members</string>
+    <string name="selected_currency">Selected currency</string>
+    <string name="selected_unit">Selected unit</string>
 
     <!-- Strings related to apiPeer/node -->
     <string name="enter_node_info">Enter node info</string>
@@ -196,6 +201,10 @@
     <string name="hour">Hour</string>
     <string name="minute">Minute</string>
     <string name="second">Second</string>
+    <string name="h">h</string>
+    <string name="m">min</string>
+    <string name="s">s</string>
+    <string name="milli_second">ms</string>
     <string name="day_of_week">Day of week</string>
 
     <string name="SUN">SUN</string>
@@ -235,6 +244,7 @@
     <string name="no_ud">No U.D.</string>
     <string name="no_contact">No contact</string>
     <string name="add_contact">Add contact</string>
+    <string name="search_identity">Search identity</string>
     <string name="name">Name</string>
     <string name="select_self_certification">Select self-certification</string>
     <string name="currency_already_exists">Currency already exists</string>
@@ -265,10 +275,66 @@
     <string name="no_connection">No connection</string>
     <string name="leave_currency">Leave currency</string>
     <string name="force_sync">force sync</string>
+    <string name="change_unit">Change Unit</string>
+    <string name="peer_prompt">Choose a peer</string>
+    <string name="select_all">Select all</string>
+    <string name="all_currency">All currency</string>
 
     <string-array name="drawer_items">
         <item>@string/wallets</item>
         <item>@string/contacts</item>
-        <item>@string/identity</item>
     </string-array>
+
+    <string-array name="list_unit_time">
+        <item>Year</item>
+        <item>Day</item>
+        <item>Hour</item>
+        <item>Minute</item>
+        <item>Second</item>
+        <item>Milli Second</item>
+    </string-array>
+
+    <string-array name="node">
+        <item>metab.ucoin.io:9201</item>
+        <item>ucoin.twiced.fr:9101</item>
+    </string-array>
+
+    <!-- Strings related to rules currency -->
+    <string name="rules_add_currency">Add currency</string>
+    <string name="rules_preselected_peers">Select a predefine currency:</string>
+    <string name="rules_peer_hint">Or fill parameters of a currency node:</string>
+    <string name="rules_node_address">Host</string>
+    <string name="rules_node_address_hint">my.domain.com</string>
+    <string name="rules_node_port">Port</string>
+    <string name="rules_node_port_hint">(optional)</string>
+    <string name="rules_rules">Rules</string>
+    <string name="rules_money">Money</string>
+    <string name="rules_wot">Web of Trust</string>
+    <string name="rules_blockchain">Blockchain</string>
+    <string name="rules_c_and_dt">Fundamental growth (c) / Time period (dt) between two UD</string>
+    <string name="rules_c_and_dt_value">%1$.0f %% / %2$.0f days (%3$d seconds)</string>
+    <string name="rules_ud0">Initial Universal Dividend UD(0) in units</string>
+    <string name="rules_ud0_value">%d units</string>
+    <string name="rules_value_days_and_seconds">%1$.0f days (%2$d s)</string>
+    <string name="rules_value_minutes_and_seconds">%1$.0f min %2$d s (%3$d s)</string>
+    <string name="rules_sig_delay">Minimum delay between 2 identical certifications (same pubkeys)</string>
+    <string name="rules_sig_validity">Maximum age of a valid signature</string>
+    <string name="rules_sig_qty">Minimum quantity of signatures to be part of the WoT</string>
+    <string name="rules_sig_qty_value">%d signatures</string>
+    <string name="rules_sig_woT">Minimum quantity of valid made certifications to be part of the WoT for distance rule</string>
+    <string name="rules_ms_validity">Maximum age of a valid membership</string>
+    <string name="rules_step_max">Maximum distance between each WoT member and a newcomer</string>
+    <string name="rules_median_time_blocks">Number of blocks used for calculating median time.</string>
+    <string name="rules_median_time_blocks_value">%d blocks</string>
+    <string name="rules_avg_gen_time">The average time for writing 1 block (wished time)</string>
+    <string name="rules_dt_diff_eval">The number of blocks required to evaluate again PoWMin value</string>
+    <string name="rules_dt_diff_eval_value">%d blocks</string>
+    <string name="rules_blocks_rot">The number of previous blocks to check for personalized difficulty</string>
+    <string name="rules_blocks_rot_value">%d blocks</string>
+    <string name="rules_percent_rot">The percent of previous issuers to reach for personalized difficulty</string>
+    <string name="rules_percent_rot_value">%.0f %%</string>
+    <string name="converter">Currency converter</string>
+
+    <string name="contact_added">Contact successfully added</string>
+
 </resources>

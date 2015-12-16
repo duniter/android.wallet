@@ -23,4 +23,11 @@
         android:layout_height="wrap_content"
         android:textSize="@dimen/abc_text_size_caption_material" />
 
+    <TextView
+        android:id="@+id/currency"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="@dimen/abc_text_size_caption_material"
+        android:gravity="right"/>
+
 </LinearLayout>

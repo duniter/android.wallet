@@ -42,7 +42,6 @@ import io.ucoin.app.model.document.SelfCertification;
 import io.ucoin.app.model.sql.sqlite.Identity;
 import io.ucoin.app.model.sql.sqlite.SelfCertifications;
 import io.ucoin.app.sqlite.SQLiteTable;
-import io.ucoin.app.technical.crypto.AddressFormatException;
 
 
 public class SelfCertificationListFragment extends ListFragment
@@ -157,12 +156,7 @@ public class SelfCertificationListFragment extends ListFragment
         final SelfCertification selfCertification = new SelfCertification();
         selfCertification.uid = identity.uid();
         selfCertification.timestamp = Application.getCurrentTime();
-        try {
-            selfCertification.signature = selfCertification.sign(identity.wallet().privateKey());
-        } catch (AddressFormatException e) {
-            Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_LONG).show();
-            return;
-        }
+        selfCertification.signature = "";//selfCertification.sign(identity.wallet().privateKey());
 
         UcoinEndpoint endpoint = identity.currency().peers().at(0).endpoints().at(0);
         String url = "http://" + endpoint.ipv4() + ":" + endpoint.port() + "/wot/add/";
@@ -175,7 +169,7 @@ public class SelfCertificationListFragment extends ListFragment
             @Override
             protected Map<String, String> getParams() {
                 Map<String, String> params = new HashMap<String, String>();
-                params.put("pubkey", identity.wallet().publicKey());
+                params.put("pubkey", identity.publicKey());
                 params.put("self", selfCertification.toString());
                 return params;
             }
@@ -192,12 +186,7 @@ public class SelfCertificationListFragment extends ListFragment
         selfCertification.timestamp = certification.timestamp();
         selfCertification.signature = certification.self();
         final String signature;
-        try {
-            signature = selfCertification.revoke(identity.wallet().privateKey());
-        } catch (AddressFormatException e) {
-            Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_LONG).show();
-            return;
-        }
+        signature = "";//selfCertification.revoke(identity.wallet().privateKey());
 
         UcoinEndpoint endpoint = identity.currency().peers().at(0).endpoints().at(0);
         String url = "http://" + endpoint.ipv4() + ":" + endpoint.port() + "/wot/revoke/";
@@ -210,7 +199,7 @@ public class SelfCertificationListFragment extends ListFragment
             @Override
             protected Map<String, String> getParams() {
                 Map<String, String> params = new HashMap<String, String>();
-                params.put("pubkey", identity.wallet().publicKey());
+                params.put("pubkey", identity.publicKey());
                 params.put("self", selfCertification.toString());
                 params.put("sig", signature);
                 return params;

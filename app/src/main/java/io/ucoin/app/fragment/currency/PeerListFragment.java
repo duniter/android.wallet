@@ -105,8 +105,12 @@ public class PeerListFragment extends Fragment
 
         if (id == PEER_LOADER_ID) {
             Long currencyId = args.getLong(BaseColumns._ID);
-            String selection = SQLiteTable.Peer.CURRENCY_ID + "=?";
-            String selectionArgs[] = new String[]{currencyId.toString()};
+            String selection = null;
+            String[] selectionArgs = null;
+            if(!currencyId.equals(Long.valueOf(-1))){
+                selection = SQLiteTable.Peer.CURRENCY_ID + "=?";
+                selectionArgs = new String[]{currencyId.toString()};
+            }
             return new CursorLoader(
                     getActivity(),
                     UcoinUris.PEER_URI,

@@ -16,6 +16,7 @@ import io.ucoin.app.sqlite.SQLiteTable;
 
 public class ContactSectionCursorAdapter extends CursorAdapter {
 
+    private int nbSection;
     private Context mContext;
     private Cursor mCursor;
     private HashMap<Integer, String> mSectionPosition;
@@ -25,21 +26,20 @@ public class ContactSectionCursorAdapter extends CursorAdapter {
         mContext = context;
         mCursor = c;
         mSectionPosition = new LinkedHashMap<>(16, (float) 0.75, false);
+        nbSection =0;
     }
 
     public View getView(int position, View convertView, ViewGroup parent) {
         View v;
+        if(position==0){
+            nbSection=0;
+        }
         if (mSectionPosition.containsKey(position)) {
             v = newSectionView(mContext, parent);
             bindSectionView(v, mContext, mSectionPosition.get(position));
+            nbSection+=1;
         } else {
-            int sectionBeforePosition = 0;
-            for (Integer sectionPosition : mSectionPosition.keySet()) {
-                if (position > sectionPosition) {
-                    sectionBeforePosition++;
-                }
-            }
-            if (!mCursor.moveToPosition(position - sectionBeforePosition)) {
+            if (!mCursor.moveToPosition(position - nbSection)) {
                 throw new IllegalStateException("couldn't move cursor to position " + position);
             }
             v = newView(mContext, mCursor, parent);
@@ -56,7 +56,7 @@ public class ContactSectionCursorAdapter extends CursorAdapter {
     }
 
     public void bindSectionView(View v, Context context, String section) {
-        ((TextView) v.findViewById(R.id.month_year)).setText(section);
+        ((TextView) v.findViewById(R.id.section_name)).setText(section);
     }
 
     @Override
@@ -86,17 +86,17 @@ public class ContactSectionCursorAdapter extends CursorAdapter {
         int position = 0;
         String section = "";
 
-        newCursor.moveToPosition(-1);
         HashMap<Integer, String> sectionPosition = new LinkedHashMap<>(16, (float) 0.75, false);
-        while (newCursor.moveToNext()) {
-            String newSection = newCursor.getString(newCursor.getColumnIndex(SQLiteTable.Contact.NAME)).substring(0, 1).toUpperCase();
-
-            if (!newSection.equals(section)) {
-                sectionPosition.put(position, newSection);
-                section = newSection;
+        if(newCursor.moveToFirst()){
+            do{
+                String newSection = newCursor.getString(newCursor.getColumnIndex(SQLiteTable.Contact.NAME)).substring(0, 1).toUpperCase();
+                if (!newSection.equals(section)) {
+                    sectionPosition.put(position, newSection);
+                    section = newSection;
+                    position++;
+                }
                 position++;
-            }
-            position++;
+            }while (newCursor.moveToNext());
         }
 
         mSectionPosition = sectionPosition;
@@ -108,6 +108,19 @@ public class ContactSectionCursorAdapter extends CursorAdapter {
     @Override
     public int getCount() {
         return super.getCount() + mSectionPosition.size();
+    }
+
+    public int getRealPosition(int position){
+        int nbSec = 0;
+        if(mSectionPosition.size()>1) {
+            for (Integer i : mSectionPosition.keySet()) {
+                if (position > i) {
+                    nbSec += 1;
+                }
+            }
+        }
+        position -= nbSec;
+        return position;
     }
 
     @Override

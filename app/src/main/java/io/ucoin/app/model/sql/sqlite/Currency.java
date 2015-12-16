@@ -8,7 +8,6 @@ import io.ucoin.app.model.UcoinContacts;
 import io.ucoin.app.model.UcoinCurrency;
 import io.ucoin.app.model.UcoinIdentity;
 import io.ucoin.app.model.UcoinPeers;
-import io.ucoin.app.model.UcoinWallet;
 import io.ucoin.app.model.UcoinWallets;
 import io.ucoin.app.sqlite.SQLiteTable;
 import io.ucoin.app.sqlite.SQLiteView;
@@ -127,8 +126,8 @@ public class Currency extends Row
     }
 
     @Override
-    public UcoinIdentity addIdentity(String uid, UcoinWallet wallet) throws AddressFormatException {
-        return new Identities(mContext, mId).add(uid, wallet);
+    public UcoinIdentity addIdentity(String uid, String publicKey) throws AddressFormatException {
+        return new Identities(mContext, mId).add(uid, publicKey);
     }
 
     @Override

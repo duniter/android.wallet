@@ -2,10 +2,13 @@ package io.ucoin.app.activity;
 
 import android.animation.Animator;
 import android.animation.ValueAnimator;
+import android.app.AlertDialog;
+import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.LoaderManager;
 import android.content.CursorLoader;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.Loader;
 import android.content.SharedPreferences;
@@ -43,8 +46,13 @@ import io.ucoin.app.fragment.currency.BlockListFragment;
 import io.ucoin.app.fragment.currency.ContactListFragment;
 import io.ucoin.app.fragment.currency.IdentityFragment;
 import io.ucoin.app.fragment.currency.PeerListFragment;
+import io.ucoin.app.fragment.currency.RulesFragment;
 import io.ucoin.app.fragment.currency.WalletListFragment;
-import io.ucoin.app.fragment.wallet.WalletFragment;
+import io.ucoin.app.fragment.dialog.ListCurrencyDialogFragment;
+import io.ucoin.app.fragment.dialog.ListUnitDialogFragment;
+import io.ucoin.app.model.UcoinCurrencies;
+import io.ucoin.app.model.http_api.WotLookup;
+import io.ucoin.app.model.sql.sqlite.Currencies;
 import io.ucoin.app.sqlite.SQLiteView;
 
 
@@ -55,6 +63,10 @@ public class CurrencyActivity extends ActionBarActivity
     private ActionBarDrawerToggle mToggle;
     private DrawerLayout mDrawerLayout;
     private TextView mDrawerActivatedView;
+    private TextView drawerRulesView;
+    private TextView drawerBlocksView;
+
+    private static Long wId;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -80,19 +92,24 @@ public class CurrencyActivity extends ActionBarActivity
 
         //Navigation drawer
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawerRulesView = (TextView) mDrawerLayout.findViewById(R.id.drawer_rules);
+
+        UcoinCurrencies currencies = new Currencies(Application.getContext());
+
         TextView drawerWalletsView = (TextView) mDrawerLayout.findViewById(R.id.drawer_wallets);
         TextView drawerContactsView = (TextView) mDrawerLayout.findViewById(R.id.drawer_contacts);
-        TextView drawerIdentityView = (TextView) mDrawerLayout.findViewById(R.id.drawer_identity);
+        TextView drawerUnitView = (TextView) findViewById(R.id.change_unit);
         TextView drawerPeersView = (TextView) mDrawerLayout.findViewById(R.id.drawer_peers);
-        TextView drawerBlocksView = (TextView) mDrawerLayout.findViewById(R.id.drawer_blocks);
+        drawerBlocksView = (TextView) mDrawerLayout.findViewById(R.id.drawer_blocks);
         drawerWalletsView.setActivated(true);
         mDrawerActivatedView = drawerWalletsView;
 
+        drawerRulesView.setOnClickListener(this);
         drawerWalletsView.setOnClickListener(this);
         drawerContactsView.setOnClickListener(this);
-        drawerIdentityView.setOnClickListener(this);
         drawerPeersView.setOnClickListener(this);
         drawerBlocksView.setOnClickListener(this);
+        drawerUnitView.setOnClickListener(this);
 
         if (BuildConfig.DEBUG) {
             drawerBlocksView.setVisibility(View.VISIBLE);
@@ -140,27 +157,13 @@ public class CurrencyActivity extends ActionBarActivity
             }
         });
 
-
         Long currencyId = getIntent().getExtras().getLong(Application.EXTRA_CURRENCY_ID);
-        Fragment fragment = WalletListFragment.newInstance(currencyId);
-        // Insert the fragment by replacing any existing fragment
-        FragmentManager fragmentManager = getFragmentManager();
-        fragment.setHasOptionsMenu(true);
-        fragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
-        fragmentManager.beginTransaction()
-                .setCustomAnimations(
-                        R.animator.delayed_fade_in,
-                        R.animator.fade_out,
-                        R.animator.delayed_fade_in,
-                        R.animator.fade_out)
-                .replace(R.id.frame_content, fragment, fragment.getClass().getSimpleName())
-                .addToBackStack(fragment.getClass().getSimpleName())
-                .commit();
-        getLoaderManager().initLoader(0, getIntent().getExtras(), this);
 
-
-        if (getIntent().getExtras().containsKey(Application.EXTRA_WALLET_ID)) {
-            fragment = WalletFragment.newInstance(getIntent().getExtras().getLong(Application.EXTRA_WALLET_ID));
+        if (savedInstanceState == null){
+            Fragment fragment = WalletListFragment.newInstance(currencyId);
+            FragmentManager fragmentManager = getFragmentManager();
+            // Insert the fragment by replacing any existing fragment
+            fragment.setHasOptionsMenu(true);
             fragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
             fragmentManager.beginTransaction()
                     .setCustomAnimations(
@@ -172,8 +175,7 @@ public class CurrencyActivity extends ActionBarActivity
                     .addToBackStack(fragment.getClass().getSimpleName())
                     .commit();
         }
-
-
+        getLoaderManager().initLoader(0, getIntent().getExtras(), this);
     }
 
     @Override
@@ -225,7 +227,7 @@ public class CurrencyActivity extends ActionBarActivity
 
         int bsEntryCount = getFragmentManager().getBackStackEntryCount();
         if (bsEntryCount <= 1) {
-            super.onBackPressed();
+            askQuitApplication();
             return;
         }
 
@@ -246,20 +248,70 @@ public class CurrencyActivity extends ActionBarActivity
         getFragmentManager().popBackStack();
     }
 
+    public void askQuitApplication(){
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        alertDialogBuilder.setTitle("");
+        alertDialogBuilder
+                .setMessage("Do you want to exit the application ?")
+                .setCancelable(false)
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        quit();
+                    }
+                }).setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }
+                });
+        AlertDialog alertDialog = alertDialogBuilder.create();
+        alertDialog.show();
+    }
+
+    private void quit(){
+        super.onBackPressed();
+    }
+
+    public void onActivityRes(int requestCode, int resultCode, Intent intent){
+        this.onActivityResult(requestCode, resultCode, intent);
+    }
+
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
         super.onActivityResult(requestCode, resultCode, intent);
-
-        if (resultCode == RESULT_OK && requestCode == Application.ACTIVITY_CURRENCY_LIST) {
+        if(resultCode == RESULT_OK){
             Long currencyId = intent.getExtras().getLong(Application.EXTRA_CURRENCY_ID);
-            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-            SharedPreferences.Editor editor = preferences.edit();
-            editor.putLong("currency_id", currencyId);
-            editor.apply();
+            switch (requestCode){
+                case Application.ACTIVITY_CURRENCY_LIST:
+                    SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+                    SharedPreferences.Editor editor = preferences.edit();
+                    editor.putLong("currency_id", currencyId);
+                    editor.apply();
 
-            intent = new Intent(this, CurrencyActivity.class);
-            intent.putExtra(Application.EXTRA_CURRENCY_ID, currencyId);
-            startActivity(intent);
-            finish();
+                    intent = new Intent(this, CurrencyActivity.class);
+                    intent.putExtra(Application.EXTRA_CURRENCY_ID, currencyId);
+                    startActivity(intent);
+                    finish();
+                    break;
+                case Application.ACTIVITY_LOOKUP:
+                    WotLookup.Result result = (WotLookup.Result)intent.getExtras().getSerializable(WotLookup.Result.class.getSimpleName());
+                    Bundle args = new Bundle();
+                    args.putLong(BaseColumns._ID, currencyId);
+                    args.putSerializable(WotLookup.Result.class.getSimpleName(),result);
+                    Fragment fragment = IdentityFragment.newInstance(args);
+                    FragmentManager fragmentManager = getFragmentManager();
+
+                    fragmentManager.beginTransaction()
+                            .setCustomAnimations(
+                                    R.animator.delayed_fade_in,
+                                    R.animator.fade_out,
+                                    R.animator.delayed_fade_in,
+                                    R.animator.fade_out)
+                            .replace(R.id.frame_content, fragment, fragment.getClass().getSimpleName())
+                            .addToBackStack(fragment.getClass().getSimpleName())
+                            .commit();
+                    // close the drawer
+                    closeDrawer();
+                    break;
+            }
         }
     }
 
@@ -348,10 +400,15 @@ public class CurrencyActivity extends ActionBarActivity
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         Long currencyId = args.getLong(Application.EXTRA_CURRENCY_ID);
         String selection;
-        String selectionArgs[];
+        String[] selectionArgs;
 
-        selection = BaseColumns._ID + "=?";
-        selectionArgs = new String[]{currencyId.toString()};
+        if(currencyId.equals(Long.valueOf(-1))){
+            selection = null;
+            selectionArgs = null;
+        }else {
+            selection = BaseColumns._ID + "=?";
+            selectionArgs = new String[]{currencyId.toString()};
+        }
 
         return new CursorLoader(
                 this,
@@ -362,33 +419,50 @@ public class CurrencyActivity extends ActionBarActivity
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        data.moveToNext();
         TextView drawerCurrencyName = (TextView) findViewById(R.id.drawer_currency_name);
-        drawerCurrencyName.setText(data.getString(data.getColumnIndex(SQLiteView.Currency.NAME)));
-
         TextView drawerMembersCount = (TextView) findViewById(R.id.drawer_members_count);
-        drawerMembersCount.setText(data.getString(data.getColumnIndex(SQLiteView.Currency.MEMBERS_COUNT)) + " " + getResources().getString(R.string.members));
-
-        TextView DrawerBlockNumber = (TextView) findViewById(R.id.drawer_block_number);
-        DrawerBlockNumber.setText(getResources().getString(R.string.block) + " " + data.getString(data.getColumnIndex(SQLiteView.Currency.CURRENT_BLOCK)));
-
-        String d = data.getString(data.getColumnIndex(SQLiteView.Currency.BLOCK_DAY_OF_WEEK));
-        if (d == null) d = Integer.toString(DayOfWeek.UNKNOWN.ordinal());
-
-        String m = data.getString(data.getColumnIndex(SQLiteView.Currency.BLOCK_MONTH));
-        if (m == null) m = Integer.toString(Month.UNKNOWN.ordinal());
-        Month month = Month.fromInt(Integer.parseInt(m));
-
-        String dayOfWeek = DayOfWeek.fromInt(Integer.parseInt(d)).toString(this);
-
-        String dateStr = dayOfWeek + " ";
-        dateStr += data.getString(data.getColumnIndex(SQLiteView.Currency.BLOCK_DAY)) + " ";
-        dateStr += month.toString(this) + " ";
-        dateStr += data.getString(data.getColumnIndex(SQLiteView.Currency.BLOCK_YEAR)) + " ";
-        dateStr += data.getString(data.getColumnIndex(SQLiteView.Currency.BLOCK_HOUR)) + " ";
-
+        TextView drawerBlockNumber = (TextView) findViewById(R.id.drawer_block_number);
         TextView drawerDate = (TextView) findViewById(R.id.drawer_date);
-        drawerDate.setText(dateStr);
+        if(data.getCount()==1) {
+            data.moveToFirst();
+            drawerCurrencyName.setText(data.getString(data.getColumnIndex(SQLiteView.Currency.NAME)));
+
+            drawerMembersCount.setText(data.getString(data.getColumnIndex(SQLiteView.Currency.MEMBERS_COUNT)) + " " + getResources().getString(R.string.members));
+
+            drawerBlockNumber.setText(getResources().getString(R.string.block) + " " + data.getString(data.getColumnIndex(SQLiteView.Currency.CURRENT_BLOCK)));
+
+            String d = data.getString(data.getColumnIndex(SQLiteView.Currency.BLOCK_DAY_OF_WEEK));
+            if (d == null) d = Integer.toString(DayOfWeek.UNKNOWN.ordinal());
+
+            String m = data.getString(data.getColumnIndex(SQLiteView.Currency.BLOCK_MONTH));
+            if (m == null) m = Integer.toString(Month.UNKNOWN.ordinal());
+            Month month = Month.fromInt(Integer.parseInt(m));
+
+            String dayOfWeek = DayOfWeek.fromInt(Integer.parseInt(d)).toString(this);
+
+            String dateStr = dayOfWeek + " ";
+            dateStr += data.getString(data.getColumnIndex(SQLiteView.Currency.BLOCK_DAY)) + " ";
+            dateStr += month.toString(this) + " ";
+            dateStr += data.getString(data.getColumnIndex(SQLiteView.Currency.BLOCK_YEAR)) + " ";
+            dateStr += data.getString(data.getColumnIndex(SQLiteView.Currency.BLOCK_HOUR)) + " ";
+
+            drawerDate.setText(dateStr);
+        }else{
+            drawerCurrencyName.setText(getResources().getString(R.string.all_currency));
+            int count=0;
+            int index = data.getColumnIndex(SQLiteView.Currency.MEMBERS_COUNT);
+            if(data.moveToFirst()){
+                do {
+                    String v = data.getString(index);
+                    if(v!=null){
+                        count += Integer.parseInt(v);
+                    }
+                }while (data.moveToNext());
+            }
+            drawerMembersCount.setText(count + " " + getResources().getString(R.string.members));
+            drawerBlockNumber.setText("");
+            drawerDate.setText("");
+        }
 
     }
 
@@ -404,22 +478,46 @@ public class CurrencyActivity extends ActionBarActivity
         closeDrawer();
 
         Fragment fragment = null;
+        DialogFragment dialogFragment = null;
         Long currencyId = getIntent().getExtras().getLong(Application.EXTRA_CURRENCY_ID);
         switch (v.getId()) {
+            case R.id.drawer_rules:
+                if(currencyId.equals(Long.valueOf(-1))){
+                    dialogFragment = ListCurrencyDialogFragment.newInstance(drawerRulesView);
+                }else {
+                    fragment = RulesFragment.newInstance(currencyId);
+                }
+                break;
             case R.id.drawer_wallets:
                 fragment = WalletListFragment.newInstance(currencyId);
                 break;
             case R.id.drawer_contacts:
                 fragment = ContactListFragment.newInstance(currencyId);
                 break;
-            case R.id.drawer_identity:
-                fragment = IdentityFragment.newInstance(currencyId);
-                break;
             case R.id.drawer_peers:
                 fragment = PeerListFragment.newInstance(currencyId);
                 break;
             case R.id.drawer_blocks:
-                fragment = BlockListFragment.newInstance(currencyId);
+                if(currencyId.equals(Long.valueOf(-1))){
+                    dialogFragment = ListCurrencyDialogFragment.newInstance(drawerBlocksView);
+                }else {
+                    fragment = BlockListFragment.newInstance(currencyId);
+                }
+                break;
+            case R.id.change_unit:
+                ChangeUnitforType action = new ChangeUnitforType(){
+                    @Override
+                    public void onChange(String type, int unit) {
+                        onChangeUnit(type, unit);
+                    }
+
+                    @Override
+                    public void selectUnit(String type) {
+                        DialogFragment dialogFragment = ListUnitDialogFragment.newInstance(this,type);
+                        dialogFragment.show(getFragmentManager(), dialogFragment.getClass().getSimpleName());
+                    }
+                };
+                dialogFragment = ListUnitDialogFragment.newInstance(action);
                 break;
         }
 
@@ -439,9 +537,23 @@ public class CurrencyActivity extends ActionBarActivity
                     .commit();
             // close the drawer
             closeDrawer();
+        } else if(dialogFragment!=null){
+            dialogFragment.show(getFragmentManager(), dialogFragment.getClass().getSimpleName());
+
+            closeDrawer();
         } else {
             throw new RuntimeException("Variable fragment has not been initialized");
         }
+    }
+
+    public void onChangeUnit(String type, int unit){
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        preferences.edit().putInt(type, unit).apply();
+    }
+
+    public interface ChangeUnitforType {
+        void onChange(String type, int unit);
+        void selectUnit(String type);
     }
 
     /**

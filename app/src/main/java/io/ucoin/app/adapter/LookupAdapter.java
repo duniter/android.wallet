@@ -13,7 +13,9 @@ import java.util.Date;
 import io.ucoin.app.R;
 import io.ucoin.app.enumeration.DayOfWeek;
 import io.ucoin.app.enumeration.Month;
+import io.ucoin.app.model.UcoinCurrency;
 import io.ucoin.app.model.http_api.WotLookup;
+import io.ucoin.app.model.sql.sqlite.Currency;
 
 public class LookupAdapter extends BaseAdapter {
 
@@ -24,8 +26,15 @@ public class LookupAdapter extends BaseAdapter {
         mContext = context;
     }
 
-    public void swapData(WotLookup lookup) {
-        mLookup = lookup;
+    public void clear(){
+        mLookup = null;
+    }
+
+    public void swapData(WotLookup lookup, Long id) {
+        if(mLookup==null){
+            mLookup = new WotLookup();
+        }
+        mLookup.add(lookup.results,id);
     }
 
     @Override
@@ -55,6 +64,7 @@ public class LookupAdapter extends BaseAdapter {
             viewHolder.name = (TextView) convertView.findViewById(R.id.name);
             viewHolder.pubkey = (TextView) convertView.findViewById(R.id.public_key);
             viewHolder.date = (TextView) convertView.findViewById(R.id.date);
+            viewHolder.currency = (TextView) convertView.findViewById(R.id.currency);
             convertView.setTag(viewHolder);
         } else {
             viewHolder = (ViewHolder) convertView.getTag();
@@ -65,6 +75,9 @@ public class LookupAdapter extends BaseAdapter {
         viewHolder.name.setText(result.uids[0].uid);
         // pubKey
         viewHolder.pubkey.setText(result.pubkey);
+
+        UcoinCurrency currency = new Currency(mContext,result.id);
+        viewHolder.currency.setText(currency.name());
 
 
         Calendar c = Calendar.getInstance();
@@ -91,5 +104,6 @@ public class LookupAdapter extends BaseAdapter {
         TextView name;
         TextView pubkey;
         TextView date;
+        TextView currency;
     }
 }

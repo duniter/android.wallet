@@ -22,7 +22,7 @@
         <ListView
             android:id="@+id/list"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:divider="@null"
             android:dividerHeight="0dp"/>
 
@@ -31,6 +31,16 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:text="@string/no_currencies"
+            android:visibility="gone"/>
+
+        <Button
+            android:id="@+id/all"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/select_all"
+            android:layout_below="@+id/list"
+            android:textSize="@dimen/abc_text_size_headline_material"
+            android:gravity="center"
             android:visibility="gone"/>
 
         <ImageButton

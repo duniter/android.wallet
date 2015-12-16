@@ -5,7 +5,7 @@
     android:paddingRight="16dp">
 
     <TextView
-        android:id="@+id/qt_amount"
+        android:id="@+id/default_amount"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
@@ -18,7 +18,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
-        android:layout_below="@id/qt_amount"
+        android:layout_below="@id/default_amount"
         android:textSize="@dimen/abc_text_size_caption_material" />
 
     <TextView
@@ -27,7 +27,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
         android:layout_alignParentTop="true"
-        android:layout_toEndOf="@id/qt_amount"
+        android:layout_toEndOf="@id/default_amount"
         android:gravity="end"
         android:textSize="@dimen/abc_text_size_caption_material" />
 

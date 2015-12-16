@@ -47,7 +47,7 @@ public interface SQLiteTable {
     class Identity implements BaseColumns {
         public static final String TABLE_NAME = "identity";
         public static final String CURRENCY_ID = "currency_id";
-        public static final String WALLET_ID = "wallet_id";
+        public static final String PUBLIC_KEY = "public_key";
         public static final String UID = "uid";
         public static final String SIG_DATE = "sig_date";
         public static final String SYNC_BLOCK = "sync_block";

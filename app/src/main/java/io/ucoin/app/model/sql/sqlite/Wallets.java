@@ -21,10 +21,12 @@ final public class Wallets extends Table
 
     public Wallets(Context context, Long currencyId) {
         this(context, currencyId, SQLiteTable.Wallet.CURRENCY_ID + "=?", new String[]{currencyId.toString()});
+        mCurrencyId = currencyId;
     }
 
     private Wallets(Context context, Long currencyId, String selection, String[] selectionArgs) {
         this(context, currencyId, selection, selectionArgs, null);
+        mCurrencyId = currencyId;
     }
 
     private Wallets(Context context, Long currencyId, String selection, String[] selectionArgs, String sortOrder) {
@@ -72,6 +74,19 @@ final public class Wallets extends Table
         } else {
             return null;
         }
+    }
+
+    @Override
+    public Cursor getbyCurrency() {
+        String selection = SQLiteTable.Wallet.CURRENCY_ID + "=?";
+        String[] selectionArgs = new String[]{mCurrencyId.toString()};
+        UcoinWallets wallets;
+        if (mCurrencyId.equals(Long.valueOf(-1))){
+            wallets = new Wallets(mContext, mCurrencyId, null, null,null);
+        }else {
+            wallets = new Wallets(mContext, mCurrencyId, selection, selectionArgs,null);
+        }
+        return ((Table)wallets).fetch();
     }
 
     @Override

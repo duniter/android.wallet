@@ -74,12 +74,31 @@
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="match_parent">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/drawer_rules"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/list_item_background_selector"
+                android:drawablePadding="48dp"
+                android:drawableStart="@drawable/ic_label_grey600_24dp"
+                android:drawableLeft="@drawable/ic_label_grey600_24dp"
+                android:gravity="center_vertical"
+                android:paddingEnd="16dp"
+                android:paddingLeft="16dp"
+                android:paddingRight="16dp"
+                android:text="@string/list_rules"
+                android:textColor="#000"
+                android:textSize="@dimen/abc_text_size_body_2_material" />
+
+            <include layout="@layout/drawer_separator" />
 
             <TextView
                 android:id="@+id/drawer_wallets"
@@ -113,21 +132,6 @@
                 android:textSize="@dimen/abc_text_size_body_2_material" />
 
             <TextView
-                android:id="@+id/drawer_identity"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:background="@drawable/list_item_background_selector"
-                android:drawablePadding="48dp"
-                android:drawableStart="@drawable/ic_label_grey600_24dp"
-                android:gravity="center_vertical"
-                android:paddingEnd="16dp"
-                android:paddingLeft="16dp"
-                android:paddingRight="16dp"
-                android:text="@string/identity"
-                android:textColor="#000"
-                android:textSize="@dimen/abc_text_size_body_2_material" />
-
-            <TextView
                 android:id="@+id/drawer_peers"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
@@ -157,7 +161,6 @@
                 android:textColor="#000"
                 android:textSize="@dimen/abc_text_size_body_2_material"
                 android:visibility="gone" />
-
 
             <include layout="@layout/drawer_separator" />
 
@@ -211,6 +214,24 @@
                 android:textColor="#FF000000"
                 android:textSize="@dimen/abc_text_size_body_2_material"
                 android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/change_unit"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:background="@drawable/textview_background_selector"
+                android:drawablePadding="48dp"
+                android:drawableStart="@drawable/ic_settings_grey600_24dp"
+                android:gravity="center_vertical"
+                android:paddingEnd="16dp"
+                android:paddingLeft="16dp"
+                android:paddingRight="16dp"
+                android:paddingStart="16dp"
+                android:text="@string/change_unit"
+                android:textColor="#FF000000"
+                android:textSize="@dimen/abc_text_size_body_2_material"
+                android:visibility="visible" />
+
         </LinearLayout>
     </ScrollView>
 </LinearLayout>

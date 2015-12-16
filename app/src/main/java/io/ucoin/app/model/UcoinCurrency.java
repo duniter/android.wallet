@@ -48,5 +48,5 @@ public interface UcoinCurrency extends SqlRow {
 
     UcoinContacts contacts();
 
-    UcoinIdentity addIdentity(String uid, UcoinWallet wallet) throws AddressFormatException;
+    UcoinIdentity addIdentity(String uid, String publicKey) throws AddressFormatException;
 }

@@ -4,6 +4,7 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.LoaderManager;
 import android.content.CursorLoader;
+import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -20,17 +21,21 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import io.ucoin.app.Application;
 import io.ucoin.app.R;
 import io.ucoin.app.UcoinUris;
 import io.ucoin.app.activity.CurrencyActivity;
-import io.ucoin.app.fragment.dialog.AddIdentityDialogFragment;
+import io.ucoin.app.activity.LookupActivity;
 import io.ucoin.app.fragment.identity.MemberListFragment;
 import io.ucoin.app.fragment.identity.MembershipListFragment;
 import io.ucoin.app.fragment.identity.SelfCertificationListFragment;
 import io.ucoin.app.model.UcoinCurrency;
+import io.ucoin.app.model.UcoinIdentity;
+import io.ucoin.app.model.http_api.WotLookup;
 import io.ucoin.app.model.sql.sqlite.Currency;
 import io.ucoin.app.sqlite.SQLiteTable;
 import io.ucoin.app.sqlite.SQLiteView;
+import io.ucoin.app.technical.crypto.AddressFormatException;
 import io.ucoin.app.widget.SlidingTabLayout;
 
 public class IdentityFragment extends Fragment
@@ -42,14 +47,11 @@ public class IdentityFragment extends Fragment
     private Cursor mCursor;
     private LinearLayout mHeaderLayout;
     private TextView mUid;
-    private ImageButton mAddIdentityButton;
+    private ImageButton mSearchIdentityButton;
 
-    public static IdentityFragment newInstance(Long currencyId) {
-        Bundle newInstanceArgs = new Bundle();
-        newInstanceArgs.putLong(BaseColumns._ID, currencyId);
-
+    public static IdentityFragment newInstance(Bundle args) {
         IdentityFragment fragment = new IdentityFragment();
-        fragment.setArguments(newInstanceArgs);
+        fragment.setArguments(args);
         return fragment;
     }
 
@@ -78,11 +80,11 @@ public class IdentityFragment extends Fragment
         mViewPager = (ViewPager) getView().findViewById(R.id.viewpager);
         mSlidingTabLayout = (SlidingTabLayout) getView().findViewById(R.id.sliding_tabs);
         mSlidingTabLayout.setDistributeEvenly(true);
-        mAddIdentityButton = (ImageButton) getView().findViewById(R.id.add_identity_button);
-        mAddIdentityButton.setOnClickListener(new View.OnClickListener() {
+        mSearchIdentityButton = (ImageButton) getView().findViewById(R.id.search_identity_button);
+        mSearchIdentityButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                actionCreate();
+                actionSearch();
             }
         });
 
@@ -121,10 +123,20 @@ public class IdentityFragment extends Fragment
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        WotLookup.Result result = (WotLookup.Result) args.getSerializable(WotLookup.Result.class.getSimpleName());
+        String publicKey = result.pubkey;
+        String uid = result.uids[0].uid;
+        UcoinCurrency currency = new Currency(getActivity(), getArguments().getLong(BaseColumns._ID));
+        UcoinIdentity identity = null;
+        try {
+            identity = currency.addIdentity(uid, publicKey);
+        } catch (AddressFormatException e) {
+            e.printStackTrace();
+        }
         Long currencyId = args.getLong(BaseColumns._ID);
-        String selection = SQLiteTable.Identity.CURRENCY_ID + "=?";
-        String[] selectionArgs = new String[]{currencyId.toString()};
-
+        String selection = SQLiteTable.Identity.CURRENCY_ID + "=?" +
+                " AND " + SQLiteTable.Identity.PUBLIC_KEY + "=?";
+        String[] selectionArgs = new String[]{currency.id().toString(),publicKey};
         return new CursorLoader(
                 getActivity(),
                 UcoinUris.IDENTITY_URI,
@@ -139,7 +151,6 @@ public class IdentityFragment extends Fragment
             mUid.setText(data.getString(data.getColumnIndex(SQLiteView.Identity.UID)));
             mHeaderLayout.setVisibility(View.VISIBLE);
             mSlidingTabLayout.setVisibility(View.VISIBLE);
-            mAddIdentityButton.setVisibility(View.GONE);
 
             // Get the ViewPager and set it's PagerAdapter so that it can display items
             if (mViewPager.getAdapter() == null) {
@@ -156,7 +167,6 @@ public class IdentityFragment extends Fragment
 
             mHeaderLayout.setVisibility(View.GONE);
             mSlidingTabLayout.setVisibility(View.GONE);
-            mAddIdentityButton.setVisibility(View.VISIBLE);
 
             mUid.setText("");
         }
@@ -175,10 +185,11 @@ public class IdentityFragment extends Fragment
         currency.identity().delete();
     }
 
-    public void actionCreate() {
-        AddIdentityDialogFragment fragment = AddIdentityDialogFragment.newInstance(getArguments().getLong(BaseColumns._ID));
-        fragment.show(getFragmentManager(),
-                fragment.getClass().getSimpleName());
+    public void actionSearch() {
+        Intent intent = new Intent(getActivity(), LookupActivity.class);
+        intent.putExtra(Application.EXTRA_CURRENCY_ID, getArguments().getLong(BaseColumns._ID));
+        intent.putExtra(Application.IDENTITY_LOOKUP,true);
+        getActivity().startActivityForResult(intent, Application.ACTIVITY_LOOKUP);
     }
 
     public void actionRevoke() {

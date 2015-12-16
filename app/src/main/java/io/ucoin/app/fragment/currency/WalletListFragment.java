@@ -33,6 +33,7 @@ public class WalletListFragment extends ListFragment
         SwipeRefreshLayout.OnRefreshListener{
 
     private SwipeRefreshLayout mSwipeLayout;
+    private WalletCursorAdapter walletCursorAdapter;
 
     static public WalletListFragment newInstance(Long currencyId) {
         Bundle newInstanceArgs = new Bundle();
@@ -63,7 +64,7 @@ public class WalletListFragment extends ListFragment
         getActivity().setTitle(getString(R.string.wallet));
         setHasOptionsMenu(true);
 
-        WalletCursorAdapter walletCursorAdapter
+        walletCursorAdapter
                 = new WalletCursorAdapter(getActivity(), null, 0);
         setListAdapter(walletCursorAdapter);
 
@@ -97,7 +98,9 @@ public class WalletListFragment extends ListFragment
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
 
-        Fragment fragment = WalletFragment.newInstance(id);
+        Long realId = walletCursorAdapter.getRealPosition(position);
+        Fragment fragment = WalletFragment.newInstance(realId);
+        walletCursorAdapter.getRealPosition(position);
         FragmentManager fragmentManager = getActivity().getFragmentManager();
         fragmentManager.beginTransaction()
                 .setCustomAnimations(
@@ -115,8 +118,16 @@ public class WalletListFragment extends ListFragment
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         Long currencyId = args.getLong(BaseColumns._ID);
 
-        String selection = SQLiteTable.Wallet.CURRENCY_ID + "=?";
-        String[] selectionArgs = new String[]{currencyId.toString()};
+        String selection;
+        String[] selectionArgs;
+
+        if(currencyId.equals(new Long(-1))){
+            selection = null;
+            selectionArgs = null;
+        }else{
+            selection = SQLiteTable.Wallet.CURRENCY_ID + "=?";
+            selectionArgs = new String[]{currencyId.toString()};
+        }
 
         return new CursorLoader(
                 getActivity(),

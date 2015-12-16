@@ -74,6 +74,23 @@ final public class Currencies extends Table
     }
 
     @Override
+    public UcoinCurrency getByName(String name) {
+        String selection = SQLiteTable.Currency.NAME + "=?";
+        String[] selectionArgs = new String[]{name};
+        UcoinCurrencies currencies = new Currencies(mContext, selection, selectionArgs);
+        if (currencies.iterator().hasNext()) {
+            return currencies.iterator().next();
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    public Cursor getAll() {
+        return fetch();
+    }
+
+    @Override
     public Iterator<UcoinCurrency> iterator() {
         Cursor cursor = fetch();
         if (cursor != null) {

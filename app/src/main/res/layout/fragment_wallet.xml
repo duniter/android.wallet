@@ -33,7 +33,7 @@
 
 
         <TextView
-            android:id="@+id/qt_amount"
+            android:id="@+id/default_amount"
             android:layout_width="match_parent"
             android:layout_height="40dp"
             android:gravity="top"

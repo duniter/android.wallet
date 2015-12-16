@@ -42,7 +42,7 @@ public class IdentityWrapper implements Response.ErrorListener, RequestQueue.Req
     private Request fetchSelfCertification() {
         UcoinEndpoint endpoint = mIdentity.currency().peers().at(0).endpoints().at(0);
         String url = "http://" + endpoint.ipv4() + ":" + endpoint.port() + "/wot/lookup/";
-        url += mIdentity.wallet().publicKey();
+        url += mIdentity.publicKey();
         StringRequest request = new StringRequest(
                 url,
                 new Response.Listener<String>() {
@@ -65,7 +65,7 @@ public class IdentityWrapper implements Response.ErrorListener, RequestQueue.Req
             url = "http://" + endpoint.ipv4() + ":" + endpoint.port() + "/wot/certified-by/";
 
         }
-        url += mIdentity.wallet().publicKey();
+        url += mIdentity.publicKey();
         final StringRequest request = new StringRequest(
                 url,
                 new Response.Listener<String>() {
@@ -133,7 +133,7 @@ public class IdentityWrapper implements Response.ErrorListener, RequestQueue.Req
 
     private void onSelfRequest(WotLookup lookup) {
         for (WotLookup.Result result : lookup.results) {
-            if (result.pubkey.equals(mIdentity.wallet().publicKey())) {
+            if (result.pubkey.equals(mIdentity.publicKey())) {
                 for (WotLookup.Uid uid : result.uids) {
                     if (uid.uid.equals(mIdentity.uid())) {
                         if ((mIdentity.selfCertifications().getBySelf(uid.self)) == null) {

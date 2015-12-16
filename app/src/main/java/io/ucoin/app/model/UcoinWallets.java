@@ -1,6 +1,8 @@
 package io.ucoin.app.model;
 
 
+import android.database.Cursor;
+
 public interface UcoinWallets extends SqlTable, Iterable<UcoinWallet> {
     UcoinWallet add(String salt, String publicKey, String alias);
 
@@ -9,4 +11,6 @@ public interface UcoinWallets extends SqlTable, Iterable<UcoinWallet> {
     UcoinWallet getById(Long id);
 
     UcoinWallet getByPublicKey(String publicKey);
+
+    Cursor getbyCurrency();
 }

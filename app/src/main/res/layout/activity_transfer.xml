@@ -1,10 +1,10 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:ucoin="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:descendantFocusability="beforeDescendants"
-    android:focusableInTouchMode="true"
-    android:orientation="vertical">
+              xmlns:ucoin="http://schemas.android.com/apk/res-auto"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:descendantFocusability="beforeDescendants"
+              android:focusableInTouchMode="true"
+              android:orientation="vertical">
 
 
     <android.support.v7.widget.Toolbar
@@ -40,38 +40,50 @@
                     android:layout_height="wrap_content"
                     android:text="@string/from"
                     android:layout_alignParentStart="true"
+                    android:layout_alignParentLeft="true"
                     android:layout_alignParentTop="true"
                     android:textSize="@dimen/abc_text_size_body_1_material"/>
 
-                <TextView
-                    android:id="@+id/wallet_alias"
+                <RelativeLayout
+                    android:id="@+id/wallet"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentTop="true"
-                    android:layout_alignParentEnd="true"
-                    android:gravity="start"
-                    android:layout_toEndOf="@id/from_label"
-                    android:textSize="@dimen/abc_text_size_body_1_material" />
+                    android:layout_below="@+id/from_label"
+                    android:padding="8dp"
+                    android:background="@android:drawable/btn_default">
 
-                <TextView
-                    android:id="@+id/wallet_qt_amount"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:layout_toEndOf="@id/from_label"
-                    android:layout_below="@id/wallet_alias"
-                    android:gravity="bottom|end"
-                    android:textSize="@dimen/abc_text_size_caption_material" />
+                    <TextView
+                        android:id="@+id/wallet_default_amount"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_alignParentRight="true"
+                        android:gravity="bottom|end"
+                        android:textSize="@dimen/abc_text_size_caption_material" />
 
-                <TextView
-                    android:id="@+id/wallet_relative_amount"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:layout_toEndOf="@id/from_label"
-                    android:layout_below="@id/wallet_qt_amount"
-                    android:gravity="end"
-                    android:textSize="@dimen/abc_text_size_headline_material" />
+                    <TextView
+                        android:id="@+id/wallet_amount"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_alignParentRight="true"
+                        android:layout_below="@id/wallet_default_amount"
+                        android:gravity="end"
+                        android:textSize="@dimen/abc_text_size_headline_material" />
+
+                    <TextView
+                        android:id="@+id/wallet_alias"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:layout_alignParentLeft="true"
+                        android:layout_alignBaseline="@id/wallet_amount"
+                        android:gravity="start"
+                        android:textSize="@dimen/abc_text_size_headline_material" />
+
+                </RelativeLayout>
+
+
             </RelativeLayout>
 
 
@@ -90,32 +102,40 @@
                     android:layout_width="72dp"
                     android:layout_height="wrap_content"
                     android:layout_alignParentStart="true"
+                    android:layout_alignParentLeft="true"
                     android:layout_alignParentTop="true"
                     android:text="@string/to"
                     android:textSize="@dimen/abc_text_size_body_1_material"/>
 
-                <TextView
-                    android:id="@+id/receiver_uid"
+                <ImageButton
+                    android:id="@+id/action_scan_qrcode"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_below="@+id/to_label"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentRight="true"
+                    android:contentDescription="@string/qr_code"
+                    android:background="@android:drawable/btn_default"
+                    android:src="@drawable/ic_qrcode_black_24dp" />
+
+                <Button
+                    android:id="@+id/contact"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentTop="true"
-                    android:layout_toEndOf="@id/to_label"
-                    android:layout_toStartOf="@id/action_lookup"
-                    android:singleLine="true"
-                    android:ellipsize="end"
-                    android:textSize="@dimen/abc_text_size_body_1_material"/>
+                    android:layout_height="48dp"
+                    android:layout_below="@+id/to_label"
+                    android:layout_toStartOf="@+id/action_scan_qrcode"
+                    android:layout_toLeftOf="@+id/action_scan_qrcode"
+                    android:background="@android:drawable/btn_default"
+                    android:text="@string/contacts"/>
 
                 <EditText
                     android:id="@+id/receiver_public_key"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_below="@id/receiver_uid"
-                    android:layout_toEndOf="@id/to_label"
+                    android:layout_below="@id/contact"
                     android:layout_toStartOf="@+id/action_lookup"
-                    android:focusable="false"
-                    android:editable="false"
-                    android:background="@null"
-                    android:textSize="@dimen/abc_text_size_caption_material"/>
+                    android:layout_toLeftOf="@+id/action_lookup"
+                    android:singleLine="true"/>
 
 
                 <ImageButton
@@ -123,25 +143,12 @@
                     android:layout_width="48dp"
                     android:layout_height="48dp"
                     android:contentDescription="@string/search"
-                    android:layout_alignParentTop="true"
-                    android:layout_toStartOf="@+id/action_scan_qrcode"
-                    android:src="@drawable/ic_search_black_24dp" />
-                <!--
-                                <ImageButton
-                                    android:id="@+id/action_contact"
-                                    android:layout_width="48dp"
-                                    android:layout_height="48dp"
-                                    android:contentDescription="@string/contact"
-                                    android:src="@drawable/ic_person_black_24dp" />
-                -->
-                <ImageButton
-                    android:id="@+id/action_scan_qrcode"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:layout_alignParentTop="true"
+                    android:layout_below="@id/action_scan_qrcode"
                     android:layout_alignParentEnd="true"
-                    android:contentDescription="@string/qr_code"
-                    android:src="@drawable/ic_qrcode_black_24dp" />
+                    android:layout_alignParentRight="true"
+                    android:background="@android:drawable/btn_default"
+                    android:src="@drawable/ic_search_black_24dp" />
+
             </RelativeLayout>
 
 
@@ -160,35 +167,59 @@
                     android:layout_width="72dp"
                     android:layout_height="wrap_content"
                     android:layout_alignParentStart="true"
+                    android:layout_alignParentLeft="true"
                     android:layout_alignParentTop="true"
                     android:labelFor="@+id/rel_amount"
                     android:text="@string/amount"
                     android:textSize="@dimen/abc_text_size_body_1_material"/>
 
-                <TextView
-                    android:id="@+id/qt_amount"
+                <LinearLayout
+                    android:id="@+id/layout_amount"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:layout_alignParentTop="true"
-                    android:layout_toEndOf="@id/amount_label"
-                    android:background="@null"
-                    android:gravity="end"
-                    android:labelFor="@id/qt_amount"
-                    android:singleLine="true"
-                    android:textSize="@dimen/abc_text_size_caption_material" />
+                    android:layout_below="@id/amount_label"
+                    android:layout_toStartOf="@+id/action_calcul"
+                    android:layout_toLeftOf="@+id/action_calcul"
+                    android:orientation="horizontal">
 
-                <EditText
-                    android:id="@+id/rel_amount"
-                    android:layout_width="wrap_content"
+                    <EditText
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="0.6"
+                        android:inputType="numberDecimal"
+                        android:id="@+id/amount"
+                        android:selectAllOnFocus="true"
+                        android:gravity="end"
+                        android:layout_gravity="center_horizontal"/>
+
+                    <Spinner
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="0.4"
+                        android:id="@+id/spinner_unit"
+                        android:background="@android:drawable/spinner_background"
+                        android:visibility="gone"/>
+
+                </LinearLayout>
+                <TextView
+                    android:id="@+id/default_amount"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_below="@+id/layout_amount"
+                    android:layout_alignLeft="@+id/layout_amount"
+                    android:layout_alignStart="@+id/layout_amount"
+                    android:textSize="@dimen/abc_text_size_body_1_material"/>
+
+                <ImageButton
+                    android:id="@+id/action_calcul"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:contentDescription="@string/search"
+                    android:layout_below="@+id/amount_label"
                     android:layout_alignParentEnd="true"
-                    android:layout_below="@id/qt_amount"
-                    android:layout_toEndOf="@id/amount_label"
-                    android:background="@null"
-                    android:gravity="end"
-                    android:inputType="numberDecimal"
-                    android:singleLine="true" />
+                    android:layout_alignParentRight="true"
+                    android:background="@android:drawable/btn_default"
+                    android:src="@drawable/ic_convert_24dp" />
 
             </RelativeLayout>
 
@@ -208,6 +239,7 @@
                     android:layout_width="72dp"
                     android:layout_height="wrap_content"
                     android:layout_alignParentStart="true"
+                    android:layout_alignParentLeft="true"
                     android:layout_alignParentTop="true"
                     android:labelFor="@+id/comment"
                     android:text="@string/comment"
@@ -218,10 +250,13 @@
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:layout_alignParentEnd="true"
+                    android:layout_alignParentRight="true"
                     android:layout_alignParentTop="true"
                     android:layout_toEndOf="@id/comment_label"
+                    android:layout_toRightOf="@id/comment_label"
                     android:background="@null"
                     android:layout_marginStart="16dp"
+                    android:layout_marginLeft="16dp"
                     android:inputType="textMultiLine"
                     android:maxLength="255"
                     android:singleLine="false"

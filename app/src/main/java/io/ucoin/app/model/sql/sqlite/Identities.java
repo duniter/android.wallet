@@ -12,7 +12,6 @@ import java.util.Iterator;
 import io.ucoin.app.UcoinUris;
 import io.ucoin.app.model.UcoinIdentities;
 import io.ucoin.app.model.UcoinIdentity;
-import io.ucoin.app.model.UcoinWallet;
 import io.ucoin.app.sqlite.SQLiteTable;
 import io.ucoin.app.technical.crypto.AddressFormatException;
 
@@ -41,28 +40,35 @@ final public class Identities extends Table
 
     @Override
     public UcoinIdentity getIdentity() {
+        UcoinIdentity result = null;
         Cursor c = fetch();
-        if (c != null) {
-            if (c.moveToNext()) {
-                Long id = c.getLong(c.getColumnIndex(BaseColumns._ID));
-                c.close();
-                return new Identity(mContext, id);
-            }
+        if (c.moveToFirst()) {
+            Long id = c.getLong(c.getColumnIndex(BaseColumns._ID));
+            result = new Identity(mContext, id);
+        }
+        if(!c.isClosed()){
             c.close();
         }
-        return null;
+        return result;
     }
 
     @Override
-    public UcoinIdentity add(String uid, UcoinWallet wallet) throws AddressFormatException {
-        ContentValues values = new ContentValues();
-        values.put(SQLiteTable.Identity.CURRENCY_ID, mCurrencyId);
-        values.put(SQLiteTable.Identity.WALLET_ID, wallet.id());
-        values.put(SQLiteTable.Identity.UID, uid);
+    public UcoinIdentity add(String uid, String publicKey) throws AddressFormatException {
+        UcoinIdentity result = getIdentity();
 
-        //insert identity
-        Uri uri = insert(values);
-        return new Identity(mContext, Long.parseLong(uri.getLastPathSegment()));
+        if(result==null || !getIdentity().publicKey().equals(publicKey)){
+            if(result!=null) {
+                delete(result.id());
+            }
+            ContentValues values = new ContentValues();
+            values.put(SQLiteTable.Identity.CURRENCY_ID, mCurrencyId);
+            values.put(SQLiteTable.Identity.PUBLIC_KEY, publicKey);
+            values.put(SQLiteTable.Identity.UID, uid);
+            Uri uri = insert(values);
+            result = new Identity(mContext, Long.parseLong(uri.getLastPathSegment()));
+        }
+
+        return result;
     }
 
     @Override
