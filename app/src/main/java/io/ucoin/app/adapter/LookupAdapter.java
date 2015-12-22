@@ -76,7 +76,7 @@ public class LookupAdapter extends BaseAdapter {
         // pubKey
         viewHolder.pubkey.setText(result.pubkey);
 
-        UcoinCurrency currency = new Currency(mContext,result.id);
+        UcoinCurrency currency = new Currency(mContext,result.currencyId);
         viewHolder.currency.setText(currency.name());
 
 

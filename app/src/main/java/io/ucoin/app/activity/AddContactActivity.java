@@ -114,7 +114,7 @@ public class AddContactActivity extends ActionBarActivity {
             WotLookup.Result result = (WotLookup.Result)intent.getExtras().getSerializable(WotLookup.Result.class.getSimpleName());
             mName.setText(result.uids[0].uid);
             mPublicKey.setText(result.pubkey);
-            currency = new Currency(this,result.id);
+            currency = new Currency(this,result.currencyId);
         } else if(requestCode == CONTACT){
             finish();
             Toast.makeText(this,

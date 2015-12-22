@@ -27,7 +27,7 @@ public class WotLookup implements Serializable {
         if(this.results==null){
             results = new Result[res.length];
             for(int i=0;i<res.length;i++){
-                res[i].id = currencyId;
+                res[i].currencyId = currencyId;
                 results[i]=res[i];
             }
         }else {
@@ -37,7 +37,7 @@ public class WotLookup implements Serializable {
                 if (i < results.length) {
                     r[i] = results[i];
                 } else {
-                    res[i - results.length].id = currencyId;
+                    res[i - results.length].currencyId = currencyId;
                     r[i] = res[i - results.length];
                 }
             }
@@ -61,7 +61,7 @@ public class WotLookup implements Serializable {
     public class Result implements Serializable {
         public String pubkey;
         public Uid[] uids;
-        public Long id;
+        public Long currencyId;
     }
 
     public class Uid implements Serializable {

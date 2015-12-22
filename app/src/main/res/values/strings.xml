@@ -336,5 +336,8 @@
     <string name="converter">Currency converter</string>
 
     <string name="contact_added">Contact successfully added</string>
+    <string name="network">Network</string>
+
+    <string name="find_by">Find by :</string>
 
 </resources>
