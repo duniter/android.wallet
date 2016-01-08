@@ -7,7 +7,9 @@ import android.widget.TextView;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 import io.ucoin.app.Application;
 import io.ucoin.app.R;
@@ -15,7 +17,7 @@ import io.ucoin.app.R;
 /**
  * Created by naivalf27 on 08/12/15.
  */
-public class UnitFormat {
+public class Format {
 
     public static final int YEAR = 0;
     public static final int DAY = 1;
@@ -28,6 +30,17 @@ public class UnitFormat {
     public static final int IN_DAY = 86400;
     public static final int IN_HOUR = 3600;
     public static final int IN_MINUTE = 60;
+
+    public static final String CONTACT_PATH = "ucoin://";
+    public static final String SEPARATOR1 = ":";
+    public static final String SEPARATOR2 = "@";
+
+    public static final String UID = "uid";
+    public static final String PUBLICKEY = "public_key";
+    public static final String CURRENCY = "currency";
+
+    public static final boolean SIMPLE = true;
+    public static final boolean LONG = false;
 
     public static String timeFormatter(Context context, double amount){
         String result = "";
@@ -141,13 +154,14 @@ public class UnitFormat {
                 currentAmount.setText(dir.concat(formatter.format(classiqueValue)));
                 break;
             case Application.UNIT_DU:
-                currentAmount.setText(dir.concat(String.format("%.8f", duValue)));
+                currentAmount.setText(dir.concat(String.format("%.8f", duValue))
+                        .concat(" ").concat(context.getResources().getString(R.string.UD)));
                 break;
             case Application.UNIT_TIME:
                 if (dir.equals("")) {
-                    currentAmount.setText(UnitFormat.timeFormatter(context, timeValue));
+                    currentAmount.setText(Format.timeFormatter(context, timeValue));
                 }else{
-                    currentAmount.setText(dir.concat("(").concat(UnitFormat.timeFormatter(context, timeValue)).concat(")"));
+                    currentAmount.setText(dir.concat("(").concat(Format.timeFormatter(context, timeValue)).concat(")"));
                 }
                 break;
         }
@@ -160,12 +174,71 @@ public class UnitFormat {
                     defaultAmount.setText(formatter.format(classiqueValue));
                     break;
                 case Application.UNIT_DU:
-                    defaultAmount.setText(String.format("%.8f", duValue));
+                    defaultAmount.setText(String.format("%.8f", duValue)
+                            .concat(" ").concat(context.getResources().getString(R.string.UD)));
                     break;
                 case Application.UNIT_TIME:
-                    defaultAmount.setText(UnitFormat.timeFormatter(context, timeValue));
+                    defaultAmount.setText(Format.timeFormatter(context, timeValue));
                     break;
             }
         }
+    }
+
+    public static String minifyPubkey(String pubkey) {
+        return (pubkey == null || pubkey.length() < 6)? pubkey : pubkey.substring(0, 6);
+    }
+
+    public static String createUri(boolean simple, String uid, String publicKey, String currency) {
+        String result;
+        if(simple){
+            result = publicKey;
+        }else {
+            result = CONTACT_PATH;
+            if (uid.isEmpty() || uid.equals(" ")) {
+                result = result.concat(SEPARATOR1);
+            } else {
+                result = result.concat(uid).concat(SEPARATOR1);
+            }
+
+            if (publicKey.isEmpty() || publicKey.equals(" ")) {
+                result = result.concat(SEPARATOR2);
+            } else {
+                result = result.concat(publicKey).concat(SEPARATOR2);
+            }
+
+            if (!currency.isEmpty() && !currency.equals(" ")) {
+                result = result.concat(currency);
+            }
+        }
+        return result;
+    }
+
+    public static Map<String, String> parseUri(String uri){
+        Map<String, String> result = new HashMap<>();
+        if(uri.substring(0,CONTACT_PATH.length()).equals(CONTACT_PATH)){
+            int index1 = uri.indexOf(SEPARATOR1,CONTACT_PATH.length());
+            int index2 = uri.indexOf(SEPARATOR2,index1+SEPARATOR1.length());
+
+            String uid = uri.substring(CONTACT_PATH.length(), index1);
+            String publicKey = uri.substring(index1+SEPARATOR1.length(),index2);
+            String currency = uri.substring(index2+SEPARATOR2.length());
+
+            if(!uid.isEmpty()){
+                result.put(UID,uid);
+            }
+            if(!publicKey.isEmpty()){
+                result.put(PUBLICKEY,publicKey);
+            }
+            if(!currency.isEmpty()){
+                result.put(CURRENCY,currency);
+            }
+        }else{
+            result.put(PUBLICKEY,uri);
+        }
+        return result;
+    }
+
+    public static String isNull(String txt){
+        return (txt==null || txt.isEmpty()) ? "" : txt;
     }
 }

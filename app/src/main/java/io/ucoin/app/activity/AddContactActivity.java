@@ -15,30 +15,34 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 import io.ucoin.app.Application;
 import io.ucoin.app.R;
+import io.ucoin.app.model.IdentityContact;
 import io.ucoin.app.model.UcoinCurrency;
 import io.ucoin.app.model.http_api.WotLookup;
 import io.ucoin.app.model.sql.sqlite.Currencies;
 import io.ucoin.app.model.sql.sqlite.Currency;
+import io.ucoin.app.service.Format;
+import io.ucoin.app.task.FindIdentityTask;
+import io.ucoin.app.task.FindIdentityTask.SendIdentity;
 
-public class AddContactActivity extends ActionBarActivity {
+public class AddContactActivity extends ActionBarActivity implements SendIdentity{
     private Toolbar mToolbar;
     private EditText mName;
+    private EditText mUid;
     private EditText mPublicKey;
     private UcoinCurrency currency;
 
-
-    public final static String CONTACT_PATH = "ucoin://";
-    public final static String SEPARATOR1 = ":";
-    public final static String SEPARATOR2 = "@";
+    private Long currencyId;
 
     public static final int CONTACT = 10003;
 
@@ -50,14 +54,39 @@ public class AddContactActivity extends ActionBarActivity {
         setContentView(R.layout.activity_add_contact);
 
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
+        currencyId = getIntent().getLongExtra(Application.EXTRA_CURRENCY_ID,-1);
+
+
+
+        LinearLayout layoutName = (LinearLayout) findViewById(R.id.layout_name);
+        layoutName.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mName.requestFocus();
+            }
+        });
+        LinearLayout layoutUid = (LinearLayout) findViewById(R.id.layout_uid);
+        layoutUid.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mUid.requestFocus();
+            }
+        });
+        LinearLayout layoutPublickey = (LinearLayout) findViewById(R.id.layout_publickey);
+        layoutPublickey.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mPublicKey.requestFocus();
+            }
+        });
+
 
         ImageButton lookup = (ImageButton) findViewById(R.id.action_lookup);
         lookup.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(AddContactActivity.this,
-                        LookupActivity.class);
-                intent.putExtra(Application.EXTRA_CURRENCY_ID, getIntent().getExtras().getLong(Application.EXTRA_CURRENCY_ID));
+                Intent intent = new Intent(getApplicationContext(), LookupActivity.class);
+                intent.putExtra(Application.EXTRA_CURRENCY_ID, currencyId);
                 startActivityForResult(intent, Application.ACTIVITY_LOOKUP);
             }
         });
@@ -81,13 +110,14 @@ public class AddContactActivity extends ActionBarActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         mName = (EditText) findViewById(R.id.name);
+        mUid = (EditText) findViewById(R.id.uid);
         mPublicKey = (EditText) findViewById(R.id.public_key);
+
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         mToolbar.inflateMenu(R.menu.toolbar_add_contact);
-
         return true;
     }
 
@@ -104,6 +134,14 @@ public class AddContactActivity extends ActionBarActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public void send(IdentityContact entity,String message) {
+        if(entity!=null) {
+            mUid.setText(entity.getUid());
+            mName.setHint(entity.getUid());
+            this.currency = new Currencies(this).getById(entity.getCurrencyId());
+        }
+    }
 
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
         super.onActivityResult(requestCode, resultCode, intent);
@@ -111,10 +149,16 @@ public class AddContactActivity extends ActionBarActivity {
             return;
 
         if(requestCode == Application.ACTIVITY_LOOKUP) {
+            IdentityContact identityContact = (IdentityContact) intent.getSerializableExtra(Application.IDENTITY_LOOKUP);
             WotLookup.Result result = (WotLookup.Result)intent.getExtras().getSerializable(WotLookup.Result.class.getSimpleName());
-            mName.setText(result.uids[0].uid);
-            mPublicKey.setText(result.pubkey);
-            currency = new Currency(this,result.currencyId);
+            mUid.setText(identityContact.getUid());
+            if(identityContact.getName().isEmpty()){
+                mName.setHint(identityContact.getUid());
+            }else {
+                mName.setText(identityContact.getName());
+            }
+            mPublicKey.setText(identityContact.getPublicKey());
+            currency = new Currency(this,identityContact.getCurrencyId());
         } else if(requestCode == CONTACT){
             finish();
             Toast.makeText(this,
@@ -124,48 +168,67 @@ public class AddContactActivity extends ActionBarActivity {
             IntentResult scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, intent);
             if (scanResult != null && !scanResult.getContents().isEmpty()) {
                 String result = scanResult.getContents();
-                String currenyName = result.substring(result.indexOf(":") + 1, result.length());
-                currency = new Currencies(this).getByName(currenyName);
-                mPublicKey.setText(result.substring(0, result.indexOf(":")));
+
+                Map<String, String> data = Format.parseUri(result);
+
+                String uid = Format.isNull(data.get(Format.UID));
+                String publicKey = Format.isNull(data.get(Format.PUBLICKEY));
+                String currencyName = Format.isNull(data.get(Format.CURRENCY));
+
+                mUid.setText(uid);
+                mName.setHint(uid);
+                currency = new Currencies(this).getByName(currencyName);
+                mPublicKey.setText(publicKey);
+
+                if(uid.equals("")){
+                    FindIdentityTask findIdentityTask = new FindIdentityTask(
+                            this,
+                            currencyId,
+                            publicKey,
+                            this);
+                    findIdentityTask.execute();
+                }
             }
         }
     }
 
-    public void actionAddContact() {
-        String name = mName.getText().toString();
-        if (name.isEmpty()) {
-            Toast.makeText(this, "Name is invalid", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        String publicKey = mPublicKey.getText().toString();
+    private void actionAddContact() {
+        final String uid = mUid.getText().toString();
+        final String name = mName.getText().toString();
+        final String publicKey = mPublicKey.getText().toString();
         if (publicKey.isEmpty()) {
             Toast.makeText(this, "public key is invalid", Toast.LENGTH_SHORT).show();
             return;
         }
+        if(uid.isEmpty() && name.isEmpty()){
+            Toast.makeText(this, "name is invalid", Toast.LENGTH_SHORT).show();
+            mName.requestFocus();
+            return;
+        }
+
         if(currency==null){
             Long currencyId = getIntent().getExtras().getLong(Application.EXTRA_CURRENCY_ID);
             currency = new Currency(this, currencyId);
         }
-        currency.contacts().add(name, publicKey);
 
-        askContactInPhone();
-    }
-
-    public String createUri(String name, String publicKey, String currency) {
-        String result;
-        if(currency!=null) {
-            result = CONTACT_PATH.concat(name).concat(SEPARATOR1).concat(publicKey).concat(SEPARATOR2).concat(currency);
+        if (uid.isEmpty()){
+            currency.contacts().add(name, "", publicKey);
+            askContactInPhone();
         }else{
-            result = CONTACT_PATH.concat(name).concat(SEPARATOR1).concat(publicKey).concat(SEPARATOR2);
+            currency.contacts().add(
+                    (name.isEmpty()) ? uid : name,
+                    uid,
+                    publicKey);
+            askContactInPhone();
         }
-        return result;
     }
 
-    public void addNewContactInPhone(){
+    private void addNewContactInPhone(){
         String name = mName.getText().toString();
+        String uid = mUid.getText().toString();
         String publicKey = mPublicKey.getText().toString();
 
-        String url = createUri(name, publicKey, currency.name());
+        String url = Format.createUri(Format.LONG, uid, publicKey, currency.name());
 
         Intent intent = new Intent(Intent.ACTION_INSERT);
         intent.setType(ContactsContract.Contacts.CONTENT_TYPE);
@@ -187,7 +250,7 @@ public class AddContactActivity extends ActionBarActivity {
         //------------------------------- end of inserting contact in the phone
     }
 
-    public void askContactInPhone(){
+    private void askContactInPhone(){
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
         alertDialogBuilder.setTitle("Contact");
         alertDialogBuilder
@@ -209,4 +272,5 @@ public class AddContactActivity extends ActionBarActivity {
         AlertDialog alertDialog = alertDialogBuilder.create();
         alertDialog.show();
     }
+
 }

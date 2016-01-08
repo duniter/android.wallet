@@ -1,7 +1,5 @@
 package io.ucoin.app.fragment.currency;
 
-import android.app.Fragment;
-import android.app.FragmentManager;
 import android.app.ListFragment;
 import android.app.LoaderManager;
 import android.content.CursorLoader;
@@ -25,19 +23,21 @@ import io.ucoin.app.UcoinUris;
 import io.ucoin.app.activity.CurrencyActivity;
 import io.ucoin.app.adapter.WalletCursorAdapter;
 import io.ucoin.app.fragment.dialog.AddWalletDialogFragment;
-import io.ucoin.app.fragment.wallet.WalletFragment;
 import io.ucoin.app.sqlite.SQLiteTable;
 
 public class WalletListFragment extends ListFragment
         implements LoaderManager.LoaderCallbacks<Cursor>,
         SwipeRefreshLayout.OnRefreshListener{
 
+    private static final String NEW_WALLET = "new_wallet";
+
     private SwipeRefreshLayout mSwipeLayout;
     private WalletCursorAdapter walletCursorAdapter;
 
-    static public WalletListFragment newInstance(Long currencyId) {
+    static public WalletListFragment newInstance(Long currencyId,boolean newWallet) {
         Bundle newInstanceArgs = new Bundle();
         newInstanceArgs.putLong(BaseColumns._ID, currencyId);
+        newInstanceArgs.putBoolean(NEW_WALLET,newWallet);
         WalletListFragment fragment = new WalletListFragment();
         fragment.setArguments(newInstanceArgs);
         return fragment;
@@ -52,7 +52,9 @@ public class WalletListFragment extends ListFragment
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
-        ((CurrencyActivity) getActivity()).setDrawerIndicatorEnabled(true);
+        if(getActivity() instanceof CurrencyActivity){
+            ((CurrencyActivity) getActivity()).setDrawerIndicatorEnabled(true);
+        }
 
         return inflater.inflate(R.layout.fragment_wallet_list,
                 container, false);
@@ -80,7 +82,9 @@ public class WalletListFragment extends ListFragment
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.toolbar_wallet_list, menu);
+        if(getArguments().getBoolean(NEW_WALLET)) {
+            inflater.inflate(R.menu.toolbar_wallet_list, menu);
+        }
     }
 
     @Override
@@ -97,21 +101,9 @@ public class WalletListFragment extends ListFragment
 
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
-
-        Long realId = walletCursorAdapter.getRealPosition(position);
-        Fragment fragment = WalletFragment.newInstance(realId);
-        walletCursorAdapter.getRealPosition(position);
-        FragmentManager fragmentManager = getActivity().getFragmentManager();
-        fragmentManager.beginTransaction()
-                .setCustomAnimations(
-                        android.R.animator.fade_in,
-                        android.R.animator.fade_out,
-                        android.R.animator.fade_in,
-                        android.R.animator.fade_out)
-                .replace(R.id.frame_content, fragment, fragment.getClass().getSimpleName())
-                .addToBackStack(fragment.getClass().getSimpleName())
-                .commit();
-
+        if(getActivity() instanceof WalletItemClick){
+            ((WalletItemClick)getActivity()).walletClick(walletCursorAdapter, position);
+        }
     }
 
     @Override
@@ -157,5 +149,9 @@ public class WalletListFragment extends ListFragment
     public void onRefresh() {
         mSwipeLayout.setRefreshing(false);
         Application.requestSync();
+    }
+
+    public interface WalletItemClick  {
+        void walletClick(WalletCursorAdapter walletCursorAdapter,int position);
     }
 }

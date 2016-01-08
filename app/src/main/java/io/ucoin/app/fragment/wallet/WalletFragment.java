@@ -35,7 +35,7 @@ import io.ucoin.app.model.UcoinEndpoint;
 import io.ucoin.app.model.UcoinWallet;
 import io.ucoin.app.model.http_api.TxHistory;
 import io.ucoin.app.model.sql.sqlite.Wallet;
-import io.ucoin.app.service.UnitFormat;
+import io.ucoin.app.service.Format;
 import io.ucoin.app.sqlite.SQLiteTable;
 import io.ucoin.app.sqlite.SQLiteView;
 
@@ -195,13 +195,7 @@ public class WalletFragment extends ListFragment
             //publicKey.setText(data.getString(data.getColumnIndex(SQLiteView.Wallet.PUBLIC_KEY)));
             StringBuilder sb = new StringBuilder();
 
-            UnitFormat.changeUnit(getActivity(),
-                    data.getDouble(data.getColumnIndex(SQLiteView.Wallet.QUANTITATIVE_AMOUNT)),
-                    data.getDouble(data.getColumnIndex(SQLiteView.Wallet.RELATIVE_AMOUNT)),
-                    data.getDouble(data.getColumnIndex(SQLiteView.Wallet.TIME_AMOUNT)),
-                    PreferenceManager.getDefaultSharedPreferences(getActivity()),
-                    amount,
-                    defaultAmount,"");
+            Format.changeUnit(getActivity(), data.getDouble(data.getColumnIndex(SQLiteView.Wallet.QUANTITATIVE_AMOUNT)), data.getDouble(data.getColumnIndex(SQLiteView.Wallet.RELATIVE_AMOUNT)), data.getDouble(data.getColumnIndex(SQLiteView.Wallet.TIME_AMOUNT)), PreferenceManager.getDefaultSharedPreferences(getActivity()), amount, defaultAmount, "");
         } else if(loader.getId() == OPERATION_LOADER_ID){
             ((OperationSectionCursorAdapter) this.getListAdapter()).swapCursor(data);
         }

@@ -23,7 +23,6 @@ import android.widget.TextView;
 import io.ucoin.app.R;
 import io.ucoin.app.UcoinUris;
 import io.ucoin.app.sqlite.SQLiteTable;
-import io.ucoin.app.sqlite.SQLiteView;
 import io.ucoin.app.task.GenerateQRCodeTask;
 
 public class QrCodeDialogFragment extends DialogFragment
@@ -90,9 +89,9 @@ public class QrCodeDialogFragment extends DialogFragment
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         data.moveToFirst();
         String pubKey = data.getString(data.getColumnIndex(SQLiteTable.Wallet.PUBLIC_KEY));
-        String currency = data.getString(data.getColumnIndex(SQLiteView.Wallet.CURRENCY_NAME));
-        String publicKey = pubKey.concat(":").concat(currency);
-        mPublicKey.setText(publicKey);
+//        String currency = data.getString(data.getColumnIndex(SQLiteView.Wallet.CURRENCY_NAME));
+//        String publicKey = pubKey.concat(":").concat(currency);
+        mPublicKey.setText(pubKey);
 
         Display display = getActivity().getWindowManager().getDefaultDisplay();
         Point size = new Point();
@@ -101,7 +100,7 @@ public class QrCodeDialogFragment extends DialogFragment
 
         Bundle args = new Bundle();
         args.putInt("width", width);
-        args.putString("public_key", publicKey);
+        args.putString("public_key", pubKey);
         args.putInt("color", getActivity().getResources().getColor(R.color.primary));
 
         GenerateQRCodeTask task = new GenerateQRCodeTask(new GenerateQRCodeTask.OnCodeGeneratedListener() {

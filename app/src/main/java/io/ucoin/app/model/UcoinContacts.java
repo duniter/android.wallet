@@ -3,7 +3,7 @@ package io.ucoin.app.model;
 import android.database.Cursor;
 
 public interface UcoinContacts extends SqlTable, Iterable<UcoinContact> {
-    UcoinContact add(String name, String publicKey);
+    UcoinContact add(String name, String uid, String publicKey);
 
     UcoinContact getById(Long id);
 

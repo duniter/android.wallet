@@ -1,9 +1,7 @@
 package io.ucoin.app.fragment.currency;
 
-import android.app.Activity;
 import android.app.ListFragment;
 import android.app.LoaderManager;
-import android.app.SearchManager;
 import android.content.Context;
 import android.content.CursorLoader;
 import android.content.Intent;
@@ -19,6 +17,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.CompoundButton;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -49,9 +48,9 @@ import io.ucoin.app.R;
 import io.ucoin.app.UcoinUris;
 import io.ucoin.app.activity.AddContactActivity;
 import io.ucoin.app.activity.CurrencyActivity;
-import io.ucoin.app.activity.LookupActivity;
+import io.ucoin.app.activity.FindByQrCode;
 import io.ucoin.app.adapter.ContactSectionBaseAdapter;
-import io.ucoin.app.fragment.identity.MemberListFragment;
+import io.ucoin.app.model.IdentityContact;
 import io.ucoin.app.model.UcoinCurrencies;
 import io.ucoin.app.model.UcoinCurrency;
 import io.ucoin.app.model.UcoinEndpoint;
@@ -65,23 +64,46 @@ public class ContactListFragment extends ListFragment
         SearchView.OnQueryTextListener{
 
     private final static String CURRENCY_ID = "currency_id";
+    private final static String FIND_IN_NETWORK = "find_in_network";
+    private final static String FIND_BY_PUBLICKEY = "find_by_publickey";
+    public final static String SEE_CONTACT = "see_contact";
+    public final static String ADD_CONTACT = "add_contact";
+    public final static String OPEN_SEARCH = "open_search";
+    public final static String TEXT_SEARCH = "text_search";
 
-    String textQuery ="";
-    boolean autorisationFindNetwork = false;
+    String textQuery = "";
+    boolean findInNetwork = false;
     ProgressBar progress;
-    Cursor mCursor;
     RequestQueue queue;
-    ArrayList<Entity> listEntity;
+    ArrayList<IdentityContact> listIdentityContact;
     protected int firstIndexIdentity;
     LoadIdentityTask loadIdentityTask;
-    LinearLayout searchAdvenced;
+    LinearLayout advancedSearch;
     SearchView searchView;
+
+    ContactItemClick listener;
+
 
     boolean findByPubKey = false;
 
-    static public ContactListFragment newInstance(Long currencyId) {
+    static public ContactListFragment newInstance(Long currencyId,boolean seeContact,boolean addContact){
         Bundle newInstanceArgs = new Bundle();
         newInstanceArgs.putLong(CURRENCY_ID, currencyId);
+        newInstanceArgs.putBoolean(SEE_CONTACT,seeContact);
+        newInstanceArgs.putBoolean(ADD_CONTACT,addContact);
+        ContactListFragment fragment = new ContactListFragment();
+        fragment.setArguments(newInstanceArgs);
+
+        return fragment;
+    }
+
+    static public ContactListFragment newInstance(Long currencyId,boolean seeContact,boolean addContact,String txt){
+        Bundle newInstanceArgs = new Bundle();
+        newInstanceArgs.putLong(CURRENCY_ID, currencyId);
+        newInstanceArgs.putBoolean(SEE_CONTACT, seeContact);
+        newInstanceArgs.putBoolean(ADD_CONTACT,addContact);
+        newInstanceArgs.putString(TEXT_SEARCH,txt);
+        newInstanceArgs.putBoolean(OPEN_SEARCH,true);
         ContactListFragment fragment = new ContactListFragment();
         fragment.setArguments(newInstanceArgs);
 
@@ -91,13 +113,17 @@ public class ContactListFragment extends ListFragment
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        findInNetwork = getArguments().getBoolean(FIND_IN_NETWORK);
+        findByPubKey = getArguments().getBoolean(FIND_BY_PUBLICKEY);
     }
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
-        ((CurrencyActivity) getActivity()).setDrawerIndicatorEnabled(true);
+        if(getActivity() instanceof CurrencyActivity) {
+            ((CurrencyActivity) getActivity()).setDrawerIndicatorEnabled(true);
+        }
 
         return inflater.inflate(R.layout.fragment_contact_list,
                 container, false);
@@ -109,7 +135,11 @@ public class ContactListFragment extends ListFragment
         getActivity().setTitle(getString(R.string.contacts));
         setHasOptionsMenu(true);
 
-        listEntity = new ArrayList<>();
+        if(getActivity() instanceof ContactItemClick){
+            this.getListView().setOnItemClickListener((ContactItemClick)getActivity());
+        }
+
+        listIdentityContact = new ArrayList<>();
 
         queue = Volley.newRequestQueue(getActivity());
 
@@ -120,26 +150,34 @@ public class ContactListFragment extends ListFragment
         ContactSectionBaseAdapter contactSectionBaseAdapter
                 = new ContactSectionBaseAdapter(getActivity(), null,this);
         setListAdapter(contactSectionBaseAdapter);
-        getLoaderManager().initLoader(0, getArguments(), this);
 
         ImageButton addContactButton = (ImageButton) view.findViewById(R.id.add_contact_button);
-        addContactButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                actionAddContact(currencyId);
-            }
-        });
 
-        searchAdvenced = (LinearLayout) view.findViewById(R.id.search_advenced);
+        if(getArguments().getBoolean(ADD_CONTACT)) {
+            addContactButton.setVisibility(View.VISIBLE);
+            addContactButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    actionAddContact(currencyId);
+                }
+            });
+        }else{
+            addContactButton.setVisibility(View.GONE);
+        }
+
+        advancedSearch = (LinearLayout) view.findViewById(R.id.search_advenced);
         Switch switch1 = (Switch) view.findViewById(R.id.switch1);
         switch1.setChecked(findByPubKey);
         switch1.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                getArguments().putBoolean(FIND_BY_PUBLICKEY, isChecked);
                 findByPubKey = isChecked;
                 onQueryTextChange(textQuery);
             }
         });
+
+        getLoaderManager().initLoader(0, getArguments(), this);
     }
 
     @Override
@@ -171,15 +209,25 @@ public class ContactListFragment extends ListFragment
 
     @Override
     public void onPrepareOptionsMenu(Menu menu) {
-        SearchManager searchManager = (SearchManager) getActivity()
-                .getSystemService(Activity.SEARCH_SERVICE);
         final MenuItem searchItem = menu.findItem(R.id.action_lookup);
+
+        String txt = getArguments().getString(TEXT_SEARCH,"");
+        boolean openSearch = getArguments().getBoolean(OPEN_SEARCH,false);
 
         searchView = (SearchView)searchItem.getActionView();
         searchView.setOnQueryTextListener(this);
+
+        if(openSearch){
+            searchView.setIconified(false);
+            searchView.requestFocus();
+            if(!txt.equals("")){
+                textQuery = txt;
+            }
+        }
+
         searchView.setQuery(textQuery, true);
         searchView.clearFocus();
-        if(!textQuery.equals("")){
+        if(!textQuery.equals("") || !getArguments().getBoolean(SEE_CONTACT)){
             searchView.setIconified(false);
             searchView.requestFocus();
         }
@@ -196,21 +244,6 @@ public class ContactListFragment extends ListFragment
     }
 
     @Override
-    public void onListItemClick(ListView l, View v, int position, long id) {
-        int realPosition = ((ContactSectionBaseAdapter) this.getListAdapter()).getRealPosition(position);
-        String pubkey = listEntity.get(realPosition).getPublicKey();
-        String name = listEntity.get(realPosition).getName();
-        Long currencyId= listEntity.get(realPosition).currencyId;
-        WotLookup.Result result= MemberListFragment.findIdentity(pubkey, name);
-        Intent intent = new Intent(getActivity(), LookupActivity.class);
-        intent.putExtra(Application.EXTRA_CURRENCY_ID, currencyId);
-        intent.putExtra(WotLookup.Result.class.getSimpleName(), result);
-        if(getActivity() instanceof CurrencyActivity){
-            ((CurrencyActivity)getActivity()).onActivityRes(Application.ACTIVITY_LOOKUP, Activity.RESULT_OK, intent);
-        }
-    }
-
-    @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         Long currencyId = args.getLong(CURRENCY_ID);
         String selection = null;
@@ -224,21 +257,10 @@ public class ContactListFragment extends ListFragment
         if(query != null && !query.equals("")) {
             this.textQuery = query;
             if(query.length()>=3){
-                autorisationFindNetwork = true;
+                args.putBoolean(FIND_IN_NETWORK,true);
+                findInNetwork = true;
             }
-            if(!findByPubKey){
-                if (selection == null) {
-                    selection = SQLiteTable.Contact.NAME + " LIKE ?";
-                } else {
-                    selection += " AND " + SQLiteTable.Contact.NAME + " LIKE ?";
-                }
-                if (selectionArgs == null) {
-                    selectionArgs = new String[]{query + "%"};
-                } else {
-                    selectionArgs = Arrays.copyOf(selectionArgs, selectionArgs.length + 1);
-                    selectionArgs[selectionArgs.length - 1] = query + "%";
-                }
-            }else {
+            if(findByPubKey){
                 if (selection == null) {
                     selection = SQLiteTable.Contact.PUBLIC_KEY + " LIKE ?";
                 } else {
@@ -250,52 +272,85 @@ public class ContactListFragment extends ListFragment
                     selectionArgs = Arrays.copyOf(selectionArgs, selectionArgs.length + 1);
                     selectionArgs[selectionArgs.length - 1] = "%" + query + "%";
                 }
+            }else {
+                if (selection == null) {
+                    selection = SQLiteTable.Contact.NAME + " LIKE ? OR " + SQLiteTable.Contact.UID + " LIKE ?";
+                } else {
+                    selection += " AND (" + SQLiteTable.Contact.NAME + " LIKE ? OR " + SQLiteTable.Contact.UID + " LIKE ?)";
+                }
+                if (selectionArgs == null) {
+                    selectionArgs = new String[]{query + "%",query + "%"};
+                } else {
+                    selectionArgs = Arrays.copyOf(selectionArgs, selectionArgs.length + 2);
+                    selectionArgs[selectionArgs.length - 1] = query + "%";
+                    selectionArgs[selectionArgs.length - 2] = query + "%";
+                }
             }
         }else{
             this.textQuery = "";
-            autorisationFindNetwork = false;
+            args.putBoolean(FIND_IN_NETWORK,false);
+            findInNetwork = false;
         }
 
-        return new CursorLoader(
-                getActivity(),
-                UcoinUris.CONTACT_URI,
-                null, selection, selectionArgs,
-                SQLiteTable.Contact.NAME + " COLLATE NOCASE ASC");
+        if(getArguments().getBoolean(SEE_CONTACT)) {
+            return new CursorLoader(getActivity(),
+                    UcoinUris.CONTACT_URI,
+                    null,
+                    selection,
+                    selectionArgs,
+                    SQLiteTable.Contact.NAME + " COLLATE NOCASE ASC");
+        }
+        else{
+            return new CursorLoader(getActivity(),
+                    UcoinUris.CONTACT_URI,
+                    null,
+                    SQLiteTable.Contact.PUBLIC_KEY + " LIKE ?",
+                    new String[]{"???"},
+                    SQLiteTable.Contact.NAME + " COLLATE NOCASE ASC");
+        }
     }
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        mCursor = data;
-        listEntity =new ArrayList<>();
-        Entity entity;
+        listIdentityContact =new ArrayList<>();
+        IdentityContact identityContact;
         if(data.moveToFirst()){
             do{
                 Long currencyId = data.getLong(data.getColumnIndex(SQLiteTable.Contact.CURRENCY_ID));
-                entity =new Entity(
+                identityContact =new IdentityContact(
                         true,
                         data.getString(data.getColumnIndex(SQLiteTable.Contact.NAME)),
+                        data.getString(data.getColumnIndex(SQLiteTable.Contact.UID)),
                         data.getString(data.getColumnIndex(SQLiteTable.Contact.PUBLIC_KEY)),
                         (new Currency(getActivity(),currencyId)).name(),
                         currencyId);
-                listEntity.add(entity);
+                listIdentityContact.add(identityContact);
             }while (data.moveToNext());
         }
-        if(listEntity.size()==0 && textQuery.length()>0){
-            autorisationFindNetwork = true;
+        if(listIdentityContact.size()==0 && textQuery.length()>0){
+            getArguments().putBoolean(FIND_IN_NETWORK, true);
+            findInNetwork = true;
         }
         seeIdentityNetwork();
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-        autorisationFindNetwork = false;
+        getArguments().putBoolean(FIND_IN_NETWORK,false);
+        findInNetwork = false;
         onQueryTextChange("");
     }
 
     private void actionAddContact(Long currencyId) {
         Intent intent = new Intent(getActivity(), AddContactActivity.class);
         intent.putExtra(Application.EXTRA_CURRENCY_ID, currencyId);
-        startActivity(intent);
+        startActivityForResult(intent,215565);
+    }
+
+    private void actionScanQrCode(){
+        Intent intent = new Intent(getActivity(), FindByQrCode.class);
+        intent.putExtra(FindByQrCode.SCAN_QR_CODE, true);
+        startActivityForResult(intent, CurrencyActivity.RESULT_SCAN);
     }
 
     @Override
@@ -318,55 +373,73 @@ public class ContactListFragment extends ListFragment
         args.putLong(CURRENCY_ID, getArguments().getLong(CURRENCY_ID));
         args.putString("query", s);
         getLoaderManager().restartLoader(0, args, this);
+
         if(s.equals("")){
-            searchAdvenced.setVisibility(View.GONE);
+            advancedSearch.setVisibility(View.GONE);
         }else{
-            searchAdvenced.setVisibility(View.VISIBLE);
+            advancedSearch.setVisibility(View.VISIBLE);
         }
         return true;
     }
 
-    public void findInNetwork(){
+    public void searchInNetwork(){
         searchView.clearFocus();
-        autorisationFindNetwork =true;
+        getArguments().putBoolean(FIND_IN_NETWORK, true);
+        findInNetwork =true;
         seeIdentityNetwork();
     }
 
     public void seeIdentityNetwork(){
-        if(autorisationFindNetwork) {
-            ((ContactSectionBaseAdapter) getListAdapter()).swapList(new ArrayList<Entity>(), false, "", 0);
+        if(findInNetwork) {
+            sortContactAndIdentity();
+            ((ContactSectionBaseAdapter) getListAdapter()).swapList(new ArrayList<IdentityContact>(), false, "", 0);
         }
         progress.setVisibility(View.VISIBLE);
-        if(autorisationFindNetwork && !textQuery.equals("")){
+        if(findInNetwork && !textQuery.equals("")){
             loadIdentityTask = new LoadIdentityTask(
                     getActivity(),
                     getArguments().getLong(CURRENCY_ID));
             loadIdentityTask.execute();
         }else{
-            autorisationFindNetwork = false;
-            onLoadIdentityFinish();
+            getArguments().putBoolean(FIND_IN_NETWORK,false);
+            findInNetwork = false;
+            majAdapter();
         }
     }
 
-    public void onLoadIdentityFinish(){
+    public void majAdapter(){
         sortContactAndIdentity();
-        ((ContactSectionBaseAdapter) this.getListAdapter()).swapList(listEntity, autorisationFindNetwork, textQuery, firstIndexIdentity);
+        ((ContactSectionBaseAdapter) this.getListAdapter()).swapList(listIdentityContact, findInNetwork, textQuery, firstIndexIdentity);
         progress.setVisibility(View.GONE);
     }
 
     public void sortContactAndIdentity(){
-        Comparator<Entity> comparator_tab = new Comparator<Entity>() {
+        Comparator<IdentityContact> comparator_contact = new Comparator<IdentityContact>() {
 
             @Override
-            public int compare(Entity o1, Entity o2) {
-                String i = o1.name;
-                String j = o2.name;
-                return i.compareTo(j);
+            public int compare(IdentityContact o1, IdentityContact o2) {
+                if(o1.isContact()){
+                    if(o2.isContact()){
+                        String i = o1.getName().toLowerCase();
+                        String j = o2.getName().toLowerCase();
+                        return i.compareTo(j);
+                    }else{
+                        return -1;
+                    }
+                }else{
+                    if(o2.isContact()){
+                        return 1;
+                    }else{
+                        String i = o1.getUid().toLowerCase();
+                        String j = o2.getUid().toLowerCase();
+                        return i.compareTo(j);
+                    }
+                }
             }
 
         };
-        if(listEntity.size()>0) {
-            Collections.sort(listEntity.subList(firstIndexIdentity, listEntity.size()), comparator_tab);
+        if(listIdentityContact.size()>0) {
+            Collections.sort(listIdentityContact, comparator_contact);
         }
     }
 
@@ -379,7 +452,7 @@ public class ContactListFragment extends ListFragment
         public LoadIdentityTask(Context context, Long currencyId){
             this.mContext = context;
             this.currencyId = currencyId;
-            firstIndexIdentity = listEntity.size();
+            firstIndexIdentity = listIdentityContact.size();
         }
 
         @Override
@@ -401,7 +474,7 @@ public class ContactListFragment extends ListFragment
                         Long cId = cursor.getLong(cursor.getColumnIndex(BaseColumns._ID));
                         UcoinCurrency currency = new Currency(mContext, cId);
                         endpoint = currency.peers().at(0).endpoints().at(0);
-                        String url = "http://" + endpoint.ipv4() + ":" + endpoint.port() + "/wot/lookup/" + textQuery;
+                        String url = "http://" + endpoint.ipv4() + ":" + endpoint.port() + "/wot/lookup/" + textQuery.toLowerCase();
                         StringRequest request = request(url, cId);
                         request.setTag(this);
                         request.setRetryPolicy(policy);
@@ -412,7 +485,7 @@ public class ContactListFragment extends ListFragment
             } else {
                 UcoinCurrency currency = new Currency(mContext, currencyId);
                 UcoinEndpoint endpoint = currency.peers().at(0).endpoints().at(0);
-                String url = "http://" + endpoint.ipv4() + ":" + endpoint.port() + "/wot/lookup/" + textQuery;
+                String url = "http://" + endpoint.ipv4() + ":" + endpoint.port() + "/wot/lookup/" + textQuery.toLowerCase();
                 StringRequest request = request(url, currencyId);
                 request.setTag("TAG");
                 request.setRetryPolicy(policy);
@@ -430,7 +503,7 @@ public class ContactListFragment extends ListFragment
                         public void onResponse(String response) {
                             WotLookup lookup = WotLookup.fromJson(response);
                             lookupToStringTab(lookup, name, id);
-                            onLoadIdentityFinish();
+                            majAdapter();
                         }
                     },
                     new Response.ErrorListener() {
@@ -443,70 +516,31 @@ public class ContactListFragment extends ListFragment
                             }else{
                                 Toast.makeText(Application.getContext(), error.toString(), Toast.LENGTH_LONG).show();
                             }
-                            onLoadIdentityFinish();
+                            majAdapter();
                         }
                     });
             return request;
         }
 
         public void lookupToStringTab(WotLookup lookup, String currencyName,Long id) {
-            Entity entity;
+            IdentityContact identityContact;
             for(WotLookup.Result res : lookup.results){
-                entity =new Entity(
+                identityContact =new IdentityContact(
                         false,
+                        "",
                         res.uids[0].uid,
                         res.pubkey,
                         currencyName,
                         id);
-                if(entity.filter(textQuery,findByPubKey) && !listEntity.contains(entity)){
-                    listEntity.add(entity);
+                if(identityContact.filter(textQuery,findByPubKey) && !listIdentityContact.contains(identityContact)){
+                    listIdentityContact.add(identityContact);
                 }
             }
         }
     }
 
-    public class Entity {
-        boolean isContact;
-        String name;
-        String publicKey;
-        String currencyName;
-        Long currencyId;
-
-        public Entity(boolean isContact, String name, String publicKey, String currencyName, Long currencyId) {
-            this.isContact = isContact;
-            this.name = name;
-            this.publicKey = publicKey;
-            this.currencyName = currencyName;
-            this.currencyId = currencyId;
-        }
-
+    public interface ContactItemClick extends ListView.OnItemClickListener{
         @Override
-        public boolean equals(Object o) {
-            return this.name.equals(((Entity)o).name) &&
-                    this.publicKey.equals(((Entity)o).publicKey) &&
-                            this.currencyName.equals(((Entity)o).currencyName);
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public String getPublicKey() {
-            return publicKey;
-        }
-
-        public boolean isContact() {
-            return isContact;
-        }
-
-        public boolean filter(String query, boolean findByPubKey){
-            boolean result;
-            if(!findByPubKey){
-                result = name.substring(0,query.length()).equals(query);
-            }else{
-                result = publicKey.contains(query);
-            }
-            return result;
-        }
+        void onItemClick(AdapterView<?> parent, View view, int position, long id);
     }
 }

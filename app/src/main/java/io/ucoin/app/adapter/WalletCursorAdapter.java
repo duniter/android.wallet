@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 
 import io.ucoin.app.R;
-import io.ucoin.app.service.UnitFormat;
+import io.ucoin.app.service.Format;
 import io.ucoin.app.sqlite.SQLiteView;
 
 
@@ -73,7 +73,7 @@ public class WalletCursorAdapter extends CursorAdapter {
         return result;
     }
 
-    public Long getRealPosition(int position){
+    public Long getIdWallet(int position){
         int nbSec = 0;
         if(mSectionPosition.size()>1) {
             for (Integer i : mSectionPosition.keySet()) {
@@ -110,16 +110,9 @@ public class WalletCursorAdapter extends CursorAdapter {
         TextView rAmount = (TextView) view.findViewById(R.id.relative_amount);
 
         alias.setText(cursor.getString(aliasIndex));
-        publicKey.setText(cursor.getString(publicKeyIndex));
+        publicKey.setText(Format.minifyPubkey(cursor.getString(publicKeyIndex)));
 
-        UnitFormat.changeUnit(context,
-                cursor.getDouble(quantitativeAmountIndex),
-                cursor.getDouble(relativeAmountIndex),
-                cursor.getDouble(timeAmountIndex),
-                PreferenceManager.getDefaultSharedPreferences(context),
-                rAmount,
-                qAmount,
-                "");
+        Format.changeUnit(context, cursor.getDouble(quantitativeAmountIndex), cursor.getDouble(relativeAmountIndex), cursor.getDouble(timeAmountIndex), PreferenceManager.getDefaultSharedPreferences(context), rAmount, qAmount, "");
     }
 
     @Override

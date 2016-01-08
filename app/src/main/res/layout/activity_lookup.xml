@@ -16,21 +16,8 @@
         ucoin:popupTheme="@style/ThemeOverlay.AppCompat.Light"
         ucoin:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar" />
 
-    <ProgressBar
-        android:id="@+id/progress_bar"
+    <FrameLayout
+        android:id="@+id/frame_content"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:visibility="gone"/>
-
-    <ListView
-        android:id="@+id/listview"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:visibility="gone"/>
-
-    <TextView
-        android:id="@+id/empty"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/no_results"/>
+        android:layout_height="match_parent"/>
 </LinearLayout>

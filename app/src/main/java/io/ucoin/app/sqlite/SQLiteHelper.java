@@ -172,10 +172,11 @@ public class SQLiteHelper extends SQLiteOpenHelper implements SQLiteTable {
             Contact._ID + " INTEGER PRIMARY KEY AUTOINCREMENT" + COMMA +
             Contact.CURRENCY_ID + INTEGER + NOTNULL + COMMA +
             Contact.NAME + TEXT + NOTNULL + COMMA +
+            Contact.UID + TEXT + NOTNULL + COMMA +
             Contact.PUBLIC_KEY + TEXT + NOTNULL + COMMA +
             "FOREIGN KEY (" + Contact.CURRENCY_ID + ") REFERENCES " +
             Currency.TABLE_NAME + "(" + Currency._ID + ") ON DELETE CASCADE" + COMMA +
-            UNIQUE + "(" + Contact.CURRENCY_ID + COMMA + Contact.NAME + ")" +
+            UNIQUE + "(" + Contact.CURRENCY_ID + COMMA + Contact.UID + ")" +
             ")";
 
     String CREATE_TABLE_TX = "CREATE TABLE " + Tx.TABLE_NAME + "(" +

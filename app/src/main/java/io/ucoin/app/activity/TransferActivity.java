@@ -1,6 +1,8 @@
 package io.ucoin.app.activity;
 
 import android.app.DialogFragment;
+import android.app.Fragment;
+import android.app.FragmentManager;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
@@ -19,9 +21,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -43,10 +45,14 @@ import java.util.Map;
 
 import io.ucoin.app.Application;
 import io.ucoin.app.R;
+import io.ucoin.app.adapter.WalletCursorAdapter;
 import io.ucoin.app.enumeration.SourceState;
 import io.ucoin.app.enumeration.TxDirection;
+import io.ucoin.app.fragment.currency.ContactListFragment;
+import io.ucoin.app.fragment.currency.WalletListFragment;
 import io.ucoin.app.fragment.dialog.ConverterDialog;
 import io.ucoin.app.fragment.dialog.ListTransferDialog;
+import io.ucoin.app.model.IdentityContact;
 import io.ucoin.app.model.UcoinContact;
 import io.ucoin.app.model.UcoinContacts;
 import io.ucoin.app.model.UcoinEndpoint;
@@ -55,14 +61,17 @@ import io.ucoin.app.model.UcoinWallet;
 import io.ucoin.app.model.UcoinWallets;
 import io.ucoin.app.model.document.Transaction;
 import io.ucoin.app.model.http_api.TxHistory;
-import io.ucoin.app.model.http_api.WotLookup;
 import io.ucoin.app.model.sql.sqlite.Contacts;
 import io.ucoin.app.model.sql.sqlite.Currency;
 import io.ucoin.app.model.sql.sqlite.Wallets;
-import io.ucoin.app.service.UnitFormat;
+import io.ucoin.app.service.Format;
+import io.ucoin.app.task.FindIdentityTask;
+import io.ucoin.app.task.FindIdentityTask.SendIdentity;
 import io.ucoin.app.technical.crypto.AddressFormatException;
 
-public class TransferActivity extends ActionBarActivity {
+import static io.ucoin.app.fragment.currency.WalletListFragment.WalletItemClick;
+
+public class TransferActivity extends ActionBarActivity implements SendIdentity,WalletItemClick{
 
     /*
         https://github.com/ucoin-io/ucoin/blob/master/doc/Protocol.md#validity-1
@@ -76,7 +85,7 @@ public class TransferActivity extends ActionBarActivity {
     private TextView mWalletAlias;
     private TextView mWalletAmount;
     private TextView mWalletDefaultAmount;
-    private Button mContact;
+    private TextView mContact;
     private EditText mReceiverPublicKey;
     private TextView defaultAmount;
     private EditText amount;
@@ -87,6 +96,9 @@ public class TransferActivity extends ActionBarActivity {
     private int unit;
     private int defaultUnit;
     private Currency currency;
+    private LinearLayout layoutTansfer;
+    private LinearLayout dataWallet;
+    private TextView noDataWallet;
 
     private UcoinWallet walletSelected;
 
@@ -110,7 +122,7 @@ public class TransferActivity extends ActionBarActivity {
         }
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        RelativeLayout mWallet = (RelativeLayout) findViewById(R.id.wallet);
+        final LinearLayout mWallet = (LinearLayout) findViewById(R.id.wallet);
         mWallet.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -118,13 +130,27 @@ public class TransferActivity extends ActionBarActivity {
             }
         });
 
-        mContact = (Button) findViewById(R.id.contact);
-        mContact.setOnClickListener(new View.OnClickListener() {
+        RelativeLayout layoutContact = (RelativeLayout) findViewById(R.id.layout_contact);
+        layoutContact.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                actionContact();
+                mReceiverPublicKey.requestFocus();
             }
         });
+
+        RelativeLayout layoutAmount = (RelativeLayout) findViewById(R.id.layout_amount);
+        layoutAmount.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                amount.requestFocus();
+            }
+        });
+
+        layoutTansfer = (LinearLayout) findViewById(R.id.layout_transfer);
+        dataWallet = (LinearLayout) findViewById(R.id.data_wallet);
+        noDataWallet = (TextView) findViewById(R.id.no_data_wallet);
+
+        mContact = (TextView) findViewById(R.id.contact);
 
         ImageButton mCalculate = (ImageButton) findViewById(R.id.action_calcul);
         mCalculate.setOnClickListener(new View.OnClickListener() {
@@ -167,7 +193,12 @@ public class TransferActivity extends ActionBarActivity {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                majDefaultAmount();
+                Long walletId = getIntent().getLongExtra(Application.EXTRA_WALLET_ID,-1);
+                if(walletId.equals(Long.valueOf(-1))){
+                    dataWallet.requestFocus();
+                }else {
+                    majDefaultAmount();
+                }
             }
 
             @Override
@@ -181,7 +212,7 @@ public class TransferActivity extends ActionBarActivity {
             ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(this,
                     android.R.layout.simple_spinner_item, list);
             spinnerUnit.setAdapter(dataAdapter);
-            spinnerUnit.setSelection(UnitFormat.MINUTE);
+            spinnerUnit.setSelection(Format.MINUTE);
             spinnerUnit.setVisibility(View.VISIBLE);
             spinnerUnit.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                 @Override
@@ -217,10 +248,7 @@ public class TransferActivity extends ActionBarActivity {
             Double res=0.0;
             if(unit==Application.UNIT_TIME){
                 val = String.valueOf(
-                        UnitFormat.toSecond(
-                                Double.parseDouble(val),
-                                spinnerUnit.getSelectedItemPosition()
-                        )
+                        Format.toSecond(Double.parseDouble(val), spinnerUnit.getSelectedItemPosition())
                 );
             }
             long coin = toClassical(Double.parseDouble(val));
@@ -229,15 +257,27 @@ public class TransferActivity extends ActionBarActivity {
                     .longValue();
             switch (defaultUnit) {
                 case Application.UNIT_CLASSIC:
-                    defaultAmount.setText(formatter.format(coin));
+                    if(coin>0){
+                        defaultAmount.setText(formatter.format(coin));
+                    }else{
+                        defaultAmount.setVisibility(View.GONE);
+                    }
                     break;
                 case Application.UNIT_DU:
                     res = (double)coin / mUd;
-                    defaultAmount.setText(String.format("%.8f",res));
+                    if(res>Double.valueOf(0.0)){
+                        defaultAmount.setText(String.format("%.8f",res).concat(" ").concat(getString(R.string.UD)));
+                    }else{
+                        defaultAmount.setVisibility(View.GONE);
+                    }
                     break;
                 case Application.UNIT_TIME:
                     res = (double)coin*currency.dt()/mUd;
-                    defaultAmount.setText(UnitFormat.timeFormatter(this, res));
+                    if(res>Double.valueOf(0.0)){
+                        defaultAmount.setText(Format.timeFormatter(this, res));
+                    }else{
+                        defaultAmount.setVisibility(View.GONE);
+                    }
                     break;
             }
         }else{
@@ -274,6 +314,12 @@ public class TransferActivity extends ActionBarActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.toolbar_transfer, menu);
         mTransferMenuItem = menu.findItem(R.id.action_transfer);
+        int bsEntryCount = getFragmentManager().getBackStackEntryCount();
+        if(bsEntryCount>=1) {
+            mTransferMenuItem.setVisible(false);
+        }else{
+            mTransferMenuItem.setVisible(true);
+        }
         return true;
     }
 
@@ -281,13 +327,30 @@ public class TransferActivity extends ActionBarActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                super.onBackPressed();
+                pressBack();
                 return true;
             case R.id.action_transfer:
                 actionTransfer();
                 return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void pressBack(){
+        int bsEntryCount = getFragmentManager().getBackStackEntryCount();
+        if(bsEntryCount>=1) {
+            String currentFragment = getFragmentManager()
+                    .getBackStackEntryAt(bsEntryCount - 1)
+                    .getName();
+
+            Fragment fragment = getFragmentManager().findFragmentByTag(currentFragment);
+            getFragmentManager().beginTransaction().remove(fragment).commit();
+            getFragmentManager().popBackStack();
+            layoutTansfer.setVisibility(View.VISIBLE);
+            ((View)layoutTansfer.getParent()).findViewById(R.id.frame_content).setVisibility(View.GONE);
+        }else{
+            super.onBackPressed();
+        }
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
@@ -298,60 +361,44 @@ public class TransferActivity extends ActionBarActivity {
         IntentResult scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, intent);
         if (requestCode == Application.ACTIVITY_LOOKUP) {
             getIntent().putExtra(Application.EXTRA_IS_CONTACT,false);
-            WotLookup.Result result = (WotLookup.Result) intent.getExtras().getSerializable(WotLookup.Result.class.getSimpleName());
-            if (result.pubkey.matches(PUBLIC_KEY_REGEX)) {
-                mReceiverPublicKey.setText(result.pubkey);
-                mContact.setText(result.uids[0].uid);
+            IdentityContact entity = (IdentityContact) intent.getSerializableExtra(Application.IDENTITY_LOOKUP);
+            if (entity.getPublicKey().matches(PUBLIC_KEY_REGEX)) {
+                mReceiverPublicKey.setText(entity.getPublicKey());
+                mContact.setText(entity.getUid());
             } else {
                 mReceiverPublicKey.setText("");
             }
         } else {
             if (scanResult.getContents().matches(PUBLIC_KEY_REGEX)) {
                 mContact.setText("Find by Qr Code");
-                mReceiverPublicKey.setText(scanResult.getContents());
+                Map<String, String> data = Format.parseUri(scanResult.getContents());
+
+                String uid = Format.isNull(data.get(Format.UID));
+                String publicKey = Format.isNull(data.get(Format.PUBLICKEY));
+                String currencyName = Format.isNull(data.get(Format.CURRENCY));
+
+                mReceiverPublicKey.setText(publicKey);
+                if(uid.isEmpty()) {
+                    FindIdentityTask findIdentityTask = new FindIdentityTask(this, mcurrencyId, publicKey, this);
+                    findIdentityTask.execute();
+                }else{
+                    mContact.setText(uid);
+                }
             } else
                 mReceiverPublicKey.setText("");
         }
     }
 
     public void showDialog(int type,Cursor list){
-        DialogItemClickListener dialogWallet = new DialogItemClickListener() {
-            @Override
-            public void onClick(Long walletId) {
-                getIntent().putExtra(Application.EXTRA_WALLET_ID,walletId);
-                actionAfterWalletSelected();
-            }
-        };
-
-        DialogItemClickListener dialogContact = new DialogItemClickListener() {
-            @Override
-            public void onClick(Long contactId) {
-                getIntent().putExtra(Application.EXTRA_CONTACT_ID,contactId);
-                getIntent().putExtra(Application.EXTRA_IS_CONTACT,true);
-                actionAfterWalletSelected();
-            }
-        };
-
         DialogFragment dialog= null;
-        switch (type){
-            case ListTransferDialog.TYPE_WALLET:
-                dialog = new ListTransferDialog(type,list,dialogWallet);
-                break;
-            case ListTransferDialog.TYPE_CONTACT:
-                dialog = new ListTransferDialog(type,list,dialogContact);
-                break;
-            case ListTransferDialog.TYPE_CURRENCY:
-                if(walletSelected!=null){
-
-                    long mUniversalDividend = Double.valueOf(
-                            walletSelected.quantitativeAmount()/walletSelected.relativeAmount())
-                            .longValue();
-                    dialog = new ConverterDialog(
-                            mUniversalDividend,
-                            currency.dt(), amount, spinnerUnit);
-                }
-
-                break;
+        Long walletId = getIntent().getLongExtra(Application.EXTRA_WALLET_ID,-1);
+        if(walletSelected!=null && !walletId.equals(Long.valueOf(-1))){
+            long mUniversalDividend = Double.valueOf(
+                    walletSelected.quantitativeAmount()/walletSelected.relativeAmount())
+                    .longValue();
+            dialog = new ConverterDialog(
+                    mUniversalDividend,
+                    currency.dt(), amount, spinnerUnit);
         }
         if(dialog!=null){
             dialog.show(getFragmentManager(), "listDialog");
@@ -359,46 +406,24 @@ public class TransferActivity extends ActionBarActivity {
     }
 
     public void actionAfterWalletSelected(){
-        Long walletId = getIntent().getExtras().getLong(Application.EXTRA_WALLET_ID);
-        UcoinWallets wallets = new Wallets(Application.getContext(),mcurrencyId);
-        walletSelected = wallets.getById(walletId);
+        Long walletId = getIntent().getLongExtra(Application.EXTRA_WALLET_ID,-1);
+        if(walletId.equals(Long.valueOf(-1))){
+            dataWallet.setVisibility(View.GONE);
+            noDataWallet.setVisibility(View.VISIBLE);
+        }else {
+            dataWallet.setVisibility(View.VISIBLE);
+            noDataWallet.setVisibility(View.GONE);
+            UcoinWallets wallets = new Wallets(Application.getContext(), mcurrencyId);
+            walletSelected = wallets.getById(walletId);
 
-        mWalletAlias.setText(walletSelected.alias());
-        DecimalFormat formatter;
+            Format.changeUnit(this, walletSelected.quantitativeAmount().doubleValue(), walletSelected.relativeAmount(), walletSelected.timeAmount(), PreferenceManager.getDefaultSharedPreferences(this), mWalletAmount, mWalletDefaultAmount, "");
 
-        switch (unit){
-            case Application.UNIT_CLASSIC:
-                formatter = new DecimalFormat("#,###");
-                mWalletAmount.setText(formatter.format(walletSelected.quantitativeAmount()));
-                break;
-            case Application.UNIT_DU:
-                mWalletAmount.setText(String.format("%.8f", walletSelected.relativeAmount()));
-                break;
-            case Application.UNIT_TIME:
-                mWalletAmount.setText(UnitFormat.timeFormatter(this, walletSelected.timeAmount()));
-                break;
+            mWalletAlias.setText(walletSelected.alias());
+
+            setTitle(getResources().getString(R.string.transfer) +
+                    " " + walletSelected.currency().name());
+            currency = new Currency(this, walletSelected.currencyId());
         }
-        if(unit!=defaultUnit) {
-            mWalletDefaultAmount.setVisibility(View.VISIBLE);
-            switch (defaultUnit) {
-                case Application.UNIT_CLASSIC:
-                    formatter = new DecimalFormat("#,###");
-                    mWalletDefaultAmount.setText(formatter.format(walletSelected.quantitativeAmount()));
-                    break;
-                case Application.UNIT_DU:
-                    mWalletDefaultAmount.setText(String.format("%.8f", walletSelected.relativeAmount()));
-                    break;
-                case Application.UNIT_TIME:
-                    mWalletDefaultAmount.setText(UnitFormat.timeFormatter(this, walletSelected.timeAmount()));
-                    break;
-            }
-        }else{
-            mWalletDefaultAmount.setVisibility(View.GONE);
-        }
-
-        setTitle(getResources().getString(R.string.transfer) +
-                " " + walletSelected.currency().name());
-        currency = new Currency(this,walletSelected.currencyId());
         //mQuantitativeUD = new BigDecimal(data.getString(data.getColumnIndex(SQLiteView.Wallet.UD_VALUE)));
 
         //TODO fma metre les valeurs des amount a jour
@@ -414,18 +439,49 @@ public class TransferActivity extends ActionBarActivity {
         }
     }
 
+    @Override
+    public void onBackPressed() {
+        pressBack();
+    }
+
+    @Override
+    public void send(IdentityContact entity,String message) {
+        if(entity==null){
+            mContact.setText(message);
+        }else {
+            mContact.setText(entity.getUid());
+        }
+    }
+
+    @Override
+    public void walletClick(WalletCursorAdapter walletCursorAdapter,int position) {
+        pressBack();
+        Long realId = walletCursorAdapter.getIdWallet(position);
+        getIntent().putExtra(Application.EXTRA_WALLET_ID, realId);
+        actionAfterWalletSelected();
+    }
+
     public interface DialogItemClickListener{
         void onClick(Long id);
     }
 
     public void actionWallet(){
-        UcoinWallets wallets = new Wallets(Application.getContext(),mcurrencyId);
-        showDialog(ListTransferDialog.TYPE_WALLET,wallets.getbyCurrency());
-    }
+        layoutTansfer.setVisibility(View.GONE);
+        ((View)layoutTansfer.getParent()).findViewById(R.id.frame_content).setVisibility(View.VISIBLE);
 
-    public void actionContact(){
-        UcoinContacts contacts = new Contacts(Application.getContext(),mcurrencyId);
-        showDialog(ListTransferDialog.TYPE_CONTACT,contacts.getbyCurrency());
+        Fragment fragment = WalletListFragment.newInstance(mcurrencyId,false);
+        FragmentManager fragmentManager = getFragmentManager();
+
+        fragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+        fragmentManager.beginTransaction()
+                .setCustomAnimations(
+                        R.animator.delayed_fade_in,
+                        R.animator.fade_out,
+                        R.animator.delayed_fade_in,
+                        R.animator.fade_out)
+                .replace(R.id.frame_content, fragment, fragment.getClass().getSimpleName())
+                .addToBackStack(fragment.getClass().getSimpleName())
+                .commit();
     }
 
     public void actionAmount(){
@@ -436,6 +492,10 @@ public class TransferActivity extends ActionBarActivity {
         Intent intent = new Intent(this, LookupActivity.class);
         Long currencyId = currency.id();
         intent.putExtra(Application.EXTRA_CURRENCY_ID, currencyId);
+        intent.putExtra(ContactListFragment.SEE_CONTACT,true);
+        intent.putExtra(ContactListFragment.ADD_CONTACT,false);
+        intent.putExtra(ContactListFragment.OPEN_SEARCH,true);
+        intent.putExtra(ContactListFragment.TEXT_SEARCH,mReceiverPublicKey.getText().toString());
         intent.putExtra(SEARCH_IDENTITY, mReceiverPublicKey.getText().toString());
         startActivityForResult(intent, Application.ACTIVITY_LOOKUP);
     }

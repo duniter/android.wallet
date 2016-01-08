@@ -35,7 +35,7 @@ public class Contacts extends Table
     }
 
     @Override
-    public UcoinContact add(String name, String publicKey) {
+    public UcoinContact add(String name, String uid, String publicKey) {
         ContentValues values = new ContentValues();
         UcoinContact contact;
 
@@ -49,6 +49,7 @@ public class Contacts extends Table
         }
         values.put(SQLiteTable.Contact.CURRENCY_ID, mCurrencyId);
         values.put(SQLiteTable.Contact.NAME, name);
+        values.put(SQLiteTable.Contact.UID, uid);
         values.put(SQLiteTable.Contact.PUBLIC_KEY, publicKey);
         Uri uri = insert(values);
 

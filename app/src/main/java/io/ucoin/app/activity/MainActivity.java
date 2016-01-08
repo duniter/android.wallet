@@ -18,10 +18,12 @@ import android.util.Log;
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import io.ucoin.app.Application;
 import io.ucoin.app.model.UcoinCurrency;
 import io.ucoin.app.model.sql.sqlite.Currencies;
+import io.ucoin.app.service.Format;
 
 public class MainActivity extends Activity {
 
@@ -89,7 +91,7 @@ public class MainActivity extends Activity {
                     + ContactsContract.CommonDataKinds.Website.URL + " LIKE ?";
             String[] whereParams = new String[]{
                     ContactsContract.CommonDataKinds.Website.CONTENT_ITEM_TYPE,
-                    AddContactActivity.CONTACT_PATH+"%"};
+                    Format.CONTACT_PATH+"%"};
 
             final Cursor cursor = contentResolver.query(
                     ContactsContract.Data.CONTENT_URI,
@@ -107,15 +109,17 @@ public class MainActivity extends Activity {
             if (cursor.moveToFirst()){
                 do{
                     //final long id = Long.parseLong(cursor.getString(cursor.getColumnIndex(ContactsContract.Data._ID)));
-                    //final String name = cursor.getString(cursor.getColumnIndex(ContactsContract.Data.DISPLAY_NAME));
+                    String name = cursor.getString(cursor.getColumnIndex(ContactsContract.Data.DISPLAY_NAME));
                     String webSite = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Website.URL));
-                    webSite = webSite.substring(webSite.indexOf(AddContactActivity.CONTACT_PATH)+AddContactActivity.CONTACT_PATH.length());
-                    String name = getName(webSite);
-                    String pubkey = getPubKey(webSite);
-                    String currencyName = getCurrencyName(webSite);
+                    Map<String, String > data = Format.parseUri(webSite);
+
+                    String uid = Format.isNull(data.get(Format.UID));
+                    String pubkey = Format.isNull(data.get(Format.PUBLICKEY));
+                    String currencyName = Format.isNull(data.get(Format.CURRENCY));
+
                     UcoinCurrency currency = new Currencies(getApplicationContext()).getByName(currencyName);
                     if(currency!=null) {
-                        currency.contacts().add(name, pubkey);
+                        currency.contacts().add(name, uid, pubkey);
                     }
                 }
                 while (cursor.moveToNext());
@@ -126,24 +130,6 @@ public class MainActivity extends Activity {
             }
 
             return ;
-        }
-
-        private String getName(String uri){
-            return uri.substring(
-                    0,
-                    uri.indexOf(AddContactActivity.SEPARATOR1));
-        }
-
-        private String getPubKey(String uri){
-            // CONTACT_PATH.concat(name).concat(SEPARATOR1).concat(publicKey).concat(SEPARATOR2).concat(currency)
-            return uri.substring(
-                    uri.indexOf(AddContactActivity.SEPARATOR1)+AddContactActivity.SEPARATOR1.length(),
-                    uri.indexOf(AddContactActivity.SEPARATOR2));
-        }
-
-        private String getCurrencyName(String uri){
-            return uri.substring(
-                    uri.indexOf(AddContactActivity.SEPARATOR2)+AddContactActivity.SEPARATOR2.length());
         }
 
         private Bitmap getPhoto(ContentResolver contentResolver, long contactId){
@@ -182,7 +168,7 @@ public class MainActivity extends Activity {
                     + ContactsContract.CommonDataKinds.Website.URL + " LIKE ?";
             String[] whereParams = new String[]{contactId+"",
                     ContactsContract.CommonDataKinds.Website.CONTENT_ITEM_TYPE,
-                    AddContactActivity.CONTACT_PATH+"%"};
+                    Format.CONTACT_PATH+"%"};
             Cursor webcur = contentResolver.query(ContactsContract.Data.CONTENT_URI, null, where, whereParams, null);
             if (webcur.moveToFirst()) {
                 do {

@@ -55,6 +55,7 @@
     <string name="OK">OK</string>
     <string name="join">Join</string>
     <string name="delete">Delete</string>
+    <string name="remove_contact">Remove contact</string>
     <string name="remove">Remove</string>
 
     <!-- Strings related to currency -->
@@ -206,6 +207,9 @@
     <string name="s">s</string>
     <string name="milli_second">ms</string>
     <string name="day_of_week">Day of week</string>
+    <string name="uid_colon">UID :</string>
+    <string name="name_colon">Name :</string>
+    <string name="publickey_colon">Public key :</string>
 
     <string name="SUN">SUN</string>
     <string name="MON">MON</string>
@@ -339,5 +343,8 @@
     <string name="network">Network</string>
 
     <string name="find_by">Find by :</string>
+    <string name="select_identity">Select an identity</string>
+    <string name="no_result_publickey">No certification for this pubkey</string>
+    <string name="no_wallet_selected">No wallet selected</string>
 
 </resources>

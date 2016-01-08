@@ -57,7 +57,8 @@
         <activity
             android:name=".activity.AddContactActivity"
             android:label="@string/add_contact"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize" />
 
         <activity
             android:name=".activity.SearchIdentityActivity"

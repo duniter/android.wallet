@@ -18,7 +18,7 @@ import io.ucoin.app.enumeration.DayOfWeek;
 import io.ucoin.app.enumeration.Month;
 import io.ucoin.app.enumeration.TxDirection;
 import io.ucoin.app.enumeration.TxState;
-import io.ucoin.app.service.UnitFormat;
+import io.ucoin.app.service.Format;
 import io.ucoin.app.sqlite.SQLiteView;
 
 public class OperationSectionCursorAdapter extends CursorAdapter {
@@ -115,14 +115,7 @@ public class OperationSectionCursorAdapter extends CursorAdapter {
             dir = "- ";
         }
 
-        UnitFormat.changeUnit(context,
-                cursor.getDouble(qtAmountIndex),
-                cursor.getDouble(relAmountThenIndex),
-                cursor.getDouble(timeAmountThenIndex),
-                PreferenceManager.getDefaultSharedPreferences(context),
-                holder.amount,
-                holder.defaultAmount,
-                dir);
+        Format.changeUnit(context, cursor.getDouble(qtAmountIndex), cursor.getDouble(relAmountThenIndex), cursor.getDouble(timeAmountThenIndex), PreferenceManager.getDefaultSharedPreferences(context), holder.amount, holder.defaultAmount, dir);
 
         holder.comment.setText(cursor.getString(commentIndex));
 

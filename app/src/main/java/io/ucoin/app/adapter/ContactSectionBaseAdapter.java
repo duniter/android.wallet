@@ -13,7 +13,8 @@ import java.util.LinkedHashMap;
 
 import io.ucoin.app.R;
 import io.ucoin.app.fragment.currency.ContactListFragment;
-import io.ucoin.app.fragment.currency.ContactListFragment.Entity;
+import io.ucoin.app.model.IdentityContact;
+import io.ucoin.app.service.Format;
 
 public class ContactSectionBaseAdapter extends BaseAdapter {
 
@@ -22,10 +23,10 @@ public class ContactSectionBaseAdapter extends BaseAdapter {
 
     private ContactListFragment fragment;
 
-    private ArrayList<Entity> list;
+    private ArrayList<IdentityContact> list;
 
 
-    public ContactSectionBaseAdapter(Context context, ArrayList<Entity> list, ContactListFragment fragment) {
+    public ContactSectionBaseAdapter(Context context, ArrayList<IdentityContact> list, ContactListFragment fragment) {
         if(list == null){
             this.list = new ArrayList<>();
         }else {
@@ -48,7 +49,7 @@ public class ContactSectionBaseAdapter extends BaseAdapter {
                 bindSectionView(v, mSectionPosition.get(position));
             }
         } else{
-            Entity item = getItem(position);
+            IdentityContact item = getItem(position);
             v = newView(mContext, parent);
             bindView(v, item);
         }
@@ -67,7 +68,7 @@ public class ContactSectionBaseAdapter extends BaseAdapter {
         v.findViewById(R.id.button_search).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                fragment.findInNetwork();
+                fragment.searchInNetwork();
             }
         });
     }
@@ -90,12 +91,23 @@ public class ContactSectionBaseAdapter extends BaseAdapter {
         return inflater.inflate(R.layout.list_item_contact, parent, false);
     }
 
-    public void bindView(View view, Entity item) {
-        ((TextView) view.findViewById(R.id.name)).setText(item.getName());
-        ((TextView) view.findViewById(R.id.public_key)).setText(item.getPublicKey());
+    public void bindView(View view, IdentityContact item) {
+        if(item.getName().equals("")){
+            ((TextView) view.findViewById(R.id.other_name)).setVisibility(View.GONE);
+            ((TextView) view.findViewById(R.id.name)).setText(item.getUid());
+        }else if(item.getName().equals(item.getUid())) {
+            ((TextView) view.findViewById(R.id.other_name)).setVisibility(View.GONE);
+            ((TextView) view.findViewById(R.id.name)).setText(item.getUid());
+        }else{
+            ((TextView) view.findViewById(R.id.other_name)).setVisibility(View.VISIBLE);
+            ((TextView) view.findViewById(R.id.name)).setText(item.getName());
+            ((TextView) view.findViewById(R.id.other_name)).setText("(".concat(item.getUid()).concat(")"));
+        }
+        ((TextView) view.findViewById(R.id.public_key)).setText(Format.minifyPubkey(item.getPublicKey()));
+        ((TextView) view.findViewById(R.id.currency)).setText(item.getCurrency());
     }
 
-    public void swapList(ArrayList<Entity> list, boolean autorisationFindNetwork, String textQuery, int firstIndex){
+    public void swapList(ArrayList<IdentityContact> list, boolean autorisationFindNetwork, String textQuery, int firstIndex){
         this.list = list;
         HashMap<Integer, String> sectionPosition = new LinkedHashMap<>(16, (float) 0.75, false);
         if(!textQuery.equals("") && !autorisationFindNetwork){
@@ -134,7 +146,7 @@ public class ContactSectionBaseAdapter extends BaseAdapter {
     }
 
     @Override
-    public Entity getItem(int position) {
+    public IdentityContact getItem(int position) {
         return list.get(getRealPosition(position));
     }
 

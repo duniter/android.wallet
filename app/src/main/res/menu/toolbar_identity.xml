@@ -1,11 +1,9 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:ucoin="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    tools:context=".MainActivity">
+    xmlns:ucoin="http://schemas.android.com/apk/res-auto">
 
     <item
         android:id="@+id/action_delete"
-        android:title="@string/delete"
+        android:title="@string/remove_contact"
         ucoin:showAsAction="never"
         android:visible="false"/>
 </menu>

@@ -109,7 +109,7 @@ public class ContactSectionCursorAdapter extends CursorAdapter {
         v.findViewById(R.id.button_search).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                fragment.findInNetwork();
+                fragment.searchInNetwork();
             }
         });
     }

@@ -22,7 +22,7 @@ import java.util.List;
 
 import io.ucoin.app.Application;
 import io.ucoin.app.R;
-import io.ucoin.app.service.UnitFormat;
+import io.ucoin.app.service.Format;
 
 /**
  * Created by naivalf27 on 26/10/15.
@@ -31,8 +31,8 @@ public class ConverterDialog extends DialogFragment{
 
 
 
-    private int timeSelected = UnitFormat.MINUTE;
-    private int lastTimeSelected = UnitFormat.MINUTE;
+    private int timeSelected = Format.MINUTE;
+    private int lastTimeSelected = Format.MINUTE;
 
     private EditText txt_coin, txt_du, mAmount;
 
@@ -78,7 +78,7 @@ public class ConverterDialog extends DialogFragment{
         ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(getActivity(),
                 android.R.layout.simple_spinner_item, list);
         list_Unit_time.setAdapter(dataAdapter);
-        list_Unit_time.setSelection(UnitFormat.MINUTE);
+        list_Unit_time.setSelection(Format.MINUTE);
         list_Unit_time.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -125,15 +125,15 @@ public class ConverterDialog extends DialogFragment{
     private void majTime(String textview,boolean is_second){
         Double val = Double.parseDouble(textview);
         if(!is_second) {
-            val = UnitFormat.toSecond(val, timeSelected);
+            val = Format.toSecond(val, timeSelected);
             long coin = timeToCoin(val);
             removeTextWatcher();
-            time_converted.setText(UnitFormat.timeFormatter(getActivity(), val));
+            time_converted.setText(Format.timeFormatter(getActivity(), val));
             txt_coin.setText(String.valueOf(coin));
             txt_du.setText(String.valueOf(coinToDu(coin)));
             addTextWatcher();
         }else{
-            time_converted.setText(UnitFormat.timeFormatter(getActivity(), val));
+            time_converted.setText(Format.timeFormatter(getActivity(), val));
             val = convertTime(val);
             txt_time.setText(String.valueOf(val));
         }
@@ -141,20 +141,20 @@ public class ConverterDialog extends DialogFragment{
 
     private Double convertTime(Double val){
         switch (timeSelected){
-            case UnitFormat.YEAR:
-                val = UnitFormat.toYear(val);
+            case Format.YEAR:
+                val = Format.toYear(val);
                 break;
-            case UnitFormat.DAY:
-                val = UnitFormat.toDay(val);
+            case Format.DAY:
+                val = Format.toDay(val);
                 break;
-            case UnitFormat.HOUR:
-                val = UnitFormat.toHour(val);
+            case Format.HOUR:
+                val = Format.toHour(val);
                 break;
-            case UnitFormat.MINUTE:
-                val = UnitFormat.toMinute(val);
+            case Format.MINUTE:
+                val = Format.toMinute(val);
                 break;
-            case UnitFormat.MILLI_SECOND:
-                val = UnitFormat.toMilliSecond(val);
+            case Format.MILLI_SECOND:
+                val = Format.toMilliSecond(val);
                 break;
         }
         return val;

@@ -29,6 +29,7 @@ public class SearchIdentityActivity extends ActionBarActivity {
     private Toolbar mToolbar;
     private EditText mName;
     private EditText mPublicKey;
+    private EditText mUid;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,6 +69,7 @@ public class SearchIdentityActivity extends ActionBarActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         mName = (EditText) findViewById(R.id.name);
+        mUid = (EditText) findViewById(R.id.uid);
         mPublicKey = (EditText) findViewById(R.id.public_key);
     }
 
@@ -100,6 +102,7 @@ public class SearchIdentityActivity extends ActionBarActivity {
         if(requestCode == Application.ACTIVITY_LOOKUP) {
             WotLookup.Result result = (WotLookup.Result)intent.getExtras().getSerializable(WotLookup.Result.class.getSimpleName());
             mName.setText(result.uids[0].uid);
+            mUid.setText(result.uids[0].uid);
             mPublicKey.setText(result.pubkey);
         } else {
             IntentResult scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, intent);
@@ -115,6 +118,11 @@ public class SearchIdentityActivity extends ActionBarActivity {
             Toast.makeText(this, "Name is invalid", Toast.LENGTH_SHORT).show();
             return;
         }
+        String uid = mUid.getText().toString();
+        if (uid.isEmpty()) {
+            Toast.makeText(this, "Uid is invalid", Toast.LENGTH_SHORT).show();
+            return;
+        }
         String publicKey = mPublicKey.getText().toString();
         if (publicKey.isEmpty()) {
             Toast.makeText(this, "public key is invalid", Toast.LENGTH_SHORT).show();
@@ -122,7 +130,7 @@ public class SearchIdentityActivity extends ActionBarActivity {
         }
         Long currencyId = getIntent().getExtras().getLong(Application.EXTRA_CURRENCY_ID);
         UcoinCurrency currency = new Currency(this, currencyId);
-        currency.contacts().add(name, publicKey);
+        currency.contacts().add(name, uid, publicKey);
         finish();
     }
 }

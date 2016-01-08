@@ -26,6 +26,7 @@ import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -40,6 +41,7 @@ import io.ucoin.app.Application;
 import io.ucoin.app.BuildConfig;
 import io.ucoin.app.R;
 import io.ucoin.app.UcoinUris;
+import io.ucoin.app.adapter.WalletCursorAdapter;
 import io.ucoin.app.enumeration.DayOfWeek;
 import io.ucoin.app.enumeration.Month;
 import io.ucoin.app.fragment.currency.BlockListFragment;
@@ -48,23 +50,28 @@ import io.ucoin.app.fragment.currency.IdentityFragment;
 import io.ucoin.app.fragment.currency.PeerListFragment;
 import io.ucoin.app.fragment.currency.RulesFragment;
 import io.ucoin.app.fragment.currency.WalletListFragment;
+import io.ucoin.app.fragment.currency.WalletListFragment.WalletItemClick;
 import io.ucoin.app.fragment.dialog.ListCurrencyDialogFragment;
 import io.ucoin.app.fragment.dialog.ListUnitDialogFragment;
-import io.ucoin.app.model.UcoinCurrencies;
+import io.ucoin.app.fragment.identity.MemberListFragment;
+import io.ucoin.app.fragment.wallet.WalletFragment;
+import io.ucoin.app.model.IdentityContact;
 import io.ucoin.app.model.http_api.WotLookup;
-import io.ucoin.app.model.sql.sqlite.Currencies;
 import io.ucoin.app.sqlite.SQLiteView;
 
 
 public class CurrencyActivity extends ActionBarActivity
         implements LoaderManager.LoaderCallbacks<Cursor>,
-        TextView.OnClickListener {
+        TextView.OnClickListener,
+        ContactListFragment.ContactItemClick,WalletItemClick{
 
     private ActionBarDrawerToggle mToggle;
     private DrawerLayout mDrawerLayout;
+    private DrawerLayout mDrawerContact;
     private TextView mDrawerActivatedView;
     private TextView drawerRulesView;
     private TextView drawerBlocksView;
+    public static int RESULT_SCAN = 10562;
 
     private static Long wId;
 
@@ -94,8 +101,6 @@ public class CurrencyActivity extends ActionBarActivity
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawerRulesView = (TextView) mDrawerLayout.findViewById(R.id.drawer_rules);
 
-        UcoinCurrencies currencies = new Currencies(Application.getContext());
-
         TextView drawerWalletsView = (TextView) mDrawerLayout.findViewById(R.id.drawer_wallets);
         TextView drawerContactsView = (TextView) mDrawerLayout.findViewById(R.id.drawer_contacts);
         TextView drawerUnitView = (TextView) findViewById(R.id.change_unit);
@@ -110,6 +115,10 @@ public class CurrencyActivity extends ActionBarActivity
         drawerPeersView.setOnClickListener(this);
         drawerBlocksView.setOnClickListener(this);
         drawerUnitView.setOnClickListener(this);
+
+
+
+        //mDrawerContact = (DrawerLayout) findViewById(R.id.drawer_contact);
 
         if (BuildConfig.DEBUG) {
             drawerBlocksView.setVisibility(View.VISIBLE);
@@ -160,7 +169,7 @@ public class CurrencyActivity extends ActionBarActivity
         Long currencyId = getIntent().getExtras().getLong(Application.EXTRA_CURRENCY_ID);
 
         if (savedInstanceState == null){
-            Fragment fragment = WalletListFragment.newInstance(currencyId);
+            Fragment fragment = WalletListFragment.newInstance(currencyId,true);
             FragmentManager fragmentManager = getFragmentManager();
             // Insert the fragment by replacing any existing fragment
             fragment.setHasOptionsMenu(true);
@@ -259,10 +268,10 @@ public class CurrencyActivity extends ActionBarActivity
                         quit();
                     }
                 }).setNegativeButton("No", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        dialog.cancel();
-                    }
-                });
+            public void onClick(DialogInterface dialog, int id) {
+                dialog.cancel();
+            }
+        });
         AlertDialog alertDialog = alertDialogBuilder.create();
         alertDialog.show();
     }
@@ -311,6 +320,26 @@ public class CurrencyActivity extends ActionBarActivity
                     // close the drawer
                     closeDrawer();
                     break;
+//                case RESULT_SCAN:
+//                    WotLookup.Result identity = (WotLookup.Result)intent.getExtras().getSerializable(WotLookup.Result.class.getSimpleName());
+//                    Bundle args = new Bundle();
+//                    args.putLong(BaseColumns._ID, currencyId);
+//                    args.putSerializable(WotLookup.Result.class.getSimpleName(),result);
+//                    Fragment fragment = IdentityFragment.newInstance(args);
+//                    FragmentManager fragmentManager = getFragmentManager();
+//
+//                    fragmentManager.beginTransaction()
+//                            .setCustomAnimations(
+//                                    R.animator.delayed_fade_in,
+//                                    R.animator.fade_out,
+//                                    R.animator.delayed_fade_in,
+//                                    R.animator.fade_out)
+//                            .replace(R.id.frame_content, fragment, fragment.getClass().getSimpleName())
+//                            .addToBackStack(fragment.getClass().getSimpleName())
+//                            .commit();
+//                    // close the drawer
+//                    closeDrawer();
+//                    break;
             }
         }
     }
@@ -373,7 +402,6 @@ public class CurrencyActivity extends ActionBarActivity
     public void openDrawer() {
         mDrawerLayout.openDrawer(findViewById(R.id.drawer_panel));
     }
-
 
     private void exportDB() {
         File sd = Environment.getExternalStorageDirectory();
@@ -489,10 +517,10 @@ public class CurrencyActivity extends ActionBarActivity
                 }
                 break;
             case R.id.drawer_wallets:
-                fragment = WalletListFragment.newInstance(currencyId);
+                fragment = WalletListFragment.newInstance(currencyId,true);
                 break;
             case R.id.drawer_contacts:
-                fragment = ContactListFragment.newInstance(currencyId);
+                fragment = ContactListFragment.newInstance(currencyId,true,true);
                 break;
             case R.id.drawer_peers:
                 fragment = PeerListFragment.newInstance(currencyId);
@@ -546,9 +574,52 @@ public class CurrencyActivity extends ActionBarActivity
         }
     }
 
+    public void showIdentityFragment(WotLookup.Result lookup,Long currencyId){
+        Bundle args = new Bundle();
+        args.putLong(BaseColumns._ID, currencyId);
+        args.putSerializable(WotLookup.Result.class.getSimpleName(),lookup);
+        Fragment fragment = IdentityFragment.newInstance(args);
+        FragmentManager fragmentManager = getFragmentManager();
+
+        fragmentManager.beginTransaction()
+                .setCustomAnimations(
+                        R.animator.delayed_fade_in,
+                        R.animator.fade_out,
+                        R.animator.delayed_fade_in,
+                        R.animator.fade_out)
+                .replace(R.id.frame_content, fragment, fragment.getClass().getSimpleName())
+                .addToBackStack(fragment.getClass().getSimpleName())
+                .commit();
+        // close the drawer
+        closeDrawer();
+    }
+
     public void onChangeUnit(String type, int unit){
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         preferences.edit().putInt(type, unit).apply();
+    }
+
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        IdentityContact identityContact = (IdentityContact) parent.getAdapter().getItem(position);
+        WotLookup.Result result= MemberListFragment.findIdentity(identityContact.getPublicKey(), identityContact.getUid());
+        showIdentityFragment(result, identityContact.getCurrencyId());
+    }
+
+    @Override
+    public void walletClick(WalletCursorAdapter walletCursorAdapter,int position) {
+        Long realId = walletCursorAdapter.getIdWallet(position);
+        Fragment fragment = WalletFragment.newInstance(realId);
+        FragmentManager fragmentManager = getFragmentManager();
+        fragmentManager.beginTransaction()
+                .setCustomAnimations(
+                        android.R.animator.fade_in,
+                        android.R.animator.fade_out,
+                        android.R.animator.fade_in,
+                        android.R.animator.fade_out)
+                .replace(R.id.frame_content, fragment, fragment.getClass().getSimpleName())
+                .addToBackStack(fragment.getClass().getSimpleName())
+                .commit();
     }
 
     public interface ChangeUnitforType {
