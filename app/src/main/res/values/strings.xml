@@ -346,5 +346,9 @@
     <string name="select_identity">Select an identity</string>
     <string name="no_result_publickey">No certification for this pubkey</string>
     <string name="no_wallet_selected">No wallet selected</string>
+    <string name="transfer_of">Transfer of %s</string>
+    <string name="reference">reference</string>
+    <string name="with_identity">With Identity</string>
+    <string name="without_identity">Without Identity</string>
 
 </resources>

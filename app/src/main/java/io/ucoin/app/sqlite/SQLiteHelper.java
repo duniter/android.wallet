@@ -53,7 +53,7 @@ public class SQLiteHelper extends SQLiteOpenHelper implements SQLiteTable {
             Block.TIME + INTEGER + NOTNULL + COMMA +
             Block.MEDIAN_TIME + INTEGER + NOTNULL + COMMA +
             Block.DIVIDEND + INTEGER + COMMA +
-            Block.MONETARY_MASS + INTEGER + NOTNULL + COMMA +
+            Block.MONETARY_MASS + TEXT + NOTNULL + COMMA +
             Block.ISSUER + TEXT + NOTNULL + COMMA +
             Block.PREVIOUS_HASH + TEXT + NOTNULL + COMMA +
             Block.PREVIOUS_ISSUER + TEXT + NOTNULL + COMMA +
@@ -68,11 +68,14 @@ public class SQLiteHelper extends SQLiteOpenHelper implements SQLiteTable {
 
     String CREATE_TABLE_IDENTITY = "CREATE TABLE " + Identity.TABLE_NAME + "(" +
             Identity._ID + " INTEGER PRIMARY KEY AUTOINCREMENT" + COMMA +
-            Identity.CURRENCY_ID + INTEGER + UNIQUE + NOTNULL + COMMA +
+            Identity.CURRENCY_ID + INTEGER + NOTNULL + COMMA +
+            Identity.WALLET_ID + INTEGER + UNIQUE + NOTNULL + COMMA +
             Identity.PUBLIC_KEY + TEXT + NOTNULL + COMMA +
             Identity.SIG_DATE + INTEGER + COMMA +
             Identity.SYNC_BLOCK + INTEGER + NOTNULL + " DEFAULT 0" + COMMA +
             Identity.UID + TEXT + NOTNULL + COMMA +
+            "FOREIGN KEY (" + Identity.WALLET_ID + ") REFERENCES " +
+            Wallet.TABLE_NAME + "(" + Wallet._ID + ") ON DELETE CASCADE" + COMMA +
             "FOREIGN KEY (" + Identity.CURRENCY_ID + ") REFERENCES " +
             Currency.TABLE_NAME + "(" + Currency._ID + ") ON DELETE CASCADE" +
             ")";
@@ -148,7 +151,7 @@ public class SQLiteHelper extends SQLiteOpenHelper implements SQLiteTable {
             Source.WALLET_ID + INTEGER + NOTNULL + COMMA +
             Source.FINGERPRINT + TEXT + NOTNULL + COMMA +
             Source.TYPE + TEXT + NOTNULL + COMMA +
-            Source.AMOUNT + INTEGER + NOTNULL + COMMA +
+            Source.AMOUNT + TEXT + NOTNULL + COMMA +
             Source.NUMBER + INTEGER + NOTNULL + COMMA +
             Source.STATE + TEXT + NOTNULL + COMMA +
             UNIQUE + "(" + Source.WALLET_ID + "," + Source.FINGERPRINT + ")" + COMMA +
@@ -162,7 +165,7 @@ public class SQLiteHelper extends SQLiteOpenHelper implements SQLiteTable {
             Ud.BLOCK + INTEGER + NOTNULL + COMMA +
             Ud.CONSUMED + TEXT + NOTNULL + COMMA +
             Ud.TIME + INTEGER + NOTNULL + COMMA +
-            Ud.QUANTITATIVE_AMOUNT + INTEGER + NOTNULL + COMMA +
+            Ud.QUANTITATIVE_AMOUNT + TEXT + NOTNULL + COMMA +
             "FOREIGN KEY (" + Ud.WALLET_ID + ") REFERENCES " +
             Wallet.TABLE_NAME + "(" + Wallet._ID + ") ON DELETE CASCADE" + COMMA +
             UNIQUE + "(" + Ud.WALLET_ID + COMMA + Ud.BLOCK + ")" +
@@ -189,7 +192,7 @@ public class SQLiteHelper extends SQLiteOpenHelper implements SQLiteTable {
             Tx.BLOCK + INTEGER + NOTNULL + COMMA +
             Tx.TIME + INTEGER + NOTNULL + COMMA +
             Tx.STATE + TEXT + NOTNULL + COMMA +
-            Tx.QUANTITATIVE_AMOUNT + INTEGER + NOTNULL + COMMA +
+            Tx.QUANTITATIVE_AMOUNT + TEXT + NOTNULL + COMMA +
             "FOREIGN KEY (" + Tx.WALLET_ID + ") REFERENCES " +
             Wallet.TABLE_NAME + "(" + Wallet._ID + ") ON DELETE CASCADE" + COMMA +
             UNIQUE + "(" + Tx.WALLET_ID + COMMA + Tx.HASH + ")" +
@@ -225,7 +228,7 @@ public class SQLiteHelper extends SQLiteOpenHelper implements SQLiteTable {
             TxInput.TYPE + TEXT + NOTNULL + COMMA +
             TxInput.NUMBER + INTEGER + NOTNULL + COMMA +
             TxInput.FINGERPRINT + TEXT + NOTNULL + COMMA +
-            TxInput.AMOUNT + INTEGER + NOTNULL + COMMA +
+            TxInput.AMOUNT + TEXT + NOTNULL + COMMA +
             "FOREIGN KEY (" + TxInput.TX_ID + ") REFERENCES " +
             Tx.TABLE_NAME + "(" + Tx._ID + ") ON DELETE CASCADE" +
             ")";
@@ -234,7 +237,7 @@ public class SQLiteHelper extends SQLiteOpenHelper implements SQLiteTable {
             TxOutput._ID + " INTEGER PRIMARY KEY AUTOINCREMENT" + COMMA +
             TxOutput.TX_ID + INTEGER + NOTNULL + COMMA +
             TxOutput.PUBLIC_KEY + TEXT + NOTNULL + COMMA +
-            TxOutput.AMOUNT + INTEGER + NOTNULL + COMMA +
+            TxOutput.AMOUNT + TEXT + NOTNULL + COMMA +
             "FOREIGN KEY (" + TxOutput.TX_ID + ") REFERENCES " +
             Tx.TABLE_NAME + "(" + Tx._ID + ") ON DELETE CASCADE" + COMMA +
             UNIQUE + "(" + TxOutput.TX_ID + COMMA + TxOutput.PUBLIC_KEY + ")" +
@@ -270,7 +273,7 @@ public class SQLiteHelper extends SQLiteOpenHelper implements SQLiteTable {
             Operation.WALLET_ID + INTEGER + NOTNULL + COMMA +
             Operation.DIRECTION + TEXT + NOTNULL + COMMA +
             Operation.COMMENT + TEXT + COMMA +
-            Operation.QUANTITATIVE_AMOUNT + INTEGER + NOTNULL + COMMA +
+            Operation.QUANTITATIVE_AMOUNT + TEXT + NOTNULL + COMMA +
             Operation.BLOCK + INTEGER + NOTNULL + COMMA +
             Operation.TIME + INTEGER + NOTNULL + COMMA +
             Operation.STATE + TEXT + COMMA +
@@ -550,14 +553,14 @@ public class SQLiteHelper extends SQLiteOpenHelper implements SQLiteTable {
                     Wallet.TABLE_NAME + DOT + Wallet.SYNC_BLOCK + AS + SQLiteView.Wallet.SYNC_BLOCK + COMMA +
                     Block.TABLE_NAME + DOT + Block.DIVIDEND + AS + SQLiteView.Wallet.UD_VALUE + COMMA +
                     " IFNULL(SUM (" + Source.TABLE_NAME + DOT + Source.AMOUNT + "), 0)" + AS + SQLiteView.Wallet.QUANTITATIVE_AMOUNT + COMMA +
-                    " ROUND ( CAST (IFNULL(SUM (" + Source.TABLE_NAME + DOT + Source.AMOUNT + "), 0) AS REAL) / " + Block.TABLE_NAME + DOT + Block.DIVIDEND + ", 8)" + AS + SQLiteView.Wallet.RELATIVE_AMOUNT + COMMA +
-                    " ROUND ( CAST (" +
-                        "IFNULL(SUM (" + Source.TABLE_NAME + DOT + Source.AMOUNT + "), 0) AS REAL)" +
-                            " * " +
-                        Currency.TABLE_NAME + DOT + Currency.DT +
-                            " / " +
-                        Block.TABLE_NAME + DOT + Block.DIVIDEND +
-                    ", 8)" + AS + SQLiteView.Wallet.TIME_AMOUNT +
+                    " ROUND ( IFNULL(SUM (" + Source.TABLE_NAME + DOT + Source.AMOUNT + "), 0) / " + Block.TABLE_NAME + DOT + Block.DIVIDEND + ", 8)" + AS + SQLiteView.Wallet.RELATIVE_AMOUNT + COMMA +
+                    " ROUND ( " +
+                    "IFNULL(SUM (" + Source.TABLE_NAME + DOT + Source.AMOUNT + "), 0)" +
+                    " * " +
+                    Currency.TABLE_NAME + DOT + Currency.DT +
+                    " / " +
+                    Block.TABLE_NAME + DOT + Block.DIVIDEND +
+                    ", 16)" + AS + SQLiteView.Wallet.TIME_AMOUNT +
                     " FROM " + Wallet.TABLE_NAME +
 
                     " LEFT JOIN " + Currency.TABLE_NAME +
@@ -861,6 +864,7 @@ public class SQLiteHelper extends SQLiteOpenHelper implements SQLiteTable {
                     " AS SELECT " +
                     Identity.TABLE_NAME + DOT + Identity._ID + AS + SQLiteView.Identity._ID + COMMA +
                     Identity.TABLE_NAME + DOT + Identity.CURRENCY_ID + AS + SQLiteView.Identity.CURRENCY_ID + COMMA +
+                    Identity.TABLE_NAME + DOT + Identity.WALLET_ID + AS + SQLiteView.Identity.WALLET_ID + COMMA +
                     Identity.TABLE_NAME + DOT + Identity.PUBLIC_KEY + AS + SQLiteView.Identity.PUBLIC_KEY + COMMA +
                     Identity.TABLE_NAME + DOT + Identity.UID + AS + SQLiteView.Identity.UID + COMMA +
                     Identity.TABLE_NAME + DOT + Identity.SIG_DATE + AS + SQLiteView.Identity.SIG_DATE + COMMA +

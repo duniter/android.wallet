@@ -1,5 +1,8 @@
 package io.ucoin.app.model;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+
 import io.ucoin.app.enumeration.DayOfWeek;
 import io.ucoin.app.enumeration.Month;
 import io.ucoin.app.enumeration.TxDirection;
@@ -34,11 +37,11 @@ public interface UcoinTx extends SqlRow {
 
     String hour();
 
-    Long quantitativeAmount();
+    BigInteger quantitativeAmount();
 
-    Double relativeAmountThen();
+    BigDecimal relativeAmountThen();
 
-    Double relativeAmountNow();
+    BigDecimal relativeAmountNow();
 
     void setComment(String comment);
 

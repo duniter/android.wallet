@@ -40,7 +40,7 @@ final public class TxOutputs extends Table
         ContentValues values = new ContentValues();
         values.put(SQLiteTable.TxOutput.TX_ID, mTxId);
         values.put(SQLiteTable.TxOutput.PUBLIC_KEY, output.publicKey);
-        values.put(SQLiteTable.TxOutput.AMOUNT, output.amount);
+        values.put(SQLiteTable.TxOutput.AMOUNT, output.amount.toString());
 
         Uri uri = insert(values);
         if (Long.parseLong(uri.getLastPathSegment()) > 0) {

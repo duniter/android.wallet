@@ -23,11 +23,18 @@ public class Application extends android.app.Application{
     public static final String EXTRA_SYNC_OP = "sync_op";
     public static final String IDENTITY_LOOKUP = "lookup_for_identity";
 
+    public static final String IDENTITY_PUBLICKEY = "identity_publicKey";
+    public static final String IDENTITY_UID = "identity_uid";
+    public static final String IDENTITY_WALLET_ID = "identity_wallet_id";
+    public static final String IDENTITY_CURRENCY_ID = "identity_currency_id";
+
     public static final String UNIT = "currency_unit";
     public static final String UNIT_DEFAULT = "default_currency_unit";
     public static final int UNIT_CLASSIC = 0;
     public static final int UNIT_DU = 1;
     public static final int UNIT_TIME = 2;
+
+    public static final String DECIMAL = "number_decimal";
 
     private static Context mContext;
     private static RequestQueue mRequestQueue;

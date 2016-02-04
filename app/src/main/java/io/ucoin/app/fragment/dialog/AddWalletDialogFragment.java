@@ -10,9 +10,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -22,6 +24,7 @@ import io.ucoin.app.model.UcoinCurrency;
 import io.ucoin.app.model.UcoinWallet;
 import io.ucoin.app.model.sql.sqlite.Currency;
 import io.ucoin.app.task.GenerateKeysTask;
+import io.ucoin.app.technical.crypto.AddressFormatException;
 import io.ucoin.app.technical.crypto.Base58;
 import io.ucoin.app.technical.crypto.KeyPair;
 
@@ -33,10 +36,11 @@ public class AddWalletDialogFragment extends DialogFragment
     private LinearLayout mProgressLayout;
     private Activity mActivity;
 
+    private Switch mSwitch;
     private EditText mAlias;
     private EditText mSalt;
     private EditText mPassword;
-    private EditText mConfirmPassword;
+//    private EditText mConfirmPassword;
 
     public static AddWalletDialogFragment newInstance(Long currencyId) {
         Bundle newInstanceArgs = new Bundle();
@@ -62,38 +66,50 @@ public class AddWalletDialogFragment extends DialogFragment
         mButtonLayout = (RelativeLayout) view.findViewById(R.id.button_layout);
         mProgressLayout = (LinearLayout) view.findViewById(R.id.progress_layout);
 
-        final TextView saltHint = (TextView) view.findViewById(R.id.salt_tip);
-        final TextView passwordHint = (TextView) view.findViewById(R.id.password_tip);
+//        final TextView saltHint = (TextView) view.findViewById(R.id.salt_tip);
+//        final TextView passwordHint = (TextView) view.findViewById(R.id.password_tip);
 
+        mSwitch = (Switch) view.findViewById(R.id.switch1);
         mAlias = (EditText) view.findViewById(R.id.alias);
         mSalt = (EditText) view.findViewById(R.id.salt);
         mPassword = (EditText) view.findViewById(R.id.password);
-        mConfirmPassword = (EditText) view.findViewById(R.id.confirm_password);
+//        mConfirmPassword = (EditText) view.findViewById(R.id.confirm_password);
         final Button posButton = (Button) view.findViewById(R.id.positive_button);
 
-        mSalt.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+        mSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if (hasFocus) {
-                    saltHint.setVisibility(View.VISIBLE);
-                } else {
-                    saltHint.setVisibility(View.GONE);
-                }
-            }
-        });
-        mPassword.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if (hasFocus) {
-                    passwordHint.setVisibility(View.VISIBLE);
-                } else {
-                    passwordHint.setVisibility(View.GONE);
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(isChecked) {
+                    mAlias.setHint(getActivity().getResources().getString(R.string.uid_hint));
+                }else{
+                    mAlias.setHint(getActivity().getResources().getString(R.string.alias_hint));
                 }
             }
         });
 
-        mConfirmPassword.setOnFocusChangeListener(mPassword.getOnFocusChangeListener());
-        mConfirmPassword.setOnEditorActionListener(new EditText.OnEditorActionListener() {
+//        mSalt.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+//            @Override
+//            public void onFocusChange(View v, boolean hasFocus) {
+//                if (hasFocus) {
+//                    saltHint.setVisibility(View.VISIBLE);
+//                } else {
+//                    saltHint.setVisibility(View.GONE);
+//                }
+//            }
+//        });
+//        mPassword.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+//            @Override
+//            public void onFocusChange(View v, boolean hasFocus) {
+//                if (hasFocus) {
+//                    passwordHint.setVisibility(View.VISIBLE);
+//                } else {
+//                    passwordHint.setVisibility(View.GONE);
+//                }
+//            }
+//        });
+
+//        mConfirmPassword.setOnFocusChangeListener(mPassword.getOnFocusChangeListener());
+        mPassword.setOnEditorActionListener(new EditText.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId,
                                           KeyEvent event) {
@@ -137,16 +153,16 @@ public class AddWalletDialogFragment extends DialogFragment
             return;
         }
 
-        if (mConfirmPassword.getText().toString().isEmpty()) {
-            mConfirmPassword.setError(getString(R.string.confirm_password_cannot_be_empty));
-            return;
-        }
+//        if (mConfirmPassword.getText().toString().isEmpty()) {
+//            mConfirmPassword.setError(getString(R.string.confirm_password_cannot_be_empty));
+//            return;
+//        }
 
-        if (!mPassword.getText().toString().equals(mConfirmPassword.getText().toString())) {
-            mPassword.setError(getString(R.string.passwords_dont_match));
-            mConfirmPassword.setError(getString(R.string.passwords_dont_match));
-            return;
-        }
+//        if (!mPassword.getText().toString().equals(mConfirmPassword.getText().toString())) {
+//            mPassword.setError(getString(R.string.passwords_dont_match));
+//            mConfirmPassword.setError(getString(R.string.passwords_dont_match));
+//            return;
+//        }
 
         GenerateKeysTask task = new GenerateKeysTask(new GenerateKeysTask.OnTaskFinishedListener() {
             @Override
@@ -158,6 +174,15 @@ public class AddWalletDialogFragment extends DialogFragment
                         mAlias.getText().toString(),
                         Base58.encode(keyPair.getPubKey()),
                         Base58.encode(keyPair.getSecKey()));
+
+                if(mSwitch.isChecked()){
+                    try {
+                        wallet.addIdentity(mAlias.getText().toString(),
+                                Base58.encode(keyPair.getPubKey()));
+                    } catch (AddressFormatException e) {
+                        e.printStackTrace();
+                    }
+                }
 
                 if (wallet == null) {
                     Toast.makeText(mActivity,

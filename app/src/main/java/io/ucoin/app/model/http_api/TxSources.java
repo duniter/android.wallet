@@ -43,7 +43,7 @@ public class TxSources implements Serializable {
         public SourceType type;
         public Integer number;
         public String fingerprint;
-        public Long amount;
+        public String amount;
 
         @Override
         public String toString() {

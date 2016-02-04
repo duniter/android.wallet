@@ -20,7 +20,6 @@ import io.ucoin.app.Application;
 import io.ucoin.app.R;
 import io.ucoin.app.activity.CurrencyActivity;
 import io.ucoin.app.model.UcoinCurrency;
-import io.ucoin.app.model.UcoinIdentity;
 import io.ucoin.app.model.sql.sqlite.Currency;
 import io.ucoin.app.task.GenerateKeysTask;
 import io.ucoin.app.technical.crypto.KeyPair;
@@ -154,7 +153,7 @@ public class AddIdentityDialogFragment extends DialogFragment {
                         UcoinCurrency currency = new Currency(getActivity(), getArguments().getLong(BaseColumns._ID));
 
                         try {
-                            UcoinIdentity identity = currency.addIdentity(uid.getText().toString(), keyPair.getPubKey().toString());
+                            //UcoinIdentity identity = currency.addIdentity(uid.getText().toString(), keyPair.getPubKey().toString());
                             dismiss();
                         } catch (Exception e) {
                             Toast.makeText(mActivity, e.getMessage(), Toast.LENGTH_LONG).show();

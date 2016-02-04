@@ -29,23 +29,16 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:paddingEnd="24dp"
-        android:paddingStart="20dp">
+        android:paddingRight="24dp"
+        android:paddingStart="20dp"
+        android:paddingLeft="20dp">
 
-        <TextView
-            android:id="@+id/salt_tip"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/salt_instructions"
-            android:textSize="@dimen/abc_text_size_body_2_material"
-            android:visibility="gone" />
-
-        <TextView
-            android:id="@+id/password_tip"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/password_instructions"
-            android:textSize="@dimen/abc_text_size_body_2_material"
-            android:visibility="gone" />
+        <Switch
+            android:id="@+id/switch1"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:textOn="@string/with_identity"
+            android:textOff="@string/without_identity"/>
 
         <EditText
             android:id="@+id/alias"
@@ -74,15 +67,15 @@
             android:inputType="textPassword"
             android:singleLine="true" />
 
-        <EditText
-            android:id="@+id/confirm_password"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:hint="@string/confirm_password"
-            android:imeOptions="actionDone"
-            android:inputType="textPassword"
-            android:singleLine="true" />
+        <!--<EditText-->
+            <!--android:id="@+id/confirm_password"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_marginBottom="16dp"-->
+            <!--android:hint="@string/confirm_password"-->
+            <!--android:imeOptions="actionDone"-->
+            <!--android:inputType="textPassword"-->
+            <!--android:singleLine="true" />-->
 
     </LinearLayout>
 

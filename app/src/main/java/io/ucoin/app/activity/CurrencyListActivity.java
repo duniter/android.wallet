@@ -121,6 +121,9 @@ public class CurrencyListActivity extends ActionBarActivity
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         switch (data.getCount()){
+            case 0:
+                mSelectAll.setVisibility(View.GONE);
+                break;
             case 1:
                 mSelectAll.setVisibility(View.GONE);
                 break;

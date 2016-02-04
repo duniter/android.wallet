@@ -1,5 +1,7 @@
 package io.ucoin.app.model;
 
+import java.math.BigInteger;
+
 public interface UcoinBlock extends SqlRow {
     Long currencyId();
 
@@ -17,7 +19,7 @@ public interface UcoinBlock extends SqlRow {
 
     Long dividend();
 
-    Long monetaryMass();
+    BigInteger monetaryMass();
 
     String issuer();
 

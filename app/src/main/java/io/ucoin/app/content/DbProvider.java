@@ -396,7 +396,7 @@ public class DbProvider extends ContentProvider implements SQLiteTable {
                 uri = Uri.parse(UcoinUris.CURRENCY_URI + Long.toString(id));
                 break;
             case IDENTITY:
-                id = db.insert(Identity.TABLE_NAME, null, values);
+                id = db.insertWithOnConflict(Identity.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_IGNORE);
                 uri = Uri.parse(UcoinUris.IDENTITY_URI + Long.toString(id));
                 break;
             case PEER:

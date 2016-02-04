@@ -1,5 +1,7 @@
 package io.ucoin.app.model;
 
+import java.math.BigInteger;
+
 import io.ucoin.app.enumeration.SourceType;
 
 public interface UcoinTxInput extends SqlRow {
@@ -13,6 +15,6 @@ public interface UcoinTxInput extends SqlRow {
 
     String fingerprint();
 
-    Long amount();
+    BigInteger amount();
 }
 

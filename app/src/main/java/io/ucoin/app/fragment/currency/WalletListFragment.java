@@ -67,7 +67,7 @@ public class WalletListFragment extends ListFragment
         setHasOptionsMenu(true);
 
         walletCursorAdapter
-                = new WalletCursorAdapter(getActivity(), null, 0);
+                = new WalletCursorAdapter(getActivity(), null, 0, getActivity());
         setListAdapter(walletCursorAdapter);
 
         mSwipeLayout = (SwipeRefreshLayout) view.findViewById(R.id.swipe_layout);
@@ -153,5 +153,6 @@ public class WalletListFragment extends ListFragment
 
     public interface WalletItemClick  {
         void walletClick(WalletCursorAdapter walletCursorAdapter,int position);
+        void showIdentity(Long walletId);
     }
 }

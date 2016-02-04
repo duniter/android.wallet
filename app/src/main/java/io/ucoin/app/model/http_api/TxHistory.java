@@ -79,12 +79,12 @@ public class TxHistory implements Serializable {
             public SourceType type;
             public Long number;
             public String fingerprint;
-            public Long amount;
+            public String amount;
         }
 
         public static class Output implements Serializable {
             public String publicKey;
-            public Long amount;
+            public String amount;
         }
 
         public static class InputAdapter extends TypeAdapter<Input> {
@@ -102,7 +102,7 @@ public class TxHistory implements Serializable {
                 input.type = SourceType.valueOf(parts[1]);
                 input.number = Long.parseLong(parts[2]);
                 input.fingerprint = parts[3];
-                input.amount = Long.parseLong(parts[4]);
+                input.amount = parts[4];
 
                 return input;
             }
@@ -133,7 +133,7 @@ public class TxHistory implements Serializable {
                 String[] parts = upt.split(":");
                 Output output = new Output();
                 output.publicKey = parts[0];
-                output.amount = Long.parseLong(parts[1]);
+                output.amount = parts[1];
 
                 return output;
             }

@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -24,6 +23,8 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
+import java.math.BigInteger;
+
 import io.ucoin.app.Application;
 import io.ucoin.app.R;
 import io.ucoin.app.UcoinUris;
@@ -31,9 +32,11 @@ import io.ucoin.app.activity.CurrencyActivity;
 import io.ucoin.app.activity.TransferActivity;
 import io.ucoin.app.adapter.OperationSectionCursorAdapter;
 import io.ucoin.app.fragment.dialog.QrCodeDialogFragment;
+import io.ucoin.app.model.UcoinCurrency;
 import io.ucoin.app.model.UcoinEndpoint;
 import io.ucoin.app.model.UcoinWallet;
 import io.ucoin.app.model.http_api.TxHistory;
+import io.ucoin.app.model.sql.sqlite.Currencies;
 import io.ucoin.app.model.sql.sqlite.Wallet;
 import io.ucoin.app.service.Format;
 import io.ucoin.app.sqlite.SQLiteTable;
@@ -101,9 +104,9 @@ public class WalletFragment extends ListFragment
         });
 
         getLoaderManager().initLoader(WALLET_LOADER_ID, getArguments(), this);
-
+        UcoinWallet wallet = new Wallet(getActivity(), getArguments().getLong(WALLET_ID));
         OperationSectionCursorAdapter operationSectionCursorAdapter
-                = new OperationSectionCursorAdapter(getActivity(), null, 0);
+                = new OperationSectionCursorAdapter(getActivity(), null, 0,wallet.udValue(),wallet.currency().dt());
         setListAdapter(operationSectionCursorAdapter);
         getLoaderManager().initLoader(OPERATION_LOADER_ID, getArguments(), this);
 
@@ -192,10 +195,20 @@ public class WalletFragment extends ListFragment
             TextView defaultAmount = (TextView) view.findViewById(R.id.default_amount);
             TextView amount = (TextView) view.findViewById(R.id.relative_amount);
 
+            UcoinCurrency currency = new Currencies(getActivity()).getByName(
+                    data.getString(data.getColumnIndex(SQLiteView.Wallet.CURRENCY_NAME)));
+
             //publicKey.setText(data.getString(data.getColumnIndex(SQLiteView.Wallet.PUBLIC_KEY)));
             StringBuilder sb = new StringBuilder();
 
-            Format.changeUnit(getActivity(), data.getDouble(data.getColumnIndex(SQLiteView.Wallet.QUANTITATIVE_AMOUNT)), data.getDouble(data.getColumnIndex(SQLiteView.Wallet.RELATIVE_AMOUNT)), data.getDouble(data.getColumnIndex(SQLiteView.Wallet.TIME_AMOUNT)), PreferenceManager.getDefaultSharedPreferences(getActivity()), amount, defaultAmount, "");
+            Format.changeUnit(
+                    getActivity(),
+                    new BigInteger(data.getString(data.getColumnIndex(SQLiteView.Wallet.QUANTITATIVE_AMOUNT))),
+                    new BigInteger(data.getString(data.getColumnIndex(SQLiteView.Wallet.UD_VALUE))),
+                    currency.dt(),
+                    amount,
+                    defaultAmount,
+                    "");
         } else if(loader.getId() == OPERATION_LOADER_ID){
             ((OperationSectionCursorAdapter) this.getListAdapter()).swapCursor(data);
         }

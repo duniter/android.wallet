@@ -1,5 +1,7 @@
 package io.ucoin.app.model;
 
+import java.math.BigInteger;
+
 import io.ucoin.app.enumeration.SourceState;
 import io.ucoin.app.enumeration.SourceType;
 
@@ -13,7 +15,7 @@ public interface UcoinSource extends SqlRow {
 
     String fingerprint();
 
-    Long amount();
+    BigInteger amount();
 
     SourceState state();
 

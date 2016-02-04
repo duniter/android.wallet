@@ -17,6 +17,8 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.List;
 
@@ -38,7 +40,7 @@ public class ConverterDialog extends DialogFragment{
 
     private EditText txt_time;
 
-    private long mUd;
+    private BigInteger mUd;
 
     private int delay, unit;
 
@@ -47,12 +49,14 @@ public class ConverterDialog extends DialogFragment{
     private Spinner list_Unit_time;
     private Spinner mSpinner;
     private TextView time_converted;
+    private String currencyName;
 
-    public ConverterDialog(long mUd, int delay, EditText mAmount, Spinner spinner) {
+    public ConverterDialog(BigInteger mUd, int delay, EditText mAmount, Spinner spinner,String name) {
         this.mUd = mUd;
         this.delay = delay;
         this.mAmount = mAmount;
         this.mSpinner = spinner;
+        this.currencyName = name;
     }
 
     @Override
@@ -71,7 +75,8 @@ public class ConverterDialog extends DialogFragment{
         txt_du = (EditText) view.findViewById(R.id.txt_du);
         txt_time = (EditText) view.findViewById(R.id.txt_time);
 
-
+        TextView nameCurrency = (TextView) view.findViewById(R.id.currency_name);
+        nameCurrency.setText(this.currencyName);
 
         list_Unit_time = (Spinner) view.findViewById(R.id.list_Unit_time);
         List list = Arrays.asList(getResources().getStringArray(R.array.list_unit_time));
@@ -123,14 +128,14 @@ public class ConverterDialog extends DialogFragment{
     }
 
     private void majTime(String textview,boolean is_second){
-        Double val = Double.parseDouble(textview);
+        BigDecimal val = new BigDecimal(textview);
         if(!is_second) {
-            val = Format.toSecond(val, timeSelected);
-            long coin = timeToCoin(val);
+            val = Format.toSecond(getActivity(), val, timeSelected);
+            BigInteger coin = Format.timeToQuantitative(getActivity(),val,delay,mUd);
             removeTextWatcher();
             time_converted.setText(Format.timeFormatter(getActivity(), val));
             txt_coin.setText(String.valueOf(coin));
-            txt_du.setText(String.valueOf(coinToDu(coin)));
+            txt_du.setText(Format.quantitativeToRelative(getActivity(),coin, mUd).toString());
             addTextWatcher();
         }else{
             time_converted.setText(Format.timeFormatter(getActivity(), val));
@@ -139,22 +144,22 @@ public class ConverterDialog extends DialogFragment{
         }
     }
 
-    private Double convertTime(Double val){
+    private BigDecimal convertTime(BigDecimal val){
         switch (timeSelected){
             case Format.YEAR:
-                val = Format.toYear(val);
+                val = Format.secondToYear(getActivity(), val);
                 break;
             case Format.DAY:
-                val = Format.toDay(val);
+                val = Format.secondToDay(getActivity(), val);
                 break;
             case Format.HOUR:
-                val = Format.toHour(val);
+                val = Format.secondToHour(getActivity(), val);
                 break;
             case Format.MINUTE:
-                val = Format.toMinute(val);
+                val = Format.secondToMinute(getActivity(), val);
                 break;
             case Format.MILLI_SECOND:
-                val = Format.toMilliSecond(val);
+                val = Format.secondToMilliSecond(val);
                 break;
         }
         return val;
@@ -215,8 +220,8 @@ public class ConverterDialog extends DialogFragment{
                     val = "0"+val;
                 }
                 removeTextWatcher();
-                txt_du.setText(String.valueOf(coinToDu(Long.parseLong(val))));
-                majTime(String.valueOf(coinToTime(Long.parseLong(val))),true);
+                txt_du.setText(Format.quantitativeToRelative(getActivity(), new BigInteger(val), mUd).toString());
+                majTime(Format.quantitativeToTime(getActivity(),new BigInteger(val),delay,mUd).toString(), true);
                 addTextWatcher();
             }
 
@@ -240,10 +245,10 @@ public class ConverterDialog extends DialogFragment{
                 if(val.substring(0,1).equals(".")){
                     val = "0"+val;
                 }
-                long coin = duToCoin(Double.parseDouble(val));
+                BigInteger coin = Format.relativeToQuantitative(getActivity(),new BigDecimal(val), mUd);
                 removeTextWatcher();
                 txt_coin.setText(String.valueOf(coin));
-                majTime(String.valueOf(coinToTime(coin)),true);
+                majTime(Format.quantitativeToTime(getActivity(),coin, delay, mUd).toString(), true);
                 addTextWatcher();
             }
 
@@ -279,24 +284,6 @@ public class ConverterDialog extends DialogFragment{
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-    }
-
-    private long timeToCoin(Double time){
-
-        return Double.valueOf(time*mUd/delay).longValue();
-    }
-
-    private long duToCoin(Double du){
-        return Double.valueOf(du*mUd).longValue();
-    }
-
-    private Double coinToDu(long coin){
-        return (double)coin/mUd;
-    }
-
-    private Double coinToTime(long coin){
-        Double result = (double)coin*delay/mUd;
-        return result;
     }
 
 

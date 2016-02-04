@@ -46,7 +46,7 @@ final public class TxInputs extends Table
         values.put(SQLiteTable.TxInput.TYPE, input.type.name());
         values.put(SQLiteTable.TxInput.NUMBER, input.number);
         values.put(SQLiteTable.TxInput.FINGERPRINT, input.fingerprint);
-        values.put(SQLiteTable.TxInput.AMOUNT, input.amount);
+        values.put(SQLiteTable.TxInput.AMOUNT, input.amount.toString());
 
         Uri uri = insert(values);
         if (Long.parseLong(uri.getLastPathSegment()) > 0) {
@@ -64,7 +64,7 @@ final public class TxInputs extends Table
         values.put(SQLiteTable.TxInput.TYPE, source.type().name());
         values.put(SQLiteTable.TxInput.NUMBER, source.number());
         values.put(SQLiteTable.TxInput.FINGERPRINT, source.fingerprint());
-        values.put(SQLiteTable.TxInput.AMOUNT, source.amount());
+        values.put(SQLiteTable.TxInput.AMOUNT, source.amount().toString());
         source.setState(SourceState.CONSUMED);
 
         Uri uri = insert(values);

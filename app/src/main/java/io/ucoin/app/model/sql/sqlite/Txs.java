@@ -7,6 +7,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.provider.BaseColumns;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -50,30 +51,34 @@ final public class Txs extends Table
         values.put(SQLiteTable.Tx.DIRECTION, direction.name());
 
         //calculate defaultAmount once
-        Long qtAmount = (long) 0;
+        //Long qtAmount = (long) 0;
+        BigInteger qtAmount = new BigInteger("0");
         switch (direction) {
             case IN:
                 for (TxHistory.Tx.Output output : tx.outputs) {
                     if (output.publicKey.matches(wallet().publicKey())) {
-                        qtAmount += output.amount;
+                        //qtAmount += output.amount;
+                        qtAmount = qtAmount.add(new BigInteger(output.amount));
                     }
                 }
                 break;
             case OUT:
                 for (TxHistory.Tx.Input input : tx.inputs) {
                     if (tx.issuers[input.index].matches(wallet().publicKey()))
-                        qtAmount += input.amount;
+                        //qtAmount += input.amount;
+                        qtAmount = qtAmount.add(new BigInteger(input.amount));
                 }
 
                 for (TxHistory.Tx.Output output : tx.outputs) {
                     if (output.publicKey.matches(wallet().publicKey())) {
-                        qtAmount -= output.amount;
+                        //qtAmount -= output.amount;
+                        qtAmount = qtAmount.subtract(new BigInteger(output.amount));
                     }
                 }
 
                 break;
         }
-        values.put(SQLiteTable.Tx.QUANTITATIVE_AMOUNT, qtAmount);
+        values.put(SQLiteTable.Tx.QUANTITATIVE_AMOUNT, qtAmount.toString());
         values.put(SQLiteTable.Tx.HASH, tx.hash);
 
         if (tx instanceof TxHistory.ConfirmedTx) {

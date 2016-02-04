@@ -2,6 +2,8 @@ package io.ucoin.app.model.sql.sqlite;
 
 import android.content.Context;
 
+import java.math.BigInteger;
+
 import io.ucoin.app.UcoinUris;
 import io.ucoin.app.enumeration.SourceType;
 import io.ucoin.app.model.UcoinTxInput;
@@ -40,8 +42,8 @@ public class TxInput extends Row
     }
 
     @Override
-    public Long amount() {
-        return getLong(SQLiteTable.TxInput.AMOUNT);
+    public BigInteger amount() {
+        return new BigInteger(getString(SQLiteTable.TxInput.AMOUNT));
     }
 
 

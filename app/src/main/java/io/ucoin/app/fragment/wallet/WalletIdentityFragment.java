@@ -1,4 +1,4 @@
-package io.ucoin.app.fragment.currency;
+package io.ucoin.app.fragment.wallet;
 
 import android.app.AlertDialog;
 import android.app.Fragment;
@@ -28,6 +28,7 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
+import io.ucoin.app.Application;
 import io.ucoin.app.R;
 import io.ucoin.app.UcoinUris;
 import io.ucoin.app.activity.CurrencyActivity;
@@ -36,17 +37,14 @@ import io.ucoin.app.fragment.identity.MembershipListFragment;
 import io.ucoin.app.fragment.identity.SelfCertificationListFragment;
 import io.ucoin.app.model.UcoinContact;
 import io.ucoin.app.model.UcoinCurrency;
-import io.ucoin.app.model.UcoinIdentity;
-import io.ucoin.app.model.http_api.WotLookup;
 import io.ucoin.app.model.sql.sqlite.Contacts;
 import io.ucoin.app.model.sql.sqlite.Currency;
 import io.ucoin.app.service.Format;
 import io.ucoin.app.sqlite.SQLiteTable;
 import io.ucoin.app.sqlite.SQLiteView;
-import io.ucoin.app.technical.crypto.AddressFormatException;
 import io.ucoin.app.widget.SlidingTabLayout;
 
-public class IdentityFragment extends Fragment
+public class WalletIdentityFragment extends Fragment
         implements LoaderManager.LoaderCallbacks<Cursor> {
 
     private ViewPager mViewPager;
@@ -58,8 +56,10 @@ public class IdentityFragment extends Fragment
     private ImageButton mContactButton;
     private UcoinContact mContact;
 
-    public static IdentityFragment newInstance(Bundle args) {
-        IdentityFragment fragment = new IdentityFragment();
+    public static String WALLET_ID = "wallet_id";
+
+    public static WalletIdentityFragment newInstance(Bundle args) {
+        WalletIdentityFragment fragment = new WalletIdentityFragment();
         fragment.setArguments(args);
         return fragment;
     }
@@ -74,7 +74,7 @@ public class IdentityFragment extends Fragment
                              Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
 
-        return inflater.inflate(R.layout.fragment_identity,
+        return inflater.inflate(R.layout.fragment_wallet_identity,
                 container, false);
     }
 
@@ -132,18 +132,19 @@ public class IdentityFragment extends Fragment
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        WotLookup.Result result = (WotLookup.Result) args.getSerializable(WotLookup.Result.class.getSimpleName());
-        String publicKey = result.pubkey;
-        String uid = result.uids[0].uid;
-        UcoinCurrency currency = new Currency(getActivity(), getArguments().getLong(BaseColumns._ID));
-        try {
-            UcoinIdentity identity = currency.addIdentity(uid, publicKey);
-        } catch (AddressFormatException e) {
-            e.printStackTrace();
-        }
-        String selection = SQLiteTable.Identity.CURRENCY_ID + "=?" +
-                " AND " + SQLiteTable.Identity.PUBLIC_KEY + "=?";
-        String[] selectionArgs = new String[]{currency.id().toString(),publicKey};
+//        String publicKey = args.getString(Application.IDENTITY_PUBLICKEY);
+//        String uid = args.getString(Application.IDENTITY_UID);
+        Long walletId = args.getLong(Application.IDENTITY_WALLET_ID);
+//        Long currencyId = args.getLong(Application.IDENTITY_CURRENCY_ID);
+        //UcoinCurrency currency = new Currency(getActivity(), getArguments().getLong(BaseColumns._ID));
+//        UcoinWallet wallet = new Wallets(getActivity(),currencyId).getById(walletId);
+//        try {
+//            UcoinIdentity identity = wallet.addIdentity(uid, publicKey);
+//        } catch (AddressFormatException e) {
+//            e.printStackTrace();
+//        }
+        String selection = SQLiteTable.Identity.WALLET_ID + "=?";
+        String[] selectionArgs = new String[]{String.valueOf(walletId)};
         return new CursorLoader(
                 getActivity(),
                 UcoinUris.IDENTITY_URI,

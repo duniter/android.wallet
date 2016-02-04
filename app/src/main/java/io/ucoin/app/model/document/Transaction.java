@@ -1,5 +1,6 @@
 package io.ucoin.app.model.document;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 
 import io.ucoin.app.enumeration.DocumentType;
@@ -38,7 +39,7 @@ public class Transaction {
         return mInputs;
     }
 
-    public void addOuput(String publicKey, Long amount) {
+    public void addOuput(String publicKey, BigInteger amount) {
         String output = publicKey + ":" + amount;
         mOutputs.add(output);
     }

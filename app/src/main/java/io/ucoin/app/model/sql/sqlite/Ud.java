@@ -2,6 +2,9 @@ package io.ucoin.app.model.sql.sqlite;
 
 import android.content.Context;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+
 import io.ucoin.app.UcoinUris;
 import io.ucoin.app.enumeration.DayOfWeek;
 import io.ucoin.app.enumeration.Month;
@@ -75,18 +78,18 @@ public class Ud extends Row
     }
 
     @Override
-    public Long quantitativeAmount() {
-        return getLong(SQLiteView.Ud.QUANTITATIVE_AMOUNT);
+    public BigInteger quantitativeAmount() {
+        return new BigInteger(getString(SQLiteView.Ud.QUANTITATIVE_AMOUNT));
     }
 
     @Override
-    public Double relativeAmountThen() {
-        return getDouble(SQLiteView.Ud.RELATIVE_AMOUNT_THEN);
+    public BigDecimal relativeAmountThen() {
+        return new BigDecimal(getString(SQLiteView.Ud.RELATIVE_AMOUNT_THEN));
     }
 
     @Override
-    public Double relativeAmountNow() {
-        return getDouble(SQLiteView.Ud.RELATIVE_AMOUNT_NOW);
+    public BigDecimal relativeAmountNow() {
+        return new BigDecimal(getString(SQLiteView.Ud.RELATIVE_AMOUNT_NOW));
     }
 
     @Override

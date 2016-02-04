@@ -46,7 +46,7 @@ import io.ucoin.app.enumeration.DayOfWeek;
 import io.ucoin.app.enumeration.Month;
 import io.ucoin.app.fragment.currency.BlockListFragment;
 import io.ucoin.app.fragment.currency.ContactListFragment;
-import io.ucoin.app.fragment.currency.IdentityFragment;
+import io.ucoin.app.fragment.wallet.WalletIdentityFragment;
 import io.ucoin.app.fragment.currency.PeerListFragment;
 import io.ucoin.app.fragment.currency.RulesFragment;
 import io.ucoin.app.fragment.currency.WalletListFragment;
@@ -305,7 +305,7 @@ public class CurrencyActivity extends ActionBarActivity
                     Bundle args = new Bundle();
                     args.putLong(BaseColumns._ID, currencyId);
                     args.putSerializable(WotLookup.Result.class.getSimpleName(),result);
-                    Fragment fragment = IdentityFragment.newInstance(args);
+                    Fragment fragment = WalletIdentityFragment.newInstance(args);
                     FragmentManager fragmentManager = getFragmentManager();
 
                     fragmentManager.beginTransaction()
@@ -325,7 +325,7 @@ public class CurrencyActivity extends ActionBarActivity
 //                    Bundle args = new Bundle();
 //                    args.putLong(BaseColumns._ID, currencyId);
 //                    args.putSerializable(WotLookup.Result.class.getSimpleName(),result);
-//                    Fragment fragment = IdentityFragment.newInstance(args);
+//                    Fragment fragment = WalletIdentityFragment.newInstance(args);
 //                    FragmentManager fragmentManager = getFragmentManager();
 //
 //                    fragmentManager.beginTransaction()
@@ -574,26 +574,6 @@ public class CurrencyActivity extends ActionBarActivity
         }
     }
 
-    public void showIdentityFragment(WotLookup.Result lookup,Long currencyId){
-        Bundle args = new Bundle();
-        args.putLong(BaseColumns._ID, currencyId);
-        args.putSerializable(WotLookup.Result.class.getSimpleName(),lookup);
-        Fragment fragment = IdentityFragment.newInstance(args);
-        FragmentManager fragmentManager = getFragmentManager();
-
-        fragmentManager.beginTransaction()
-                .setCustomAnimations(
-                        R.animator.delayed_fade_in,
-                        R.animator.fade_out,
-                        R.animator.delayed_fade_in,
-                        R.animator.fade_out)
-                .replace(R.id.frame_content, fragment, fragment.getClass().getSimpleName())
-                .addToBackStack(fragment.getClass().getSimpleName())
-                .commit();
-        // close the drawer
-        closeDrawer();
-    }
-
     public void onChangeUnit(String type, int unit){
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         preferences.edit().putInt(type, unit).apply();
@@ -603,7 +583,7 @@ public class CurrencyActivity extends ActionBarActivity
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         IdentityContact identityContact = (IdentityContact) parent.getAdapter().getItem(position);
         WotLookup.Result result= MemberListFragment.findIdentity(identityContact.getPublicKey(), identityContact.getUid());
-        showIdentityFragment(result, identityContact.getCurrencyId());
+        //showIdentityFragment(result, identityContact.getCurrencyId());
     }
 
     @Override
@@ -620,6 +600,26 @@ public class CurrencyActivity extends ActionBarActivity
                 .replace(R.id.frame_content, fragment, fragment.getClass().getSimpleName())
                 .addToBackStack(fragment.getClass().getSimpleName())
                 .commit();
+    }
+
+    @Override
+    public void showIdentity(Long walletId) {
+        Bundle args = new Bundle();
+        args.putLong(Application.IDENTITY_WALLET_ID, walletId);
+        Fragment fragment = WalletIdentityFragment.newInstance(args);
+        FragmentManager fragmentManager = getFragmentManager();
+
+        fragmentManager.beginTransaction()
+                .setCustomAnimations(
+                        R.animator.delayed_fade_in,
+                        R.animator.fade_out,
+                        R.animator.delayed_fade_in,
+                        R.animator.fade_out)
+                .replace(R.id.frame_content, fragment, fragment.getClass().getSimpleName())
+                .addToBackStack(fragment.getClass().getSimpleName())
+                .commit();
+        // close the drawer
+        closeDrawer();
     }
 
     public interface ChangeUnitforType {

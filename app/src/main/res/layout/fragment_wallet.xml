@@ -8,12 +8,14 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
         android:background="@color/primary"
-        android:elevation="4dp"
+        android:elevation="@dimen/elevation"
         android:orientation="vertical"
         android:paddingBottom="16dp"
-        android:paddingStart="56dp">
+        android:paddingStart="56dp"
+        android:paddingLeft="56dp">
 
         <TextView
             android:id="@+id/alias"
@@ -21,7 +23,7 @@
             android:layout_height="40dp"
             android:gravity="bottom"
             android:textColor="@color/grey200"
-            android:textSize="@dimen/abc_text_size_caption_material" />
+            android:textSize="@dimen/abc_text_size_body_2_material" />
 
         <TextView
             android:id="@+id/relative_amount"

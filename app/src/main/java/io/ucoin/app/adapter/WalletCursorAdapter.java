@@ -1,18 +1,26 @@
 package io.ucoin.app.adapter;
 
+import android.app.Activity;
 import android.content.Context;
 import android.database.Cursor;
-import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CursorAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 
 import io.ucoin.app.R;
+import io.ucoin.app.fragment.currency.WalletListFragment;
+import io.ucoin.app.model.UcoinCurrency;
+import io.ucoin.app.model.UcoinIdentity;
+import io.ucoin.app.model.UcoinWallet;
+import io.ucoin.app.model.sql.sqlite.Currencies;
+import io.ucoin.app.model.sql.sqlite.Wallets;
 import io.ucoin.app.service.Format;
 import io.ucoin.app.sqlite.SQLiteView;
 
@@ -23,11 +31,13 @@ public class WalletCursorAdapter extends CursorAdapter {
     private Context mContext;
     private Cursor mCursor;
     private HashMap<Integer, String> mSectionPosition;
+    private Activity activity;
 
-    public WalletCursorAdapter(Context context, final Cursor c, int flags) {
+    public WalletCursorAdapter(Context context, final Cursor c, int flags, Activity activity) {
         super(context, c, flags);
         mContext = context;
         mCursor = c;
+        this.activity = activity;
         mSectionPosition = new LinkedHashMap<>(16, (float) 0.75, false);
         nbSection =0;
     }
@@ -97,22 +107,55 @@ public class WalletCursorAdapter extends CursorAdapter {
 
     @Override
     public void bindView(View view, Context context, Cursor cursor) {
+        int idIndex = cursor.getColumnIndex(SQLiteView.Wallet._ID);
         int aliasIndex = cursor.getColumnIndex(SQLiteView.Wallet.ALIAS);
         int publicKeyIndex = cursor.getColumnIndex(SQLiteView.Wallet.PUBLIC_KEY);
         int quantitativeAmountIndex = cursor.getColumnIndex(SQLiteView.Wallet.QUANTITATIVE_AMOUNT);
         int relativeAmountIndex = cursor.getColumnIndex(SQLiteView.Wallet.RELATIVE_AMOUNT);
         int timeAmountIndex = cursor.getColumnIndex(SQLiteView.Wallet.TIME_AMOUNT);
         int currencyNameIndex = cursor.getColumnIndex(SQLiteView.Wallet.CURRENCY_NAME);
+        int udValueIndex = cursor.getColumnIndex(SQLiteView.Wallet.UD_VALUE);
 
         TextView alias = (TextView) view.findViewById(R.id.alias);
         TextView publicKey = (TextView) view.findViewById(R.id.public_key);
         TextView qAmount = (TextView) view.findViewById(R.id.default_amount);
         TextView rAmount = (TextView) view.findViewById(R.id.relative_amount);
+        ImageView infoIdentity = (ImageView) view.findViewById(R.id.info_identity);
+
+        final Long walletId = cursor.getLong(idIndex);
+        UcoinCurrency cu = new Currencies(context).getByName(cursor.getString(currencyNameIndex));
+
+        UcoinWallet wallet =new Wallets(context,cu.id()).getById(walletId);
+
+        try{
+            UcoinIdentity identity = wallet.identity();
+            if(identity!=null){
+                infoIdentity.setVisibility(View.VISIBLE);
+            }else{
+                infoIdentity.setVisibility(View.GONE);
+            }
+        }catch (NullPointerException e){
+
+        }
+
+        infoIdentity.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ((WalletListFragment.WalletItemClick)activity).showIdentity(walletId);
+            }
+        });
+
+
 
         alias.setText(cursor.getString(aliasIndex));
         publicKey.setText(Format.minifyPubkey(cursor.getString(publicKeyIndex)));
 
-        Format.changeUnit(context, cursor.getDouble(quantitativeAmountIndex), cursor.getDouble(relativeAmountIndex), cursor.getDouble(timeAmountIndex), PreferenceManager.getDefaultSharedPreferences(context), rAmount, qAmount, "");
+        Format.changeUnit(context,
+                new BigInteger(cursor.getString(quantitativeAmountIndex)),
+                new BigInteger(cursor.getString(udValueIndex)),
+                cu.dt(),
+                rAmount,
+                qAmount, "");
     }
 
     @Override

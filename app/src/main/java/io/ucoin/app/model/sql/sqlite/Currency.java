@@ -2,6 +2,8 @@ package io.ucoin.app.model.sql.sqlite;
 
 import android.content.Context;
 
+import java.math.BigInteger;
+
 import io.ucoin.app.UcoinUris;
 import io.ucoin.app.model.UcoinBlocks;
 import io.ucoin.app.model.UcoinContacts;
@@ -11,7 +13,6 @@ import io.ucoin.app.model.UcoinPeers;
 import io.ucoin.app.model.UcoinWallets;
 import io.ucoin.app.sqlite.SQLiteTable;
 import io.ucoin.app.sqlite.SQLiteView;
-import io.ucoin.app.technical.crypto.AddressFormatException;
 
 public class Currency extends Row
         implements UcoinCurrency {
@@ -101,8 +102,8 @@ public class Currency extends Row
     }
 
     @Override
-    public Long monetaryMass() {
-        return getLong(SQLiteView.Currency.MONETARY_MASS);
+    public BigInteger monetaryMass() {
+        return new BigInteger(getString(SQLiteView.Currency.MONETARY_MASS));
     }
 
     @Override
@@ -125,10 +126,10 @@ public class Currency extends Row
         return new Blocks(mContext, mId);
     }
 
-    @Override
-    public UcoinIdentity addIdentity(String uid, String publicKey) throws AddressFormatException {
-        return new Identities(mContext, mId).add(uid, publicKey);
-    }
+//    @Override
+//    public UcoinIdentity addIdentity(String uid, String publicKey) throws AddressFormatException {
+//        return new Identities(mContext, mId).add(uid, publicKey);
+//    }
 
     @Override
     public UcoinWallets wallets() {

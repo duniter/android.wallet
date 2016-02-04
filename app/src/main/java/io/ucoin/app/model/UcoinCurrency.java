@@ -1,6 +1,6 @@
 package io.ucoin.app.model;
 
-import io.ucoin.app.technical.crypto.AddressFormatException;
+import java.math.BigInteger;
 
 public interface UcoinCurrency extends SqlRow {
 
@@ -36,7 +36,7 @@ public interface UcoinCurrency extends SqlRow {
 
     Long membersCount();
 
-    Long monetaryMass();
+    BigInteger monetaryMass();
 
     UcoinIdentity identity();
 
@@ -48,5 +48,5 @@ public interface UcoinCurrency extends SqlRow {
 
     UcoinContacts contacts();
 
-    UcoinIdentity addIdentity(String uid, String publicKey) throws AddressFormatException;
+    //UcoinIdentity addIdentity(String uid, String publicKey) throws AddressFormatException;
 }

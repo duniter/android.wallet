@@ -2,13 +2,13 @@ package io.ucoin.app.adapter;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CursorAdapter;
 import android.widget.TextView;
 
+import java.math.BigInteger;
 import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -35,13 +35,18 @@ public class OperationSectionCursorAdapter extends CursorAdapter {
     private int commentIndex;
     private int stateIndex;
 
+    private BigInteger mUd;
+    private int delay;
+
 
     private HashMap<Integer, String> mSectionPosition;
 
-    public OperationSectionCursorAdapter(Context context, Cursor c, int flags) {
+    public OperationSectionCursorAdapter(Context context, Cursor c, int flags, BigInteger mUd, int delay) {
         super(context, c, flags);
         mContext = context;
         mCursor = c;
+        this.mUd = mUd;
+        this.delay = delay;
         mSectionPosition = new LinkedHashMap<>(16, (float) 0.75, false);
     }
 
@@ -115,7 +120,13 @@ public class OperationSectionCursorAdapter extends CursorAdapter {
             dir = "- ";
         }
 
-        Format.changeUnit(context, cursor.getDouble(qtAmountIndex), cursor.getDouble(relAmountThenIndex), cursor.getDouble(timeAmountThenIndex), PreferenceManager.getDefaultSharedPreferences(context), holder.amount, holder.defaultAmount, dir);
+        Format.changeUnit(context,
+                new BigInteger(cursor.getString(qtAmountIndex)),
+                mUd,
+                delay,
+                holder.amount,
+                holder.defaultAmount,
+                dir);
 
         holder.comment.setText(cursor.getString(commentIndex));
 

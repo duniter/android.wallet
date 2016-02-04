@@ -18,8 +18,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Clasique"
-                android:id="@+id/textView"
+                android:id="@+id/currency_name"
                 android:layout_gravity="center_horizontal"/>
 
             <EditText
@@ -42,7 +41,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="DU"
+                android:text="@string/universal_dividende"
                 android:id="@+id/textView2"
                 android:layout_gravity="center_horizontal"/>
 
@@ -67,7 +66,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Mutual Credit"
+                android:text="@string/mutual_credit"
                 android:id="@+id/textView3"
                 android:layout_gravity="center_horizontal"/>
 

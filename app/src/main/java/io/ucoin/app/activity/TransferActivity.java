@@ -37,7 +37,8 @@ import com.android.volley.toolbox.StringRequest;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 
-import java.text.DecimalFormat;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -242,68 +243,43 @@ public class TransferActivity extends ActionBarActivity implements SendIdentity,
         if(val.substring(0,1).equals(".")){
             val="0"+val;
         }
-        DecimalFormat formatter = new DecimalFormat("#,###");
         if(unit!=defaultUnit) {
-            defaultAmount.setVisibility(View.VISIBLE);
-            Double res=0.0;
-            if(unit==Application.UNIT_TIME){
-                val = String.valueOf(
-                        Format.toSecond(Double.parseDouble(val), spinnerUnit.getSelectedItemPosition())
-                );
-            }
-            long coin = toClassical(Double.parseDouble(val));
-            long mUd = Double.valueOf(
-                    walletSelected.quantitativeAmount()/walletSelected.relativeAmount())
-                    .longValue();
-            switch (defaultUnit) {
+            BigInteger quantitative = null;
+            switch (unit){
                 case Application.UNIT_CLASSIC:
-                    if(coin>0){
-                        defaultAmount.setText(formatter.format(coin));
-                    }else{
-                        defaultAmount.setVisibility(View.GONE);
-                    }
+                    quantitative = new BigInteger(val);
                     break;
                 case Application.UNIT_DU:
-                    res = (double)coin / mUd;
-                    if(res>Double.valueOf(0.0)){
-                        defaultAmount.setText(String.format("%.8f",res).concat(" ").concat(getString(R.string.UD)));
-                    }else{
-                        defaultAmount.setVisibility(View.GONE);
-                    }
+                    quantitative = Format.relativeToQuantitative(this, new BigDecimal(val), walletSelected.udValue());
                     break;
                 case Application.UNIT_TIME:
-                    res = (double)coin*currency.dt()/mUd;
-                    if(res>Double.valueOf(0.0)){
-                        defaultAmount.setText(Format.timeFormatter(this, res));
-                    }else{
-                        defaultAmount.setVisibility(View.GONE);
-                    }
+                    val = Format.toSecond(this, new BigDecimal(val), spinnerUnit.getSelectedItemPosition()).toString();
+                    quantitative = Format.timeToQuantitative(this,new BigDecimal(val),walletSelected.currency().dt(), walletSelected.udValue());
                     break;
             }
-        }else{
-            defaultAmount.setVisibility(View.GONE);
+            Format.changeUnit(this,
+                    quantitative,
+                    walletSelected.udValue(),
+                    walletSelected.currency().dt(),
+                    null,
+                    defaultAmount,
+                    "");
         }
     }
 
-    private Long toClassical(Double val){
-        Long res = null;
-        long mUd;
+    private BigInteger toQuantitative(BigDecimal val){
+        BigInteger res = null;
         if(currency!=null) {
             switch (unit) {
                 case Application.UNIT_CLASSIC:
-                    res = val.longValue();
+                    res = val.toBigInteger();
                     break;
                 case Application.UNIT_DU:
-                    mUd = Double.valueOf(
-                            walletSelected.quantitativeAmount()/walletSelected.relativeAmount())
-                            .longValue();
-                    res = Double.valueOf(val*mUd).longValue();
+                    res = Format.relativeToQuantitative(this, val, walletSelected.udValue());
                     break;
                 case Application.UNIT_TIME:
-                    mUd = Double.valueOf(
-                            walletSelected.quantitativeAmount()/walletSelected.relativeAmount())
-                            .longValue();
-                    res = Double.valueOf(val*mUd/currency.dt()).longValue();
+                    val = Format.toSecond(this, val, spinnerUnit.getSelectedItemPosition());
+                    res = Format.timeToQuantitative(this,val,walletSelected.currency().dt(),walletSelected.udValue());
                     break;
             }
         }
@@ -393,12 +369,9 @@ public class TransferActivity extends ActionBarActivity implements SendIdentity,
         DialogFragment dialog= null;
         Long walletId = getIntent().getLongExtra(Application.EXTRA_WALLET_ID,-1);
         if(walletSelected!=null && !walletId.equals(Long.valueOf(-1))){
-            long mUniversalDividend = Double.valueOf(
-                    walletSelected.quantitativeAmount()/walletSelected.relativeAmount())
-                    .longValue();
             dialog = new ConverterDialog(
-                    mUniversalDividend,
-                    currency.dt(), amount, spinnerUnit);
+                    walletSelected.udValue(),
+                    currency.dt(), amount, spinnerUnit,walletSelected.currency().name());
         }
         if(dialog!=null){
             dialog.show(getFragmentManager(), "listDialog");
@@ -416,12 +389,16 @@ public class TransferActivity extends ActionBarActivity implements SendIdentity,
             UcoinWallets wallets = new Wallets(Application.getContext(), mcurrencyId);
             walletSelected = wallets.getById(walletId);
 
-            Format.changeUnit(this, walletSelected.quantitativeAmount().doubleValue(), walletSelected.relativeAmount(), walletSelected.timeAmount(), PreferenceManager.getDefaultSharedPreferences(this), mWalletAmount, mWalletDefaultAmount, "");
+            Format.changeUnit(this,
+                    walletSelected.quantitativeAmount(),
+                    walletSelected.udValue(),
+                    walletSelected.currency().dt(),
+                    mWalletAmount,
+                    mWalletDefaultAmount, "");
 
             mWalletAlias.setText(walletSelected.alias());
 
-            setTitle(getResources().getString(R.string.transfer) +
-                    " " + walletSelected.currency().name());
+            setTitle(getResources().getString(R.string.transfer_of,walletSelected.currency().name()));
             currency = new Currency(this, walletSelected.currencyId());
         }
         //mQuantitativeUD = new BigDecimal(data.getString(data.getColumnIndex(SQLiteView.Wallet.UD_VALUE)));
@@ -459,6 +436,11 @@ public class TransferActivity extends ActionBarActivity implements SendIdentity,
         Long realId = walletCursorAdapter.getIdWallet(position);
         getIntent().putExtra(Application.EXTRA_WALLET_ID, realId);
         actionAfterWalletSelected();
+    }
+
+    @Override
+    public void showIdentity(Long walletId) {
+
     }
 
     public interface DialogItemClickListener{
@@ -509,7 +491,7 @@ public class TransferActivity extends ActionBarActivity implements SendIdentity,
     }
 
     public boolean actionTransfer() {
-        Long qtAmount;
+        BigInteger qtAmount;
         String receiverPublicKey = mReceiverPublicKey.getText().toString();
         String comment;
 
@@ -527,18 +509,18 @@ public class TransferActivity extends ActionBarActivity implements SendIdentity,
 
 
         //check funds
-        if (qtAmount > wallet.quantitativeAmount()) {
+        if (qtAmount.compareTo(wallet.quantitativeAmount()) == 1) {
             defaultAmount.setError(getResources().getString(R.string.insufficient_funds));
             return false;
         }
 
         //set inputs
-        long cumulativeAmount = 0;
+        BigInteger cumulativeAmount = new BigInteger("0");
         for (UcoinSource source : wallet.sources().getByState(SourceState.AVAILABLE)) {
             transaction.addInput(source);
             source.setState(SourceState.CONSUMED);
-            cumulativeAmount += source.amount();
-            if (cumulativeAmount > qtAmount) {
+            cumulativeAmount.add(source.amount());
+            if (cumulativeAmount.compareTo(qtAmount) == 1) {
                 break;
             }
         }
@@ -550,8 +532,8 @@ public class TransferActivity extends ActionBarActivity implements SendIdentity,
             transaction.addOuput(receiverPublicKey, cumulativeAmount);
         } else {
             transaction.addOuput(receiverPublicKey, qtAmount);
-            Long refundAmount = cumulativeAmount - qtAmount;
-            if (refundAmount > 0) {
+            BigInteger refundAmount = cumulativeAmount.subtract(qtAmount);
+            if (refundAmount.compareTo(BigInteger.ZERO) > 0) {
                 transaction.addOuput(wallet.publicKey(), refundAmount);
             }
         }
@@ -626,7 +608,7 @@ public class TransferActivity extends ActionBarActivity implements SendIdentity,
         return publicKey;
     }
 
-    private Long validateAmount() {
+    private BigInteger validateAmount() {
         if (amount.getText().toString().isEmpty()) {
             amount.setError(getResources().getString(R.string.amount_is_empty));
             amount.requestFocus();
@@ -634,9 +616,7 @@ public class TransferActivity extends ActionBarActivity implements SendIdentity,
         }else{
             amount.setError(null);
         }
-
-        Double res = Double.parseDouble(amount.getText().toString());
-        return toClassical(res);
+        return toQuantitative(new BigDecimal(amount.getText().toString()));
     }
 
     private String validateComment() {
