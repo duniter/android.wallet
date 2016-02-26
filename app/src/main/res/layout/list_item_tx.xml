@@ -48,7 +48,7 @@
             android:textSize="@dimen/abc_text_size_title_material" />
 
         <TextView
-            android:id="@+id/default_amount"
+            android:id="@+id/second_amount"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="end"

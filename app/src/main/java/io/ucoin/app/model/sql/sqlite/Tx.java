@@ -85,7 +85,7 @@ public class Tx extends Row
     @Override
     public DayOfWeek dayOfWeek() {
         try {
-            return DayOfWeek.fromInt(getInt(SQLiteView.Tx.DAY_OF_WEEK));
+            return DayOfWeek.fromInt(getInt(SQLiteView.Tx.DAY_OF_WEEK),false);
         } catch (Exception e) {
             return DayOfWeek.UNKNOWN;
         }
@@ -151,6 +151,13 @@ public class Tx extends Row
     public void setBlock(Long block) {
         ContentValues values = new ContentValues();
         values.put(SQLiteTable.Tx.BLOCK, block);
+        update(values);
+    }
+
+    @Override
+    public void setDirection(TxDirection direction) {
+        ContentValues values = new ContentValues();
+        values.put(SQLiteTable.Tx.DIRECTION, direction.name());
         update(values);
     }
 

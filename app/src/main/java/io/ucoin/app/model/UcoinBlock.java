@@ -17,7 +17,7 @@ public interface UcoinBlock extends SqlRow {
 
     Long medianTime();
 
-    Long dividend();
+    BigInteger dividend();
 
     BigInteger monetaryMass();
 

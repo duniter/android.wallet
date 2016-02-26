@@ -1,5 +1,6 @@
 package io.ucoin.app.fragment.currency;
 
+import android.app.DialogFragment;
 import android.app.ListFragment;
 import android.app.LoaderManager;
 import android.content.CursorLoader;
@@ -22,7 +23,10 @@ import io.ucoin.app.R;
 import io.ucoin.app.UcoinUris;
 import io.ucoin.app.activity.CurrencyActivity;
 import io.ucoin.app.adapter.WalletCursorAdapter;
-import io.ucoin.app.fragment.dialog.AddWalletDialogFragment;
+import io.ucoin.app.fragment.dialog.InscriptionDialogFragment;
+import io.ucoin.app.fragment.dialog.ConnectionDialogFragment;
+import io.ucoin.app.fragment.dialog.NewWalletDialogFragment;
+import io.ucoin.app.fragment.dialog.RecordingDialogFragment;
 import io.ucoin.app.sqlite.SQLiteTable;
 
 public class WalletListFragment extends ListFragment
@@ -89,11 +93,9 @@ public class WalletListFragment extends ListFragment
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        Long currencyId = getArguments().getLong(BaseColumns._ID);
-
         switch (item.getItemId()) {
-            case R.id.action_new_wallet:
-                actionNewWallet(currencyId);
+            case R.id.new_wallet:
+                actionNew();
                 return true;
         }
         return super.onOptionsItemSelected(item);
@@ -101,8 +103,8 @@ public class WalletListFragment extends ListFragment
 
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
-        if(getActivity() instanceof WalletItemClick){
-            ((WalletItemClick)getActivity()).walletClick(walletCursorAdapter, position);
+        if(getActivity() instanceof Action){
+            ((Action)getActivity()).displayWalletFragment(walletCursorAdapter.getIdWallet(position));
         }
     }
 
@@ -139,10 +141,39 @@ public class WalletListFragment extends ListFragment
         ((WalletCursorAdapter) this.getListAdapter()).swapCursor(null);
     }
 
-    private void actionNewWallet(Long currencyId) {
-        AddWalletDialogFragment addWalletDialogFragment = AddWalletDialogFragment.newInstance(currencyId);
-        addWalletDialogFragment.show(getFragmentManager(),
-                addWalletDialogFragment.getClass().getSimpleName());
+    private void actionNew(){
+        DialogFragment whatNew = NewWalletDialogFragment.newInstance(new NewWalletDialogFragment.Action() {
+            @Override
+            public void actionNew() {
+                actionInscriptionWallet();
+            }
+
+            @Override
+            public void actionConnect() {
+                actionConnectionWallet();
+            }
+
+            @Override
+            public void actionRecording() {
+                actionRecordingWallet();
+            }
+        });
+        whatNew.show(getFragmentManager(), whatNew.getClass().getSimpleName());
+    }
+
+    private void actionInscriptionWallet() {
+        InscriptionDialogFragment inscriptionDialogFragment = InscriptionDialogFragment.newInstance();
+        inscriptionDialogFragment.show(getFragmentManager(), inscriptionDialogFragment.getClass().getSimpleName());
+    }
+
+    private void actionConnectionWallet() {
+        ConnectionDialogFragment connectionDialogFragment = ConnectionDialogFragment.newInstance();
+        connectionDialogFragment.show(getFragmentManager(), connectionDialogFragment.getClass().getSimpleName());
+    }
+
+    private void actionRecordingWallet() {
+        RecordingDialogFragment recordingDialogFragment = RecordingDialogFragment.newInstance();
+        recordingDialogFragment.show(getFragmentManager(), recordingDialogFragment.getClass().getSimpleName());
     }
 
     @Override
@@ -151,8 +182,7 @@ public class WalletListFragment extends ListFragment
         Application.requestSync();
     }
 
-    public interface WalletItemClick  {
-        void walletClick(WalletCursorAdapter walletCursorAdapter,int position);
-        void showIdentity(Long walletId);
+    public interface Action {
+        void displayWalletFragment(Long walletId);
     }
 }

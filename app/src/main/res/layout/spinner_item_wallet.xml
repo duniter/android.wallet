@@ -1,29 +1,10 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:paddingLeft="16dp"
-    android:paddingRight="16dp">
-
-    <TextView
-        android:id="@+id/alias"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="start"
-        android:textSize="@dimen/abc_text_size_caption_material" />
-
-    <TextView
-        android:id="@+id/relative_amount"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="end"
-        android:textSize="@dimen/abc_text_size_headline_material" />
-
-    <TextView
-        android:id="@+id/default_amount"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="end"
-        android:textSize="@dimen/abc_text_size_caption_material" />
-
-</LinearLayout>
+<?xml version="1.0" encoding="utf-8"?>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+          android:id="@android:id/text1"
+          style="?android:attr/spinnerItemStyle"
+          android:singleLine="true"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:textColor="@android:color/white"
+          android:ellipsize="marquee"
+          android:textAlignment="inherit"/>

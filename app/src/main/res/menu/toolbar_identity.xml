@@ -1,6 +1,12 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:ucoin="http://schemas.android.com/apk/res-auto">
 
+    <item android:id="@+id/spinner"
+          android:title=""
+          android:orderInCategory="0"
+          ucoin:showAsAction="ifRoom"
+          ucoin:actionViewClass="android.widget.Spinner" />
+
     <item
         android:id="@+id/action_delete"
         android:title="@string/remove_contact"

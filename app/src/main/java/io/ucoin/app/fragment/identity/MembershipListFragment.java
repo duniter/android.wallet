@@ -183,7 +183,6 @@ public class MembershipListFragment extends ListFragment
         ((MembershipCursorAdapter) this.getListAdapter()).swapCursor(null);
     }
 
-
     public void actionJoin() {
         Long identityId = getArguments().getLong(BaseColumns._ID);
         UcoinIdentity identity = new io.ucoin.app.model.sql.sqlite.Identity(getActivity(), identityId);

@@ -52,7 +52,7 @@ public class SQLiteHelper extends SQLiteOpenHelper implements SQLiteTable {
             Block.POWMIN + INTEGER + NOTNULL + COMMA +
             Block.TIME + INTEGER + NOTNULL + COMMA +
             Block.MEDIAN_TIME + INTEGER + NOTNULL + COMMA +
-            Block.DIVIDEND + INTEGER + COMMA +
+            Block.DIVIDEND + TEXT + COMMA +
             Block.MONETARY_MASS + TEXT + NOTNULL + COMMA +
             Block.ISSUER + TEXT + NOTNULL + COMMA +
             Block.PREVIOUS_HASH + TEXT + NOTNULL + COMMA +
@@ -511,16 +511,7 @@ public class SQLiteHelper extends SQLiteOpenHelper implements SQLiteTable {
                     "last_ud_block." + Block.DIVIDEND + AS + SQLiteView.Currency.QUANTITATIVE_UD + COMMA +
                     "current_block." + Block.MONETARY_MASS + AS + SQLiteView.Currency.MONETARY_MASS + COMMA +
                     "current_block." + Block.MEMBERS_COUNT + AS + SQLiteView.Currency.MEMBERS_COUNT + COMMA +
-                    "current_block." + Block.NUMBER + AS + SQLiteView.Currency.CURRENT_BLOCK + COMMA +
-
-                    "strftime('%Y', datetime(" + "current_block." + Block.TIME + ", 'unixepoch', 'localtime'))" + AS + SQLiteView.Currency.BLOCK_YEAR + COMMA +
-                    "strftime('%m', datetime(" + "current_block." + Block.TIME + ", 'unixepoch', 'localtime'))" + AS + SQLiteView.Currency.BLOCK_MONTH + COMMA +
-                    "strftime('%d', datetime(" + "current_block." + Block.TIME + ", 'unixepoch', 'localtime'))" + AS + SQLiteView.Currency.BLOCK_DAY + COMMA +
-                    "strftime('%w', datetime(" + "current_block." + Block.TIME + ", 'unixepoch', 'localtime'))" + AS + SQLiteView.Currency.BLOCK_DAY_OF_WEEK + COMMA +
-                    "strftime('%H:%M:%S', datetime(" + "current_block." + Block.TIME + ", 'unixepoch', 'localtime'))" + AS + SQLiteView.Currency.BLOCK_HOUR + COMMA +
-
-
-                    "total.total_amount" + AS + SQLiteView.Currency.QUANT_BALANCE +
+                    "current_block." + Block.NUMBER + AS + SQLiteView.Currency.CURRENT_BLOCK +
 
                     " FROM " + Currency.TABLE_NAME +
                     " LEFT JOIN (SELECT " + Block.CURRENCY_ID + COMMA + "MAX(" + Block.NUMBER + ") AS " + Block.NUMBER + COMMA + Block.MONETARY_MASS + COMMA + Block.MEMBERS_COUNT + COMMA + Block.TIME +
@@ -532,13 +523,7 @@ public class SQLiteHelper extends SQLiteOpenHelper implements SQLiteTable {
                     " FROM " + Block.TABLE_NAME +
                     " WHERE " + Block.DIVIDEND + " IS NOT NULL" +
                     " GROUP BY " + Block.CURRENCY_ID + ") AS last_ud_block" +
-                    " ON " + Currency.TABLE_NAME + DOT + Currency._ID + "= last_ud_block." + Block.CURRENCY_ID +
-
-                    " LEFT JOIN (SELECT " + Wallet.CURRENCY_ID + COMMA + "SUM(" + Source.AMOUNT + ") AS total_amount" +
-                    " FROM " + Wallet.TABLE_NAME + COMMA + Source.TABLE_NAME +
-                    " WHERE " + Wallet.TABLE_NAME + DOT + Wallet._ID + "=" + Source.TABLE_NAME + DOT + Source.WALLET_ID +
-                    " GROUP BY " + Wallet.CURRENCY_ID + ") AS total" +
-                    " ON " + Currency.TABLE_NAME + DOT + Currency._ID + "= total." + Wallet.CURRENCY_ID;
+                    " ON " + Currency.TABLE_NAME + DOT + Currency._ID + "= last_ud_block." + Block.CURRENCY_ID;
             db.execSQL(CREATE_VIEW_CURRENCY);
 
             String CREATE_VIEW_WALLET = "CREATE VIEW " + SQLiteView.Wallet.VIEW_NAME +

@@ -2,6 +2,8 @@ package io.ucoin.app.model;
 
 import java.io.Serializable;
 
+import io.ucoin.app.model.http_api.WotRequirements;
+
 /**
  * Created by naivalf27 on 05/01/16.
  */
@@ -12,6 +14,7 @@ public class IdentityContact implements Serializable{
     private String currencyName;
     private String uid;
     private Long currencyId;
+    private WotRequirements requirements;
 
     public IdentityContact(boolean isContact, String name, String uid, String publicKey, String currencyName, Long currencyId) {
         this.isContact = isContact;
@@ -49,6 +52,14 @@ public class IdentityContact implements Serializable{
         return uid;
     }
 
+    public WotRequirements getRequirements() {
+        return requirements;
+    }
+
+    public void setRequirements(WotRequirements requirements) {
+        this.requirements = requirements;
+    }
+
     public boolean isContact() {
         return isContact;
     }
@@ -60,6 +71,18 @@ public class IdentityContact implements Serializable{
         }else{
             result = publicKey.contains(query);
         }
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        String result;
+        if(isContact()){
+            result = getName().concat(" (").concat(getUid()).concat(")");
+        }else{
+            result = getUid();
+        }
+
         return result;
     }
 }

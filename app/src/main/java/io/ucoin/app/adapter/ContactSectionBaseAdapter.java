@@ -14,7 +14,7 @@ import java.util.LinkedHashMap;
 import io.ucoin.app.R;
 import io.ucoin.app.fragment.currency.ContactListFragment;
 import io.ucoin.app.model.IdentityContact;
-import io.ucoin.app.service.Format;
+import io.ucoin.app.Format;
 
 public class ContactSectionBaseAdapter extends BaseAdapter {
 

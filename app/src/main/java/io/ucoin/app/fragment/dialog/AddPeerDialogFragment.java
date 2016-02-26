@@ -57,7 +57,7 @@ public class AddPeerDialogFragment extends DialogFragment
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
-        return inflater.inflate(R.layout.fragment_add_peer_dialog, null);
+        return inflater.inflate(R.layout.dialog_fragment_add_peer, null);
     }
 
     @Override

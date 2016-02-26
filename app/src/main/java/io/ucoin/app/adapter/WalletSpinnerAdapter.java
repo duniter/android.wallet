@@ -40,7 +40,7 @@ public class WalletSpinnerAdapter extends CursorAdapter implements SpinnerAdapte
 
     @Override
     public void bindView(View view, Context context, Cursor cursor) {
-        TextView rAmount = (TextView) view.findViewById(R.id.relative_amount);
+        TextView rAmount = (TextView) view.findViewById(R.id.principal_amount);
         int relAmountIndex = cursor.getColumnIndex(SQLiteView.Wallet.RELATIVE_AMOUNT);
         rAmount.setText(String.format("%.8f", cursor.getFloat(relAmountIndex)));
 
@@ -48,7 +48,7 @@ public class WalletSpinnerAdapter extends CursorAdapter implements SpinnerAdapte
         int aliasIndex = cursor.getColumnIndex(SQLiteTable.Wallet.ALIAS);
         alias.setText(cursor.getString(aliasIndex));
 
-        TextView qAmount = (TextView) view.findViewById(R.id.default_amount);
+        TextView qAmount = (TextView) view.findViewById(R.id.second_amount);
         int qtAmountIndex = cursor.getColumnIndex(SQLiteView.Wallet.QUANTITATIVE_AMOUNT);
         DecimalFormat formatter = new DecimalFormat("#,###");
 

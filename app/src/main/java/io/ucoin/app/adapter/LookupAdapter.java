@@ -85,7 +85,7 @@ public class LookupAdapter extends BaseAdapter {
 
         int i = c.get(Calendar.DAY_OF_WEEK);
         i = c.get(Calendar.MONTH);
-        DayOfWeek dow = DayOfWeek.fromInt(c.get(Calendar.DAY_OF_WEEK ) - 1);
+        DayOfWeek dow = DayOfWeek.fromInt(c.get(Calendar.DAY_OF_WEEK ) - 1,false);
         Month m = Month.fromInt(c.get(Calendar.MONTH) + 1);
         String dateStr = dow.toString(mContext);
         dateStr += " " + c.get(Calendar.DAY_OF_MONTH);

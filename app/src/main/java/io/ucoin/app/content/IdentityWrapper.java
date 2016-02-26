@@ -12,7 +12,9 @@ import java.util.HashMap;
 
 import io.ucoin.app.BuildConfig;
 import io.ucoin.app.enumeration.CertificationType;
+import io.ucoin.app.model.IdentityContact;
 import io.ucoin.app.model.UcoinBlock;
+import io.ucoin.app.model.UcoinCurrency;
 import io.ucoin.app.model.UcoinEndpoint;
 import io.ucoin.app.model.UcoinIdentity;
 import io.ucoin.app.model.UcoinMember;
@@ -20,6 +22,7 @@ import io.ucoin.app.model.http_api.BlockchainBlock;
 import io.ucoin.app.model.http_api.BlockchainMemberships;
 import io.ucoin.app.model.http_api.WotCertification;
 import io.ucoin.app.model.http_api.WotLookup;
+import io.ucoin.app.model.http_api.WotRequirements;
 
 public class IdentityWrapper implements Response.ErrorListener, RequestQueue.RequestFinishedListener {
     private UcoinQueue mRequestQueue;
@@ -78,6 +81,24 @@ public class IdentityWrapper implements Response.ErrorListener, RequestQueue.Req
         mRequestQueue.add(request);
         return request;
     }
+
+    private Request fetchRequirements(UcoinCurrency currency, final IdentityContact identityContact){
+        UcoinEndpoint endpoint = currency.peers().at(0).endpoints().at(0);
+        String url = "http://" + endpoint.ipv4() + ":" + endpoint.port() + "/wot/requirements/" + identityContact.getPublicKey();
+
+        final StringRequest request = new StringRequest(
+                url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        identityContact.setRequirements(WotRequirements.fromJson(response));
+                    }
+                }, this);
+        request.setTag(this);
+        mRequestQueue.add(request);
+        return request;
+    }
+
 
     private Request fetchMember(final UcoinMember member) {
         UcoinEndpoint endpoint = member.identity().currency().peers().at(0).endpoints().at(0);

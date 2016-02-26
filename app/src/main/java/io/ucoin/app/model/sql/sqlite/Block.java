@@ -114,8 +114,8 @@ public class Block extends Row
     }
 
     @Override
-    public Long dividend() {
-        return getLong(SQLiteTable.Block.DIVIDEND);
+    public BigInteger dividend() {
+        return new BigInteger(getString(SQLiteTable.Block.DIVIDEND));
     }
 
     @Override

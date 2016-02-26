@@ -24,6 +24,7 @@ import io.ucoin.app.enumeration.SelfCertificationState;
 import io.ucoin.app.fragment.identity.MembershipListFragment;
 import io.ucoin.app.model.UcoinIdentity;
 import io.ucoin.app.model.UcoinSelfCertification;
+import io.ucoin.app.model.sql.sqlite.Identity;
 import io.ucoin.app.model.sql.sqlite.SelfCertification;
 import io.ucoin.app.sqlite.SQLiteTable;
 
@@ -36,10 +37,12 @@ public class SelectSelfDialogFragment extends DialogFragment
     private Button mPosButton;
     private Long mSelectedItemId;
 
+    private static final String IDENTITY = "identity";
 
-    public static SelectSelfDialogFragment newInstance(Long identityId) {
+
+    public static SelectSelfDialogFragment newInstance(Long id) {
         Bundle newInstanceArgs = new Bundle();
-        newInstanceArgs.putLong(BaseColumns._ID, identityId);
+        newInstanceArgs.putLong(BaseColumns._ID, id);
         SelectSelfDialogFragment fragment = new SelectSelfDialogFragment();
         fragment.setArguments(newInstanceArgs);
         return fragment;
@@ -48,7 +51,7 @@ public class SelectSelfDialogFragment extends DialogFragment
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
-        return inflater.inflate(R.layout.fragment_select_self_dialog, null);
+        return inflater.inflate(R.layout.dialog_fragment_select_self, null);
     }
 
     @Override
@@ -66,7 +69,7 @@ public class SelectSelfDialogFragment extends DialogFragment
             @Override
             public void onClick(View v) {
                 Long identityId = getArguments().getLong(BaseColumns._ID);
-                UcoinIdentity identity = new io.ucoin.app.model.sql.sqlite.Identity(getActivity(), identityId);
+                UcoinIdentity identity = new Identity(getActivity(), identityId);
                 UcoinSelfCertification certification = new SelfCertification(getActivity(), mSelectedItemId);
                 identity.setSigDate(certification.timestamp());
                 MembershipListFragment fragment = (MembershipListFragment)getTargetFragment();

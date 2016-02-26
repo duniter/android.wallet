@@ -68,9 +68,23 @@ public class WotLookup implements Serializable {
         public String uid;
         public Meta meta;
         public String self;
+        public Other[] others;
     }
 
     public class Meta implements Serializable {
         public Long timestamp;
+    }
+
+    public class Other implements Serializable {
+        public String pubkey;
+        public MetaOther meta;
+        public String[] uids;
+        public Boolean isMember;
+        public Boolean wasMember;
+        public String signature;
+    }
+
+    public class MetaOther implements Serializable {
+        public Long block_number;
     }
 }

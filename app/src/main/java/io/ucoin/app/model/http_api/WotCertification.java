@@ -11,6 +11,7 @@ import java.nio.charset.Charset;
 public class WotCertification implements Serializable {
     public String pubkey;
     public String uid;
+    public Long sigDate;
     public Boolean isMember;
     public Certification[] certifications;
 
@@ -49,6 +50,7 @@ public class WotCertification implements Serializable {
         public Boolean isMember;
         public Boolean wasMember;
         public CertTime cert_time;
+        public Long sigDate;
         public Written written;
         public String signature;
 

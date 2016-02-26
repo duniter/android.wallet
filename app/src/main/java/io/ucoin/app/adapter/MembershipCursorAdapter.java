@@ -43,7 +43,7 @@ public class MembershipCursorAdapter extends CursorAdapter {
         date.setText(cursor.getString(timeIndex));
 
         date.setText(
-                DayOfWeek.fromInt(cursor.getInt(dayOfWeekIndex)).toString(context) + " " +
+                DayOfWeek.fromInt(cursor.getInt(dayOfWeekIndex),false).toString(context) + " " +
                         cursor.getString(dayIndex) + " " +
                         Month.fromInt(Integer.parseInt(cursor.getString(monthIndex))).toString(context) + " " +
                         cursor.getString(monthIndex) + " " +
@@ -66,7 +66,7 @@ public class MembershipCursorAdapter extends CursorAdapter {
             expirationDate.setText(cursor.getString(timeIndex));
 
             expirationDate.setText(
-                    DayOfWeek.fromInt(cursor.getInt(dayOfWeekIndex)).toString(context) + " " +
+                    DayOfWeek.fromInt(cursor.getInt(dayOfWeekIndex),false).toString(context) + " " +
                             cursor.getString(dayIndex) + " " +
                             Month.fromInt(cursor.getInt(monthIndex)).toString(context) + " " +
                             cursor.getString(monthIndex) + " " +

@@ -66,7 +66,7 @@ public class Membership extends Row
 
     @Override
     public DayOfWeek dayOfWeek() {
-        return DayOfWeek.fromInt(getInt(SQLiteView.Membership.DAY_OF_WEEK));
+        return DayOfWeek.fromInt(getInt(SQLiteView.Membership.DAY_OF_WEEK),false);
     }
 
     @Override
@@ -96,7 +96,7 @@ public class Membership extends Row
 
     @Override
     public DayOfWeek expirationDayOfWeek() {
-        return DayOfWeek.fromInt(getInt(SQLiteView.Membership.EXPIRATION_DAY_OF_WEEK));
+        return DayOfWeek.fromInt(getInt(SQLiteView.Membership.EXPIRATION_DAY_OF_WEEK),false);
     }
 
     @Override

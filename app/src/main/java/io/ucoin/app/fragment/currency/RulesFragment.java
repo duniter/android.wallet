@@ -15,11 +15,11 @@ import io.ucoin.app.sqlite.SQLiteTable;
 public class RulesFragment extends Fragment {
 
     private final int SECONDS_IN_DAY = 24 * 60 * 60;
-    private static Long currencyId;
+    private static Long mCurrencyId;
 
-    public static RulesFragment newInstance(Long id) {
+    public static RulesFragment newInstance(Long currencyId) {
         RulesFragment fragment = new RulesFragment();
-        currencyId = id;
+        mCurrencyId = currencyId;
         fragment.setArguments(new Bundle());
         return fragment;
     }
@@ -49,7 +49,7 @@ public class RulesFragment extends Fragment {
 
 
     protected void bind(View view) {
-        Currency currency = new Currency(getActivity(),currencyId);
+        Currency currency = new Currency(getActivity(), mCurrencyId);
         // Get views
 
         // growth

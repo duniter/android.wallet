@@ -113,16 +113,21 @@ public class Wallet extends Row
 
     @Override
     public String toString() {
-        String s = "WALLET id=" + id() + "\n";
-        s += "\ncurrencyId=" + currencyId();
-        s += "\nsalt=" + salt();
-        s += "\npublicKey=" + publicKey();
-        s += "\nprivateKey=" + privateKey();
-        s += "\nalias=" + alias();
-        s += "\nquantitativeAmount=" + quantitativeAmount();
-        s += "\nrelativeAmount=" + relativeAmount();
-        s += "\ntimeAmount=" + timeAmount();
-
-        return s;
+        return alias();
     }
+
+    //    @Override
+//    public String toString() {
+//        String s = "WALLET id=" + id() + "\n";
+//        s += "\ncurrencyId=" + currencyId();
+//        s += "\nsalt=" + salt();
+//        s += "\npublicKey=" + publicKey();
+//        s += "\nprivateKey=" + privateKey();
+//        s += "\nalias=" + alias();
+//        s += "\nquantitativeAmount=" + quantitativeAmount();
+//        s += "\nrelativeAmount=" + relativeAmount();
+//        s += "\ntimeAmount=" + timeAmount();
+//
+//        return s;
+//    }
 }

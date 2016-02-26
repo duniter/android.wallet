@@ -46,7 +46,6 @@ import java.util.Map;
 
 import io.ucoin.app.Application;
 import io.ucoin.app.R;
-import io.ucoin.app.adapter.WalletCursorAdapter;
 import io.ucoin.app.enumeration.SourceState;
 import io.ucoin.app.enumeration.TxDirection;
 import io.ucoin.app.fragment.currency.ContactListFragment;
@@ -65,14 +64,14 @@ import io.ucoin.app.model.http_api.TxHistory;
 import io.ucoin.app.model.sql.sqlite.Contacts;
 import io.ucoin.app.model.sql.sqlite.Currency;
 import io.ucoin.app.model.sql.sqlite.Wallets;
-import io.ucoin.app.service.Format;
+import io.ucoin.app.Format;
 import io.ucoin.app.task.FindIdentityTask;
 import io.ucoin.app.task.FindIdentityTask.SendIdentity;
 import io.ucoin.app.technical.crypto.AddressFormatException;
 
-import static io.ucoin.app.fragment.currency.WalletListFragment.WalletItemClick;
+import static io.ucoin.app.fragment.currency.WalletListFragment.Action;
 
-public class TransferActivity extends ActionBarActivity implements SendIdentity,WalletItemClick{
+public class TransferActivity extends ActionBarActivity implements SendIdentity,Action {
 
     /*
         https://github.com/ucoin-io/ucoin/blob/master/doc/Protocol.md#validity-1
@@ -100,6 +99,7 @@ public class TransferActivity extends ActionBarActivity implements SendIdentity,
     private LinearLayout layoutTansfer;
     private LinearLayout dataWallet;
     private TextView noDataWallet;
+    private IdentityContact identityConatct;
 
     private UcoinWallet walletSelected;
 
@@ -109,12 +109,15 @@ public class TransferActivity extends ActionBarActivity implements SendIdentity,
 
         setContentView(R.layout.activity_transfer);
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        unit = preferences.getInt(Application.UNIT,Application.UNIT_CLASSIC);
-        defaultUnit = preferences.getInt(Application.UNIT_DEFAULT, Application.UNIT_CLASSIC);
+        unit = Integer.parseInt(preferences.getString(Application.UNIT, Application.UNIT_CLASSIC + ""));
+        defaultUnit = Integer.parseInt(preferences.getString(Application.UNIT_DEFAULT, Application.UNIT_CLASSIC + ""));
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 
         mcurrencyId = getIntent().getExtras().getLong(Application.EXTRA_CURRENCY_ID);
+        identityConatct = (IdentityContact) getIntent().getExtras().getSerializable(Application.EXTRA_IDENTITY);
+
+
 
         try {
             setSupportActionBar(toolbar);
@@ -184,7 +187,7 @@ public class TransferActivity extends ActionBarActivity implements SendIdentity,
         mReceiverPublicKey = (EditText) findViewById(R.id.receiver_public_key);
 
         amount = (EditText) findViewById(R.id.amount);
-        defaultAmount = (TextView) findViewById(R.id.default_amount);
+        defaultAmount = (TextView) findViewById(R.id.second_amount);
         amount.addTextChangedListener(new TextWatcher(){
 
             @Override
@@ -213,7 +216,7 @@ public class TransferActivity extends ActionBarActivity implements SendIdentity,
             ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(this,
                     android.R.layout.simple_spinner_item, list);
             spinnerUnit.setAdapter(dataAdapter);
-            spinnerUnit.setSelection(Format.MINUTE);
+            spinnerUnit.setSelection(Format.Time.MINUTE);
             spinnerUnit.setVisibility(View.VISIBLE);
             spinnerUnit.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                 @Override
@@ -231,6 +234,11 @@ public class TransferActivity extends ActionBarActivity implements SendIdentity,
         }
 
         mComment = (EditText) findViewById(R.id.comment);
+
+        if (identityConatct != null) {
+            mReceiverPublicKey.setText(identityConatct.getPublicKey());
+            mContact.setText(identityConatct.getUid());
+        }
 
         actionAfterWalletSelected();
     }
@@ -250,20 +258,14 @@ public class TransferActivity extends ActionBarActivity implements SendIdentity,
                     quantitative = new BigInteger(val);
                     break;
                 case Application.UNIT_DU:
-                    quantitative = Format.relativeToQuantitative(this, new BigDecimal(val), walletSelected.udValue());
+                    quantitative = Format.Currency.relativeToQuantitative(this, new BigDecimal(val), walletSelected.udValue());
                     break;
                 case Application.UNIT_TIME:
-                    val = Format.toSecond(this, new BigDecimal(val), spinnerUnit.getSelectedItemPosition()).toString();
-                    quantitative = Format.timeToQuantitative(this,new BigDecimal(val),walletSelected.currency().dt(), walletSelected.udValue());
+                    val = Format.Time.toSecond(this, new BigDecimal(val), spinnerUnit.getSelectedItemPosition()).toString();
+                    quantitative = Format.Currency.timeToQuantitative(this, new BigDecimal(val), walletSelected.currency().dt(), walletSelected.udValue());
                     break;
             }
-            Format.changeUnit(this,
-                    quantitative,
-                    walletSelected.udValue(),
-                    walletSelected.currency().dt(),
-                    null,
-                    defaultAmount,
-                    "");
+            Format.Currency.changeUnit(this, walletSelected.currency().name(), quantitative, walletSelected.udValue(), walletSelected.currency().dt(), null, defaultAmount, "");
         }
     }
 
@@ -275,11 +277,11 @@ public class TransferActivity extends ActionBarActivity implements SendIdentity,
                     res = val.toBigInteger();
                     break;
                 case Application.UNIT_DU:
-                    res = Format.relativeToQuantitative(this, val, walletSelected.udValue());
+                    res = Format.Currency.relativeToQuantitative(this, val, walletSelected.udValue());
                     break;
                 case Application.UNIT_TIME:
-                    val = Format.toSecond(this, val, spinnerUnit.getSelectedItemPosition());
-                    res = Format.timeToQuantitative(this,val,walletSelected.currency().dt(),walletSelected.udValue());
+                    val = Format.Time.toSecond(this, val, spinnerUnit.getSelectedItemPosition());
+                    res = Format.Currency.timeToQuantitative(this, val, walletSelected.currency().dt(), walletSelected.udValue());
                     break;
             }
         }
@@ -337,10 +339,10 @@ public class TransferActivity extends ActionBarActivity implements SendIdentity,
         IntentResult scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, intent);
         if (requestCode == Application.ACTIVITY_LOOKUP) {
             getIntent().putExtra(Application.EXTRA_IS_CONTACT,false);
-            IdentityContact entity = (IdentityContact) intent.getSerializableExtra(Application.IDENTITY_LOOKUP);
-            if (entity.getPublicKey().matches(PUBLIC_KEY_REGEX)) {
-                mReceiverPublicKey.setText(entity.getPublicKey());
-                mContact.setText(entity.getUid());
+            identityConatct = (IdentityContact) intent.getSerializableExtra(Application.IDENTITY_LOOKUP);
+            if (identityConatct.getPublicKey().matches(PUBLIC_KEY_REGEX)) {
+                mReceiverPublicKey.setText(identityConatct.getPublicKey());
+                mContact.setText(identityConatct.getUid());
             } else {
                 mReceiverPublicKey.setText("");
             }
@@ -389,12 +391,7 @@ public class TransferActivity extends ActionBarActivity implements SendIdentity,
             UcoinWallets wallets = new Wallets(Application.getContext(), mcurrencyId);
             walletSelected = wallets.getById(walletId);
 
-            Format.changeUnit(this,
-                    walletSelected.quantitativeAmount(),
-                    walletSelected.udValue(),
-                    walletSelected.currency().dt(),
-                    mWalletAmount,
-                    mWalletDefaultAmount, "");
+            Format.Currency.changeUnit(this, walletSelected.currency().name(), walletSelected.quantitativeAmount(), walletSelected.udValue(), walletSelected.currency().dt(), mWalletAmount, mWalletDefaultAmount, "");
 
             mWalletAlias.setText(walletSelected.alias());
 
@@ -431,16 +428,10 @@ public class TransferActivity extends ActionBarActivity implements SendIdentity,
     }
 
     @Override
-    public void walletClick(WalletCursorAdapter walletCursorAdapter,int position) {
+    public void displayWalletFragment(Long walletId) {
         pressBack();
-        Long realId = walletCursorAdapter.getIdWallet(position);
-        getIntent().putExtra(Application.EXTRA_WALLET_ID, realId);
+        getIntent().putExtra(Application.EXTRA_WALLET_ID, walletId);
         actionAfterWalletSelected();
-    }
-
-    @Override
-    public void showIdentity(Long walletId) {
-
     }
 
     public interface DialogItemClickListener{

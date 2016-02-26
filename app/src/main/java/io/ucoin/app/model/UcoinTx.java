@@ -53,6 +53,8 @@ public interface UcoinTx extends SqlRow {
 
     void setBlock(Long block);
 
+    void setDirection(TxDirection direction);
+
     UcoinTxIssuers issuers();
 
     UcoinTxInputs inputs();

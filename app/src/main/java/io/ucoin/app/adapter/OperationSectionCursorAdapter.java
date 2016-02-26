@@ -18,7 +18,7 @@ import io.ucoin.app.enumeration.DayOfWeek;
 import io.ucoin.app.enumeration.Month;
 import io.ucoin.app.enumeration.TxDirection;
 import io.ucoin.app.enumeration.TxState;
-import io.ucoin.app.service.Format;
+import io.ucoin.app.Format;
 import io.ucoin.app.sqlite.SQLiteView;
 
 public class OperationSectionCursorAdapter extends CursorAdapter {
@@ -93,7 +93,7 @@ public class OperationSectionCursorAdapter extends CursorAdapter {
         holder.day = (TextView) view.findViewById(R.id.day);
         holder.hour = (TextView) view.findViewById(R.id.hour);
         holder.amount = (TextView) view.findViewById(R.id.amount);
-        holder.defaultAmount = (TextView) view.findViewById(R.id.default_amount);
+        holder.defaultAmount = (TextView) view.findViewById(R.id.second_amount);
         holder.comment = (TextView) view.findViewById(R.id.comment);
 
         view.setTag(holder);
@@ -107,7 +107,7 @@ public class OperationSectionCursorAdapter extends CursorAdapter {
         String d = cursor.getString(dayOfWeekIndex);
         if (d == null) d = Integer.toString(DayOfWeek.UNKNOWN.ordinal());
 
-        String dayOfWeek = DayOfWeek.fromInt(Integer.parseInt(d)).toString(context);
+        String dayOfWeek = DayOfWeek.fromInt(Integer.parseInt(d),false).toString(context);
 
         holder.day.setText(dayOfWeek + " " + cursor.getString(dayIndex));
         holder.hour.setText(cursor.getString(hourIndex));
@@ -120,13 +120,7 @@ public class OperationSectionCursorAdapter extends CursorAdapter {
             dir = "- ";
         }
 
-        Format.changeUnit(context,
-                new BigInteger(cursor.getString(qtAmountIndex)),
-                mUd,
-                delay,
-                holder.amount,
-                holder.defaultAmount,
-                dir);
+        Format.Currency.changeUnit(context, "NAN", new BigInteger(cursor.getString(qtAmountIndex)), mUd, delay, holder.amount, holder.defaultAmount, dir);
 
         holder.comment.setText(cursor.getString(commentIndex));
 

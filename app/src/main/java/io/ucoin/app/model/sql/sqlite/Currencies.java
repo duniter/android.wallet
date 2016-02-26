@@ -91,6 +91,20 @@ final public class Currencies extends Table
     }
 
     @Override
+    public ArrayList<UcoinCurrency> list() {
+        Cursor cursor = fetch();
+        ArrayList<UcoinCurrency> data = new ArrayList<>();
+        if (cursor != null) {
+            while (cursor.moveToNext()) {
+                Long id = cursor.getLong(cursor.getColumnIndex(BaseColumns._ID));
+                data.add(new Currency(mContext, id));
+            }
+            cursor.close();
+        }
+        return data;
+    }
+
+    @Override
     public Iterator<UcoinCurrency> iterator() {
         Cursor cursor = fetch();
         if (cursor != null) {

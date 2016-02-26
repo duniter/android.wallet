@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.ContactsContract;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
@@ -23,29 +24,31 @@ import java.util.Map;
 import io.ucoin.app.Application;
 import io.ucoin.app.model.UcoinCurrency;
 import io.ucoin.app.model.sql.sqlite.Currencies;
-import io.ucoin.app.service.Format;
+import io.ucoin.app.Format;
 
 public class MainActivity extends Activity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        findActivity();
+    }
 
-        LoadContactsTask loadContactsTask = new LoadContactsTask();
-        loadContactsTask.execute();
-
+    public void findActivity(){
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        Long currencyId = preferences.getLong("currency_id", -2);
-        if (currencyId == -2) {
-            startCurrencyListActivity();
-        } else if(currencyId == -1){
-            startCurrencyActivity(currencyId);
-        } else if (new Currencies(this).getById(currencyId) == null) {
-            startCurrencyListActivity();
-        } else {
-            startCurrencyActivity(currencyId);
+        boolean connected = preferences.getBoolean(Application.CONNECTION,false);
+        if(!connected) {
+            startConnectionActivity();
+        }else{
+            LoadContactsTask loadContactsTask = new LoadContactsTask();
+            loadContactsTask.execute();
+            long currencyId = preferences.getLong(Application.EXTRA_CURRENCY_ID, -2);
+            if(currencyId == -2){
+                Toast.makeText(this,"Error MainActivity findActivity",Toast.LENGTH_LONG).show();
+            }else {
+                startCurrencyActivity(currencyId);
+            }
         }
-
     }
 
     @Override
@@ -55,19 +58,33 @@ public class MainActivity extends Activity {
             finish();
             return;
         }
-
-        Long currencyId = intent.getExtras().getLong(Application.EXTRA_CURRENCY_ID);
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor editor = preferences.edit();
-        editor.putLong("currency_id", currencyId);
-        editor.apply();
-
-        startCurrencyActivity(currencyId);
+        Long currencyId;
+        switch (requestCode){
+//            case Application.ACTIVITY_CURRENCY_LIST:
+//                currencyId = intent.getExtras().getLong(Application.EXTRA_CURRENCY_ID);
+//                editor.putLong("currency_id", currencyId);
+//                editor.apply();
+//
+//                startCurrencyActivity(currencyId);
+//                break;
+            case Application.ACTIVITY_CONNECTION:
+                if(intent!=null) {
+                    currencyId = intent.getExtras().getLong(Application.EXTRA_CURRENCY_ID);
+                    editor.putLong(Application.EXTRA_CURRENCY_ID, currencyId);
+                    editor.apply();
+                }
+                editor.putBoolean(Application.CONNECTION, true);
+                editor.apply();
+                findActivity();
+                break;
+        }
     }
 
-    public void startCurrencyListActivity() {
-        Intent intent = new Intent(this, CurrencyListActivity.class);
-        startActivityForResult(intent, Application.ACTIVITY_CURRENCY_LIST);
+    public void startConnectionActivity() {
+        Intent intent = new Intent(this, ConnectionActivity.class);
+        startActivityForResult(intent, Application.ACTIVITY_CONNECTION);
     }
 
     public void startCurrencyActivity(Long currencyId) {
@@ -93,12 +110,7 @@ public class MainActivity extends Activity {
                     ContactsContract.CommonDataKinds.Website.CONTENT_ITEM_TYPE,
                     Format.CONTACT_PATH+"%"};
 
-            final Cursor cursor = contentResolver.query(
-                    ContactsContract.Data.CONTENT_URI,
-                    null,
-                    where,
-                    whereParams,
-                    null);
+            final Cursor cursor = contentResolver.query(ContactsContract.Data.CONTENT_URI, null, where, whereParams, null);
 
 
             if (cursor == null){

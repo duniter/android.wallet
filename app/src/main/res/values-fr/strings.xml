@@ -7,7 +7,8 @@
     its name should be the snake case of its main words
     -->
 
-    <string name="welcome_to_ucoin">Bienvenue dans l\'application android uCoin!</string>
+    <string name="welcome_to_ucoin">Bienvenue dans l\'application uCoin!</string>
+    <string name="welcome_description">Regardez l\'état de vos comptes en temps réel.</string>
     <string name="title_activity_account">Compte</string>
 
     <!-- Strings related to connection -->
@@ -54,7 +55,7 @@
     <string name="CANCEL">ANNULER</string>
     <string name="OK">OK</string>
     <string name="join">Joindre</string>
-    <string name="delete">Effacer</string>
+    <string name="delete">Supprimer</string>
     <string name="remove_contact">Retirer contact</string>
     <string name="remove">Enlever</string>
 
@@ -97,9 +98,9 @@
     <string name="password">Mot de passe</string>
     <string name="confirm">Confirmer</string>
     <string name="confirm_password">Confirmez le mot de passe</string>
-    <string name="pin_code">Code PIN</string>
+    <string name="pin_code">Code PIN :</string>
     <string name="add_account">Ajouter un compte</string>
-    <string name="salt">Salt</string>
+    <string name="salt">Phrase de protection (email, ...)</string>
     <string name="salt_instructions">Salt: Nous vous conseillons de choisir votre adresse e-mail personnelle en tant que valeur pour ce champ. Mais vous pouvez mettre une autre valeur: il faut juste que la taille soit suffisante pour éviter la collision clé. En général, votre e-mail personnelle est un bon choix, et est facile à retenir.</string>
     <string name="password_instructions">Mot de passe: Choisissez un mot de passe très forte, afin que personne ne puisse le trouver. Ce mot de passe ne peut pas être changé par la suite, afin de choisir soigneusement. Le mot de passe ne peut pas être récupéré. Attention à ne pas le perdre</string>
 
@@ -128,7 +129,7 @@
     <string name="no_wallet">Pas de portefeuille</string>
     <string name="sources">Sources</string>
     <string name="no_source">Aucune source</string>
-    <string name="alias_hint">alias local</string>
+    <string name="alias_hint">Nom du portefeuille</string>
     <string name="alias">Alias</string>
     <string name="add_currency">Ajouter une monnaie</string>
 
@@ -159,7 +160,7 @@
     <string name="delete_wallet">supprimer le portefeuille</string>
     <string name="create_uid">créer l\'UID</string>
     <string name="enter_identity_info">Saisissez les informations de l\'identité</string>
-    <string name="uid_hint">UID</string>
+    <string name="uid_hint">Pseudonyme</string>
     <string name="certifiers">certificateurs</string>
     <string name="certified">certifié</string>
     <string name="add_identity">Ajouter une identité</string>
@@ -257,7 +258,7 @@
     <string name="do_you_want_to_certify_this_uid">Voulez-vous certifier cette UID</string>
     <string name="circle">cercle</string>
     <string name="monetary_mass">Masse monétaire</string>
-    <string name="balance">Équilibre</string>
+    <string name="balance">Solde (tous portefeuilles)</string>
     <string name="tx_direction">Tx direction</string> <!-- traduction inconnu -->
     <string name="comment_is_not_valid">Le commentaire n\’est pas valable</string>
     <string name="amount_not_valid">Le montant n\'est pas valable</string>
@@ -266,14 +267,15 @@
     <string name="amount_must_be_positive">Le montant doit être une valeur positive</string>
     <string name="transaction_sent">Transaction envoyée</string>
     <string name="membership_sent">Adhésion envoyé</string>
-    <string name="self_certification_sent">Autocertification envoyé</string>
+    <string name="self_certification_sent">Inscription envoyé</string>
     <string name="revocation_sent">Révocation envoyé</string>
     <string name="certification_sent">Certification envoyé</string>
     <string name="current_block">Bloc courant</string>
     <string name="certification">Certification</string>
+    <string name="certifications">Certifications</string>
     <string name="no_connection">Pas de connection</string>
     <string name="leave_currency">Leave currency</string> <!-- traduction inconnu -->
-    <string name="force_sync">forcer la sync</string>
+    <string name="force_sync">Forcer la synchronisation</string>
     <string name="change_unit">Changer l\'unité</string>
     <string name="peer_prompt">Choisir un pair</string>
     <string name="select_all">Sélectionner tout</string>
@@ -293,9 +295,31 @@
         <item>Milli Seconde</item>
     </string-array>
 
+    <string-array name="list_unit">
+        <item>Monnaie principal</item>
+        <item>Dividende Universel</item>
+        <item>Crédit mutuel</item>
+    </string-array>
+
+    <string-array name="list_unit_value">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+
     <string-array name="node">
-        <item>metab.ucoin.io:9201</item>
-        <item>ucoin.twiced.fr:9101</item>
+        <item>meta_brouzouf@metab.ucoin.io:9201</item>
+        <item>zeta_brouzouf@ucoin.twiced.fr:9101</item>
+    </string-array>
+
+    <string-array name="adress">
+        <item>metab.ucoin.io</item>
+        <item>ucoin.twiced.fr</item>
+    </string-array>
+
+    <string-array name="port">
+        <item>9201</item>
+        <item>9101</item>
     </string-array>
 
     <!-- Strings related to rules currency -->
@@ -345,5 +369,28 @@
     <string name="reference">référence</string>
     <string name="with_identity">Avec Identité</string>
     <string name="without_identity">Sans Identité</string>
+    <string name="all">Tout</string>
+    <string name="hasnt_member">Ce portefeuille n\'est pas membre de la toile de confiance.</string>
+    <string name="change_precision">nombre de chiffres</string>
+    <string name="sign_wallet">Signer ce portefeuille</string>
+    <string name="connection_wallet">Connexion au portefeuille</string>
+    <string name="wallet_no_exists">Ce portefeuille n\'éxiste pas \nVeuillez créer un nouveau portefeuille</string>
+    <string name="connection">Connexion</string>
+    <string name="inscription">Inscription</string>
+    <string name="preference">Preference</string>
+    <string name="_new">Nouveau</string>
+    <string name="help">Aide</string>
+    <string name="anonymous_recording">Enregistrement anonyme</string>
+    <string name="pin_description">Un code Pin protegera vos données.</string>
+    <string name="pin_diferent">Le code Pin ne peut pas être egal à 0000 ou 1234.</string>
+    <string name="pin_code_bis">Confirmez le code PIN :</string>
+    <string name="pin_dont_match">Les codes PINs ne correspondent pas</string>
+    <string name="valid">Valider</string>
+    <string name="in_dev">En cours de réalisation</string>
+    <string name="must_be_member">Vous devez être membre pour pouvoir certifier.</string>
+    <string name="choose_wallet">Choisissez un portefeuille</string>
+    <string name="uid_alredy_exist">Ce pseudonyme existe déjà</string>
+    <string name="wallet_already_registered">Ce portefeuille est déjà inscrit</string>
+    <string name="inscription_wallet">Inscription d\'un portefeuille</string>
 
 </resources>

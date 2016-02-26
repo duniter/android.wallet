@@ -64,24 +64,25 @@ final public class Identities extends Table
         }
     }
 
-//    @Override
-//    public UcoinIdentity add(String uid, String publicKey) throws AddressFormatException {
-//        UcoinIdentity result = getIdentity();
-//
-//        if(result==null || !getIdentity().publicKey().equals(publicKey)){
-//            if(result!=null) {
-//                delete(result.id());
-//            }
-//            ContentValues values = new ContentValues();
-//            values.put(SQLiteTable.Identity.CURRENCY_ID, mCurrencyId);
-//            values.put(SQLiteTable.Identity.PUBLIC_KEY, publicKey);
-//            values.put(SQLiteTable.Identity.UID, uid);
-//            Uri uri = insert(values);
-//            result = new Identity(mContext, Long.parseLong(uri.getLastPathSegment()));
-//        }
-//
-//        return result;
-//    }
+    @Override
+    public UcoinIdentity add(String uid, String publicKey) throws AddressFormatException {
+        UcoinIdentity result = getIdentityByWallet((long) -5);
+
+        if(result==null || !getIdentity().publicKey().equals(publicKey)){
+            if(result!=null) {
+                delete(result.id());
+            }
+            ContentValues values = new ContentValues();
+            values.put(SQLiteTable.Identity.CURRENCY_ID, mCurrencyId);
+            values.put(SQLiteTable.Identity.PUBLIC_KEY, publicKey);
+            values.put(SQLiteTable.Identity.UID, uid);
+            values.put(SQLiteTable.Identity.WALLET_ID, -5);
+            Uri uri = insert(values);
+            result = new Identity(mContext, Long.parseLong(uri.getLastPathSegment()));
+        }
+
+        return result;
+    }
 
     @Override
     public UcoinIdentity addWallet(String uid, String publicKey, Long walletId) throws AddressFormatException {

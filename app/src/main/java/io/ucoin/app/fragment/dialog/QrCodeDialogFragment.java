@@ -44,7 +44,7 @@ public class QrCodeDialogFragment extends DialogFragment
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
-        return inflater.inflate(R.layout.fragment_qrcode_dialog, null);
+        return inflater.inflate(R.layout.dialog_fragment_qrcode, null);
     }
 
     @Override

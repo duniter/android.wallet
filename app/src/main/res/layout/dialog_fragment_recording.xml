@@ -1,7 +1,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="vertical">
 
     <LinearLayout
         android:id="@+id/progress_layout"
@@ -33,15 +33,12 @@
         android:paddingStart="20dp"
         android:paddingLeft="20dp">
 
-        <Switch
-            android:id="@+id/switch1"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:textOn="@string/with_identity"
-            android:textOff="@string/without_identity"/>
+        <include
+            android:id="@+id/selector_currency"
+            layout="@layout/selector_currency"/>
 
         <EditText
-            android:id="@+id/alias"
+            android:id="@+id/uid"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/alias_hint"
@@ -67,47 +64,16 @@
             android:inputType="textPassword"
             android:singleLine="true" />
 
-        <!--<EditText-->
-            <!--android:id="@+id/confirm_password"-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:layout_marginBottom="16dp"-->
-            <!--android:hint="@string/confirm_password"-->
-            <!--android:imeOptions="actionDone"-->
-            <!--android:inputType="textPassword"-->
-            <!--android:singleLine="true" />-->
+        <EditText
+            android:id="@+id/confirm_password"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/confirm_password"
+            android:imeOptions="actionDone"
+            android:inputType="textPassword"
+            android:singleLine="true" />
 
     </LinearLayout>
-
-    <RelativeLayout
-        android:id="@+id/button_layout"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:paddingBottom="8dp"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp">
-
-        <Button
-            android:id="@+id/cancel_button"
-            android:layout_width="96dp"
-            android:layout_height="48dp"
-            android:layout_centerVertical="true"
-            android:layout_toStartOf="@+id/positive_button"
-            android:background="@color/transparent"
-            android:text="@string/CANCEL"
-            android:textColor="@color/primary" />
-
-        <Button
-            android:id="@+id/positive_button"
-            android:layout_width="64dp"
-            android:layout_height="48dp"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:background="@color/transparent"
-            android:text="@string/OK"
-            android:textColor="@color/primary" />
-
-    </RelativeLayout>
 </LinearLayout>
 
 

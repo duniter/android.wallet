@@ -8,20 +8,17 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CursorAdapter;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 
+import io.ucoin.app.Format;
 import io.ucoin.app.R;
-import io.ucoin.app.fragment.currency.WalletListFragment;
 import io.ucoin.app.model.UcoinCurrency;
-import io.ucoin.app.model.UcoinIdentity;
 import io.ucoin.app.model.UcoinWallet;
-import io.ucoin.app.model.sql.sqlite.Currencies;
-import io.ucoin.app.model.sql.sqlite.Wallets;
-import io.ucoin.app.service.Format;
+import io.ucoin.app.model.sql.sqlite.Wallet;
 import io.ucoin.app.sqlite.SQLiteView;
 
 
@@ -43,6 +40,7 @@ public class WalletCursorAdapter extends CursorAdapter {
     }
 
     public View getView(int position, View convertView, ViewGroup parent) {
+        ViewHolder viewHolder;
         View v;
         if (mSectionPosition.size()>1 && mSectionPosition.containsKey(position)) {
             v = newSectionView(mContext, parent);
@@ -51,6 +49,18 @@ public class WalletCursorAdapter extends CursorAdapter {
         } else {
             if (!mCursor.moveToPosition(position - nbSection)) {
                 throw new IllegalStateException("couldn't move cursor to position " + position);
+            }
+            if (convertView == null) {
+                convertView = LayoutInflater.from(mContext)
+                        .inflate(R.layout.list_item_wallet, parent, false);
+                viewHolder = new ViewHolder();
+                viewHolder.name = (TextView) convertView.findViewById(R.id.alias);
+                viewHolder.pubkey = (TextView) convertView.findViewById(R.id.public_key);
+                viewHolder.primaryAmount = (TextView) convertView.findViewById(R.id.second_amount);
+                viewHolder.secondAmount = (TextView) convertView.findViewById(R.id.principal_amount);
+                convertView.setTag(viewHolder);
+            } else {
+                viewHolder = (ViewHolder) convertView.getTag();
             }
             v = newView(mContext, mCursor, parent);
             bindView(v, mContext, mCursor);
@@ -102,60 +112,63 @@ public class WalletCursorAdapter extends CursorAdapter {
         LayoutInflater inflater = (LayoutInflater) context
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
-        return inflater.inflate(R.layout.list_item_wallet, parent, false);
+        View rowView = inflater.inflate(R.layout.list_item_wallet, parent, false);
+        ViewHolder viewHolder = new ViewHolder();
+        viewHolder.name = (TextView) rowView.findViewById(R.id.alias);
+        viewHolder.pubkey = (TextView) rowView.findViewById(R.id.public_key);
+        viewHolder.primaryAmount = (TextView) rowView.findViewById(R.id.principal_amount);
+        viewHolder.secondAmount = (TextView) rowView.findViewById(R.id.second_amount);
+        viewHolder.is_member = (ImageView) rowView.findViewById(R.id.is_member);
+        viewHolder.progress = (LinearLayout) rowView.findViewById(R.id.progress_layout);
+        rowView.setTag(viewHolder);
+        return rowView;
     }
 
-    @Override
     public void bindView(View view, Context context, Cursor cursor) {
-        int idIndex = cursor.getColumnIndex(SQLiteView.Wallet._ID);
-        int aliasIndex = cursor.getColumnIndex(SQLiteView.Wallet.ALIAS);
-        int publicKeyIndex = cursor.getColumnIndex(SQLiteView.Wallet.PUBLIC_KEY);
-        int quantitativeAmountIndex = cursor.getColumnIndex(SQLiteView.Wallet.QUANTITATIVE_AMOUNT);
-        int relativeAmountIndex = cursor.getColumnIndex(SQLiteView.Wallet.RELATIVE_AMOUNT);
-        int timeAmountIndex = cursor.getColumnIndex(SQLiteView.Wallet.TIME_AMOUNT);
-        int currencyNameIndex = cursor.getColumnIndex(SQLiteView.Wallet.CURRENCY_NAME);
-        int udValueIndex = cursor.getColumnIndex(SQLiteView.Wallet.UD_VALUE);
+        ViewHolder holder = (ViewHolder) view.getTag();
 
-        TextView alias = (TextView) view.findViewById(R.id.alias);
-        TextView publicKey = (TextView) view.findViewById(R.id.public_key);
-        TextView qAmount = (TextView) view.findViewById(R.id.default_amount);
-        TextView rAmount = (TextView) view.findViewById(R.id.relative_amount);
-        ImageView infoIdentity = (ImageView) view.findViewById(R.id.info_identity);
+        int idIndex = cursor.getColumnIndex(SQLiteView.Wallet._ID);
+//        int currencyNameIndex = cursor.getColumnIndex(SQLiteView.Wallet.CURRENCY_NAME);
+//        ImageView infoIdentity = (ImageView) view.findViewById(R.id.info_identity);
 
         final Long walletId = cursor.getLong(idIndex);
-        UcoinCurrency cu = new Currencies(context).getByName(cursor.getString(currencyNameIndex));
 
-        UcoinWallet wallet =new Wallets(context,cu.id()).getById(walletId);
+        UcoinWallet wallet = new Wallet(context,walletId);
+
+        UcoinCurrency currency = wallet.currency();
 
         try{
-            UcoinIdentity identity = wallet.identity();
-            if(identity!=null){
-                infoIdentity.setVisibility(View.VISIBLE);
+            if(wallet.identity()!=null){
+                holder.is_member.setVisibility(View.VISIBLE);
             }else{
-                infoIdentity.setVisibility(View.GONE);
+                holder.is_member.setVisibility(View.GONE);
             }
         }catch (NullPointerException e){
 
         }
 
-        infoIdentity.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                ((WalletListFragment.WalletItemClick)activity).showIdentity(walletId);
-            }
-        });
+//        infoIdentity.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                ((WalletListFragment.Action)activity).showIdentity(walletId);
+//            }
+//        });
 
 
 
-        alias.setText(cursor.getString(aliasIndex));
-        publicKey.setText(Format.minifyPubkey(cursor.getString(publicKeyIndex)));
+        holder.name.setText(wallet.alias());
+        holder.pubkey.setText(Format.minifyPubkey(wallet.publicKey()));
 
-        Format.changeUnit(context,
-                new BigInteger(cursor.getString(quantitativeAmountIndex)),
-                new BigInteger(cursor.getString(udValueIndex)),
-                cu.dt(),
-                rAmount,
-                qAmount, "");
+        try{
+            Format.Currency.changeUnit(context, currency.name(), wallet.quantitativeAmount(), wallet.udValue(), currency.dt(), holder.primaryAmount, holder.secondAmount, "");
+            holder.progress.setVisibility(View.GONE);
+            holder.primaryAmount.setVisibility(View.VISIBLE);
+            holder.secondAmount.setVisibility(View.VISIBLE);
+        }catch (NullPointerException e) {
+            holder.progress.setVisibility(View.VISIBLE);
+            holder.primaryAmount.setVisibility(View.GONE);
+            holder.secondAmount.setVisibility(View.GONE);
+        }
     }
 
     @Override
@@ -189,5 +202,18 @@ public class WalletCursorAdapter extends CursorAdapter {
         notifyDataSetChanged();
 
         return newCursor;
+    }
+
+    public interface FinishAction{
+        public void onFinish();
+    }
+
+    private static class ViewHolder {
+        TextView name;
+        TextView pubkey;
+        TextView primaryAmount;
+        TextView secondAmount;
+        ImageView is_member;
+        LinearLayout progress;
     }
 }

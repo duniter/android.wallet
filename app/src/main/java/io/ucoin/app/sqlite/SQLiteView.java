@@ -7,16 +7,8 @@ public interface SQLiteView {
         public static final String VIEW_NAME ="currency_view";
         public static final String MEMBERS_COUNT = "members_count";
         public static final String MONETARY_MASS = "monetary_mass";
-        public static final String QUANT_BALANCE = "quantitative_balance";
-        public static final String REL_BALANCE = "relative_balance";
         public static final String QUANTITATIVE_UD = "quantitative_ud";
         public static final String CURRENT_BLOCK = "current_block";
-        public static final String BLOCK_YEAR = "current_year";
-        public static final String BLOCK_MONTH = "current_month";
-        public static final String BLOCK_DAY = "current_day";
-        public static final String BLOCK_DAY_OF_WEEK = "current_day_of_week";
-        public static final String BLOCK_HOUR = "current_hour";
-
     }
 
     final class Wallet extends SQLiteTable.Wallet {

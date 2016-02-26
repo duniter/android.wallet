@@ -26,6 +26,10 @@ final public class TxOutputs extends Table
                 new String[]{txId.toString()});
     }
 
+    public TxOutputs(Context context) {
+        this(context, null, null,null);
+    }
+
     private TxOutputs(Context context, Long txId, String selection, String[] selectionArgs) {
         this(context, txId, selection, selectionArgs, null);
     }
@@ -68,6 +72,13 @@ final public class TxOutputs extends Table
     @Override
     public UcoinTxOutput getById(Long id) {
         return new TxOutput(mContext, id);
+    }
+
+    @Override
+    public UcoinTxOutputs getByOutput(String publicKey) {
+        String selection = SQLiteTable.TxOutput.PUBLIC_KEY + "=?";
+        String[] selectionArgs = new String[]{publicKey};
+        return new TxOutputs(mContext, null, selection, selectionArgs);
     }
 
     @Override

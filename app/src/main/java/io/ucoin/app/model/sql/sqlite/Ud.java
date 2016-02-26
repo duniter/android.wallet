@@ -56,7 +56,7 @@ public class Ud extends Row
     @Override
     public DayOfWeek dayOfWeek() {
         try {
-            return DayOfWeek.fromInt(getInt(SQLiteView.Ud.DAY_OF_WEEK));
+            return DayOfWeek.fromInt(getInt(SQLiteView.Ud.DAY_OF_WEEK),false);
         } catch (Exception e) {
             return DayOfWeek.UNKNOWN;
         }

@@ -7,7 +7,8 @@
     its name should be the snake case of its main words
     -->
 
-    <string name="welcome_to_ucoin">Welcome to uCoin Android app !</string>
+    <string name="welcome_to_ucoin">Welcome to uCoin app !</string>
+    <string name="welcome_description">Look at the state of yours accounts in real time.</string>
     <string name="title_activity_account">Account</string>
 
     <!-- Strings related to connection -->
@@ -97,9 +98,9 @@
     <string name="password">Password</string>
     <string name="confirm">Confirm</string>
     <string name="confirm_password">Confirm password</string>
-    <string name="pin_code">PIN code</string>
+    <string name="pin_code">PIN code :</string>
     <string name="add_account">Add account</string>
-    <string name="salt">Salt</string>
+    <string name="salt">Sentence protection (email,...)</string>
     <string name="salt_instructions">Salt: We advice you to choose your personal e-mail as value for this
         field. But you can put any other value: it only has to carry enough entropy to avoid key
         collision. Typically, your personal e-mail is a good choice, added to the fact it is easy to
@@ -133,7 +134,7 @@
     <string name="no_wallet">No wallet</string>
     <string name="sources">Sources</string>
     <string name="no_source">No source</string>
-    <string name="alias_hint">local alias</string>
+    <string name="alias_hint">Wallet name</string>
     <string name="alias">Alias</string>
     <string name="add_currency">Add currency</string>
 
@@ -164,7 +165,7 @@
     <string name="delete_wallet">delete wallet</string>
     <string name="create_uid">create UID</string>
     <string name="enter_identity_info">Enter identity info</string>
-    <string name="uid_hint">UID</string>
+    <string name="uid_hint">Pseudonym</string>
     <string name="certifiers">certifiers</string>
     <string name="certified">certified</string>
     <string name="add_identity">Add identity</string>
@@ -262,7 +263,7 @@
     <string name="do_you_want_to_certify_this_uid">Do you want to certify this UID</string>
     <string name="circle">circle</string>
     <string name="monetary_mass">Monetary mass</string>
-    <string name="balance">Balance</string>
+    <string name="balance">Balance (All wallets)</string>
     <string name="tx_direction">Tx direction</string>
     <string name="comment_is_not_valid">The comment is not valid</string>
     <string name="amount_not_valid">Amount is not valid</string>
@@ -271,14 +272,15 @@
     <string name="amount_must_be_positive">Amount must be a positive value</string>
     <string name="transaction_sent">Transaction sent</string>
     <string name="membership_sent">Membership sent</string>
-    <string name="self_certification_sent">Self certification sent</string>
+    <string name="self_certification_sent">Inscription sent</string>
     <string name="revocation_sent">Revocation sent</string>
     <string name="certification_sent">Certification sent</string>
     <string name="current_block">Current block</string>
     <string name="certification">Certification</string>
+    <string name="certifications">Certifications</string>
     <string name="no_connection">No connection</string>
     <string name="leave_currency">Leave currency</string>
-    <string name="force_sync">force sync</string>
+    <string name="force_sync">Force synchronization</string>
     <string name="change_unit">Change Unit</string>
     <string name="peer_prompt">Choose a peer</string>
     <string name="select_all">Select all</string>
@@ -298,9 +300,31 @@
         <item>Milli Second</item>
     </string-array>
 
+    <string-array name="list_unit">
+        <item>Currency principal</item>
+        <item>Universal Dividende</item>
+        <item>Mutual Credit</item>
+    </string-array>
+
+    <string-array name="list_unit_value">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+
     <string-array name="node">
-        <item>metab.ucoin.io:9201</item>
-        <item>ucoin.twiced.fr:9101</item>
+        <item>meta_brouzouf@metab.ucoin.io:9201</item>
+        <item>zeta_brouzouf@ucoin.twiced.fr:9101</item>
+    </string-array>
+
+    <string-array name="adress">
+        <item>metab.ucoin.io</item>
+        <item>ucoin.twiced.fr</item>
+    </string-array>
+
+    <string-array name="port">
+        <item>9201</item>
+        <item>9101</item>
     </string-array>
 
     <!-- Strings related to rules currency -->
@@ -350,5 +374,28 @@
     <string name="reference">reference</string>
     <string name="with_identity">With Identity</string>
     <string name="without_identity">Without Identity</string>
+    <string name="all">All</string>
+    <string name="hasnt_member">This wallet isn\'t a member of the web of trust .</string>
+    <string name="change_precision">number of digits</string>
+    <string name="sign_wallet">Sign this wallet</string>
+    <string name="connection_wallet">Connection to wallet</string>
+    <string name="wallet_no_exists">This wallet no exists \\n Please create new wallet</string>
+    <string name="connection">Connection</string>
+    <string name="inscription">Inscription</string>
+    <string name="preference">Preference</string>
+    <string name="_new">New</string>
+    <string name="help">Help</string>
+    <string name="anonymous_recording">Anonymous record</string>
+    <string name="pin_description">A Pin code will protect your data.</string>
+    <string name="pin_diferent">The PIN code can not be equal to 0000 or 1234.</string>
+    <string name="pin_code_bis">Confirm PIN code :</string>
+    <string name="pin_dont_match">Pin codes don\'t match</string>
+    <string name="valid">Validate</string>
+    <string name="in_dev">Under construction</string>
+    <string name="must_be_member">You must be a registered member to certify.</string>
+    <string name="choose_wallet">Select a walet</string>
+    <string name="uid_alredy_exist">This pseudonym alredy exist</string>
+    <string name="wallet_already_registered">This wallet is already registered</string>
+    <string name="inscription_wallet">Wallet inscription</string>
 
 </resources>

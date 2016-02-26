@@ -5,5 +5,12 @@
     <dimen name="activity_horizontal_margin">64dp</dimen>
     <dimen name="elevation">4dp</dimen>
     <dimen name="padding">16dp</dimen>
+    <dimen name="demi_padding">8dp</dimen>
+
+    <dimen name="small_padding">4dp</dimen>
     <dimen name="margin">16dp</dimen>
+    <dimen name="number_background">40dp</dimen>
+    
+    <dimen name="welcom_text">20sp</dimen>
+    <dimen name="welcom_button">30sp</dimen>
 </resources>

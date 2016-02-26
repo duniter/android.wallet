@@ -5,7 +5,6 @@ import android.content.ContentProviderResult;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
-import android.provider.BaseColumns;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -32,9 +31,16 @@ final public class Txs extends Table
     public Txs(Context context, Long walletId) {
         this(context, walletId, SQLiteTable.Tx.WALLET_ID + "=?", new String[]{walletId.toString()});
     }
+    public Txs(Context context) {
+        this(context, null, null, null);
+    }
 
     private Txs(Context context, Long walletId, String selection, String[] selectionArgs) {
         this(context, walletId, selection, selectionArgs, null);
+    }
+
+    private Txs(Context context, String query, String[] selectionArgs) {
+        super(context, UcoinUris.REQUETE_URI, query, selectionArgs, null);
     }
 
     private Txs(Context context, Long walletId, String selection, String[] selectionArgs, String sortOrder) {
@@ -161,26 +167,6 @@ final public class Txs extends Table
 
     @Override
     public UcoinTxs add(TxHistory history) {
-        for (TxHistory.ConfirmedTx tx : history.history.received) {
-            UcoinTx localTx = getByHash(tx.hash);
-            if (localTx == null) {
-                boolean isIssuer = false;
-                for (String issuer : tx.issuers) {
-                    if (issuer.equals(wallet().publicKey())) {
-                        isIssuer = true;
-                        break;
-                    }
-                }
-                if (!isIssuer) {
-                    if (tx.time != null) add(tx, TxDirection.IN);
-                }
-            } else if (localTx.state() == TxState.PENDING) {
-                localTx.setState(TxState.CONFIRMED);
-                localTx.setTime(tx.time);
-                localTx.setBlock(tx.block_number);
-            }
-        }
-
         for (TxHistory.ConfirmedTx tx : history.history.sent) {
             UcoinTx localTx = getByHash(tx.hash);
             if (localTx == null) {
@@ -198,9 +184,32 @@ final public class Txs extends Table
                 localTx.setState(TxState.CONFIRMED);
                 localTx.setTime(tx.time);
                 localTx.setBlock(tx.block_number);
+            } else if (localTx.direction() == TxDirection.IN){
+                localTx.setDirection(TxDirection.OUT);
             }
         }
 
+        for (TxHistory.ConfirmedTx tx : history.history.received) {
+            UcoinTx localTx = getByHash(tx.hash);
+            if (localTx == null) {
+                boolean isIssuer = false;
+                for (String issuer : tx.issuers) {
+                    if (issuer.equals(wallet().publicKey())) {
+                        isIssuer = true;
+                        break;
+                    }
+                }
+                if (!isIssuer) {
+                    if (tx.time != null) add(tx, TxDirection.IN);
+                }
+            } else if (localTx.state() == TxState.PENDING) {
+                localTx.setState(TxState.CONFIRMED);
+                localTx.setTime(tx.time);
+                localTx.setBlock(tx.block_number);
+            } else if (localTx.direction() == TxDirection.OUT){
+                localTx.setDirection(TxDirection.IN);
+            }
+        }
 
         for (TxHistory.PendingTx tx : history.history.pending) {
             UcoinTx localTx = getByHash(tx.hash);
@@ -286,6 +295,43 @@ final public class Txs extends Table
     }
 
     @Override
+    public UcoinTxs getByWalletId(long walletId){
+        String query = "SELECT * " +
+                "FROM " + SQLiteView.Tx.TABLE_NAME + " WHERE " +
+                SQLiteView.Tx.WALLET_ID + "=? " +
+                "ORDER BY " + SQLiteView.Tx.TIME + " DESC";
+
+        String[] selectionArgs = new String[]{String.valueOf(walletId)};
+        return new Txs(mContext, query, selectionArgs);
+    }
+
+    @Override
+    public UcoinTxs getByPublicKey(String publicKey, long walletId){
+        String query = "SELECT * " +
+                "FROM " + SQLiteView.Tx.TABLE_NAME + " trx" +
+                " LEFT OUTER JOIN " + SQLiteTable.TxOutput.TABLE_NAME + " output " +
+                    "ON trx." + SQLiteView.Tx._ID + "=output." + SQLiteTable.TxOutput.TX_ID +
+                " LEFT OUTER JOIN " + SQLiteTable.TxIssuer.TABLE_NAME + " issuer " +
+                    "ON trx." + SQLiteView.Tx._ID + "=issuer." + SQLiteTable.TxIssuer.TX_ID +
+                " WHERE ";
+        if(walletId != (long)-1){
+            query += "trx." + SQLiteView.Tx.WALLET_ID + "=? AND ";
+        }
+        query += "( output." + SQLiteTable.TxOutput.PUBLIC_KEY + "=? OR " +
+                "issuer." + SQLiteTable.TxIssuer.PUBLIC_KEY + "=? ) " +
+                "ORDER BY trx." + SQLiteView.Tx.TIME + " DESC";
+
+        String[] selectionArgs;
+        if(walletId != (long)-1){
+            selectionArgs = new String[]{String.valueOf(walletId),publicKey,publicKey};
+        }else {
+            selectionArgs = new String[]{publicKey, publicKey};
+        }
+
+        return new Txs(mContext, query, selectionArgs);
+    }
+
+    @Override
     public UcoinWallet wallet() {
         return new Wallet(mContext, mWalletId);
     }
@@ -299,12 +345,17 @@ final public class Txs extends Table
     }
 
     @Override
+    public Cursor cursor() {
+        return fetch();
+    }
+
+    @Override
     public Iterator<UcoinTx> iterator() {
         Cursor cursor = fetch();
         if (cursor != null) {
             ArrayList<UcoinTx> data = new ArrayList<>();
             while (cursor.moveToNext()) {
-                Long id = cursor.getLong(cursor.getColumnIndex(BaseColumns._ID));
+                Long id = cursor.getLong(0);
                 data.add(new Tx(mContext, id));
             }
             cursor.close();

@@ -31,7 +31,7 @@ import io.ucoin.app.model.UcoinCurrency;
 import io.ucoin.app.model.http_api.WotLookup;
 import io.ucoin.app.model.sql.sqlite.Currencies;
 import io.ucoin.app.model.sql.sqlite.Currency;
-import io.ucoin.app.service.Format;
+import io.ucoin.app.Format;
 import io.ucoin.app.task.FindIdentityTask;
 import io.ucoin.app.task.FindIdentityTask.SendIdentity;
 
