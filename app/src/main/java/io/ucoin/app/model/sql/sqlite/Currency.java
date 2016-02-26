@@ -2,13 +2,14 @@ package io.ucoin.app.model.sql.sqlite;
 
 import android.content.Context;
 
+import java.math.BigInteger;
+
 import io.ucoin.app.UcoinUris;
 import io.ucoin.app.model.UcoinBlocks;
 import io.ucoin.app.model.UcoinContacts;
 import io.ucoin.app.model.UcoinCurrency;
 import io.ucoin.app.model.UcoinIdentity;
 import io.ucoin.app.model.UcoinPeers;
-import io.ucoin.app.model.UcoinWallet;
 import io.ucoin.app.model.UcoinWallets;
 import io.ucoin.app.sqlite.SQLiteTable;
 import io.ucoin.app.sqlite.SQLiteView;
@@ -102,8 +103,8 @@ public class Currency extends Row
     }
 
     @Override
-    public Long monetaryMass() {
-        return getLong(SQLiteView.Currency.MONETARY_MASS);
+    public BigInteger monetaryMass() {
+        return new BigInteger(getString(SQLiteView.Currency.MONETARY_MASS));
     }
 
     @Override
@@ -122,14 +123,24 @@ public class Currency extends Row
     }
 
     @Override
+    public UcoinIdentity addIdentity(String uid, String publicKey) {
+        try {
+            return new Identities(mContext, mId).add(uid, publicKey);
+        } catch (AddressFormatException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    @Override
     public UcoinBlocks blocks() {
         return new Blocks(mContext, mId);
     }
 
-    @Override
-    public UcoinIdentity addIdentity(String uid, UcoinWallet wallet) throws AddressFormatException {
-        return new Identities(mContext, mId).add(uid, wallet);
-    }
+//    @Override
+//    public UcoinIdentity addIdentity(String uid, String publicKey) throws AddressFormatException {
+//        return new Identities(mContext, mId).add(uid, publicKey);
+//    }
 
     @Override
     public UcoinWallets wallets() {
@@ -138,24 +149,6 @@ public class Currency extends Row
 
     @Override
     public String toString() {
-        String s = "CURRENCY id=" + id() + "\n";
-        s += "\ncurrency_name=" + name();
-        s += "\nc=" + c();
-        s += "\ndt=" + dt();
-        s += "\nud0=" + ud0();
-        s += "\nsigDelay=" + sigDelay();
-        s += "\nsigValidity=" + sigValidity();
-        s += "\nsigQty=" + sigQty();
-        s += "\nsigWoT=" + sigWoT();
-        s += "\nmsValidity=" + msValidity();
-        s += "\nstepMax=" + stepMax();
-        s += "\nmedianTimeBlocks=" + medianTimeBlocks();
-        s += "\navgGenTime=" + avgGenTime();
-        s += "\ndtDiffEval=" + dtDiffEval();
-        s += "\nblocksRot=" + blocksRot();
-        s += "\npercentRot=" + percentRot();
-        s += "\nidentity=" + identity();
-
-        return s;
+        return name();
     }
 }

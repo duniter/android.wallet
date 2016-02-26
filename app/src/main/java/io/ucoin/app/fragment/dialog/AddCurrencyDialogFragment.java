@@ -3,15 +3,18 @@ package io.ucoin.app.fragment.dialog;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.util.Log;
 import android.util.Patterns;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -37,6 +40,7 @@ public class AddCurrencyDialogFragment extends DialogFragment
     private EditText mPortView;
     private LinearLayout mFormLayout;
     private LinearLayout mProgressLayout;
+    private Spinner mPeerSpinner;
     private DialogInterface.OnDismissListener mOnDismissListener;
 
     public static AddCurrencyDialogFragment newInstance() {
@@ -46,7 +50,7 @@ public class AddCurrencyDialogFragment extends DialogFragment
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
-        return inflater.inflate(R.layout.fragment_add_peer_dialog, null);
+        return inflater.inflate(R.layout.dialog_fragment_add_peer, null);
     }
 
     @Override
@@ -72,6 +76,20 @@ public class AddCurrencyDialogFragment extends DialogFragment
             }
         });
 
+        mPeerSpinner= (Spinner) view.findViewById(R.id.peer_spinner);
+        mPeerSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                String value = (String) parent.getItemAtPosition(position);
+                mAddressView.setText(value.substring(0, value.indexOf(":")));
+                mPortView.setText(value.substring(value.indexOf(":") + 1, value.length()));
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                Log.i("TAG", "vide");
+            }
+        });
 
         posButton.setOnClickListener(this);
 

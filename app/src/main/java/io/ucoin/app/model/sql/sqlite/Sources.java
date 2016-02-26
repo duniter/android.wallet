@@ -43,7 +43,7 @@ final public class Sources extends Table
         values.put(SQLiteTable.Source.TYPE, source.type.name());
         values.put(SQLiteTable.Source.FINGERPRINT, source.fingerprint);
         values.put(SQLiteTable.Source.NUMBER, source.number);
-        values.put(SQLiteTable.Source.AMOUNT, source.amount);
+        values.put(SQLiteTable.Source.AMOUNT, source.amount.toString());
         values.put(SQLiteTable.Source.STATE, SourceState.AVAILABLE.name());
 
         Uri uri = insert(values);

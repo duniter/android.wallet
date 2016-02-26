@@ -44,7 +44,7 @@ public class QrCodeDialogFragment extends DialogFragment
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
-        return inflater.inflate(R.layout.fragment_qrcode_dialog, null);
+        return inflater.inflate(R.layout.dialog_fragment_qrcode, null);
     }
 
     @Override
@@ -88,8 +88,10 @@ public class QrCodeDialogFragment extends DialogFragment
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         data.moveToFirst();
-        String publicKey = data.getString(data.getColumnIndex(SQLiteTable.Wallet.PUBLIC_KEY));
-        mPublicKey.setText(publicKey);
+        String pubKey = data.getString(data.getColumnIndex(SQLiteTable.Wallet.PUBLIC_KEY));
+//        String currency = data.getString(data.getColumnIndex(SQLiteView.Wallet.CURRENCY_NAME));
+//        String publicKey = pubKey.concat(":").concat(currency);
+        mPublicKey.setText(pubKey);
 
         Display display = getActivity().getWindowManager().getDefaultDisplay();
         Point size = new Point();
@@ -98,7 +100,7 @@ public class QrCodeDialogFragment extends DialogFragment
 
         Bundle args = new Bundle();
         args.putInt("width", width);
-        args.putString("public_key", publicKey);
+        args.putString("public_key", pubKey);
         args.putInt("color", getActivity().getResources().getColor(R.color.primary));
 
         GenerateQRCodeTask task = new GenerateQRCodeTask(new GenerateQRCodeTask.OnCodeGeneratedListener() {

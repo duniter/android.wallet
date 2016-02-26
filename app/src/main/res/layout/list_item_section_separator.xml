@@ -7,7 +7,7 @@
     android:paddingEnd="16dp">
 
     <TextView
-        android:id="@+id/month_year"
+        android:id="@+id/section_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="@dimen/abc_text_size_title_material"

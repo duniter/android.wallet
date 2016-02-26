@@ -96,13 +96,14 @@ public class CurrencyWrapper implements
             if (wallet.syncBlock() < mCurrency.blocks().currentBlock().number()) {
                 w.start();
             }
+            if (wallet.identity() != null &&
+                    wallet.identity().syncBlock() < mCurrency.blocks().currentBlock().number()) {
+                IdentityWrapper iw = new IdentityWrapper(mRequestQueue, wallet.identity());
+                iw.start();
+            }
         }
 
-        if (mCurrency.identity() != null &&
-                mCurrency.identity().syncBlock() < mCurrency.blocks().currentBlock().number()) {
-            IdentityWrapper w = new IdentityWrapper(mRequestQueue, mCurrency.identity());
-            w.start();
-        }
+
 
     }
 

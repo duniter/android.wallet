@@ -20,23 +20,26 @@ public enum DayOfWeek {
         mDay = day;
     }
 
-    public static DayOfWeek fromInt(Integer day) {
-        if (day == 0)
-            return SUNDAY;
-        else if (day == 1)
-            return MONDAY;
-        else if (day == 2)
-            return TUESDAY;
-        else if (day == 3)
-            return WEDNESDAY;
-        else if (day == 4)
-            return THURSDAY;
-        else if (day == 5)
-            return FRIDAY;
-        else if (day == 6)
-            return SATURDAY;
-        else
-            return UNKNOWN;
+    public static DayOfWeek fromInt(Integer day, boolean mondayInFirst) {
+        if(mondayInFirst) {
+            if (day == 0) return MONDAY;
+            else if (day == 1) return TUESDAY;
+            else if (day == 2) return WEDNESDAY;
+            else if (day == 3) return THURSDAY;
+            else if (day == 4) return FRIDAY;
+            else if (day == 5) return SATURDAY;
+            else if (day == 6) return SUNDAY;
+            else return UNKNOWN;
+        }else {
+            if (day == 0) return SUNDAY;
+            else if (day == 1) return MONDAY;
+            else if (day == 2) return TUESDAY;
+            else if (day == 3) return WEDNESDAY;
+            else if (day == 4) return THURSDAY;
+            else if (day == 5) return FRIDAY;
+            else if (day == 6) return SATURDAY;
+            else return UNKNOWN;
+        }
     }
 
     @Override

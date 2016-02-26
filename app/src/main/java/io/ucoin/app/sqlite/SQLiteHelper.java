@@ -52,8 +52,8 @@ public class SQLiteHelper extends SQLiteOpenHelper implements SQLiteTable {
             Block.POWMIN + INTEGER + NOTNULL + COMMA +
             Block.TIME + INTEGER + NOTNULL + COMMA +
             Block.MEDIAN_TIME + INTEGER + NOTNULL + COMMA +
-            Block.DIVIDEND + INTEGER + COMMA +
-            Block.MONETARY_MASS + INTEGER + NOTNULL + COMMA +
+            Block.DIVIDEND + TEXT + COMMA +
+            Block.MONETARY_MASS + TEXT + NOTNULL + COMMA +
             Block.ISSUER + TEXT + NOTNULL + COMMA +
             Block.PREVIOUS_HASH + TEXT + NOTNULL + COMMA +
             Block.PREVIOUS_ISSUER + TEXT + NOTNULL + COMMA +
@@ -68,15 +68,16 @@ public class SQLiteHelper extends SQLiteOpenHelper implements SQLiteTable {
 
     String CREATE_TABLE_IDENTITY = "CREATE TABLE " + Identity.TABLE_NAME + "(" +
             Identity._ID + " INTEGER PRIMARY KEY AUTOINCREMENT" + COMMA +
-            Identity.CURRENCY_ID + INTEGER + UNIQUE + NOTNULL + COMMA +
-            Identity.WALLET_ID + INTEGER + NOTNULL + COMMA +
+            Identity.CURRENCY_ID + INTEGER + NOTNULL + COMMA +
+            Identity.WALLET_ID + INTEGER + UNIQUE + NOTNULL + COMMA +
+            Identity.PUBLIC_KEY + TEXT + NOTNULL + COMMA +
             Identity.SIG_DATE + INTEGER + COMMA +
             Identity.SYNC_BLOCK + INTEGER + NOTNULL + " DEFAULT 0" + COMMA +
             Identity.UID + TEXT + NOTNULL + COMMA +
-            "FOREIGN KEY (" + Identity.CURRENCY_ID + ") REFERENCES " +
-            Currency.TABLE_NAME + "(" + Currency._ID + ") ON DELETE CASCADE" + COMMA +
             "FOREIGN KEY (" + Identity.WALLET_ID + ") REFERENCES " +
-            Wallet.TABLE_NAME + "(" + Wallet._ID + ")" +
+            Wallet.TABLE_NAME + "(" + Wallet._ID + ") ON DELETE CASCADE" + COMMA +
+            "FOREIGN KEY (" + Identity.CURRENCY_ID + ") REFERENCES " +
+            Currency.TABLE_NAME + "(" + Currency._ID + ") ON DELETE CASCADE" +
             ")";
 
     String CREATE_TABLE_MEMBER = "CREATE TABLE " + Member.TABLE_NAME + "(" +
@@ -150,7 +151,7 @@ public class SQLiteHelper extends SQLiteOpenHelper implements SQLiteTable {
             Source.WALLET_ID + INTEGER + NOTNULL + COMMA +
             Source.FINGERPRINT + TEXT + NOTNULL + COMMA +
             Source.TYPE + TEXT + NOTNULL + COMMA +
-            Source.AMOUNT + INTEGER + NOTNULL + COMMA +
+            Source.AMOUNT + TEXT + NOTNULL + COMMA +
             Source.NUMBER + INTEGER + NOTNULL + COMMA +
             Source.STATE + TEXT + NOTNULL + COMMA +
             UNIQUE + "(" + Source.WALLET_ID + "," + Source.FINGERPRINT + ")" + COMMA +
@@ -164,7 +165,7 @@ public class SQLiteHelper extends SQLiteOpenHelper implements SQLiteTable {
             Ud.BLOCK + INTEGER + NOTNULL + COMMA +
             Ud.CONSUMED + TEXT + NOTNULL + COMMA +
             Ud.TIME + INTEGER + NOTNULL + COMMA +
-            Ud.QUANTITATIVE_AMOUNT + INTEGER + NOTNULL + COMMA +
+            Ud.QUANTITATIVE_AMOUNT + TEXT + NOTNULL + COMMA +
             "FOREIGN KEY (" + Ud.WALLET_ID + ") REFERENCES " +
             Wallet.TABLE_NAME + "(" + Wallet._ID + ") ON DELETE CASCADE" + COMMA +
             UNIQUE + "(" + Ud.WALLET_ID + COMMA + Ud.BLOCK + ")" +
@@ -174,10 +175,11 @@ public class SQLiteHelper extends SQLiteOpenHelper implements SQLiteTable {
             Contact._ID + " INTEGER PRIMARY KEY AUTOINCREMENT" + COMMA +
             Contact.CURRENCY_ID + INTEGER + NOTNULL + COMMA +
             Contact.NAME + TEXT + NOTNULL + COMMA +
+            Contact.UID + TEXT + NOTNULL + COMMA +
             Contact.PUBLIC_KEY + TEXT + NOTNULL + COMMA +
             "FOREIGN KEY (" + Contact.CURRENCY_ID + ") REFERENCES " +
             Currency.TABLE_NAME + "(" + Currency._ID + ") ON DELETE CASCADE" + COMMA +
-            UNIQUE + "(" + Contact.CURRENCY_ID + COMMA + Contact.NAME + ")" +
+            UNIQUE + "(" + Contact.CURRENCY_ID + COMMA + Contact.UID + ")" +
             ")";
 
     String CREATE_TABLE_TX = "CREATE TABLE " + Tx.TABLE_NAME + "(" +
@@ -190,7 +192,7 @@ public class SQLiteHelper extends SQLiteOpenHelper implements SQLiteTable {
             Tx.BLOCK + INTEGER + NOTNULL + COMMA +
             Tx.TIME + INTEGER + NOTNULL + COMMA +
             Tx.STATE + TEXT + NOTNULL + COMMA +
-            Tx.QUANTITATIVE_AMOUNT + INTEGER + NOTNULL + COMMA +
+            Tx.QUANTITATIVE_AMOUNT + TEXT + NOTNULL + COMMA +
             "FOREIGN KEY (" + Tx.WALLET_ID + ") REFERENCES " +
             Wallet.TABLE_NAME + "(" + Wallet._ID + ") ON DELETE CASCADE" + COMMA +
             UNIQUE + "(" + Tx.WALLET_ID + COMMA + Tx.HASH + ")" +
@@ -226,7 +228,7 @@ public class SQLiteHelper extends SQLiteOpenHelper implements SQLiteTable {
             TxInput.TYPE + TEXT + NOTNULL + COMMA +
             TxInput.NUMBER + INTEGER + NOTNULL + COMMA +
             TxInput.FINGERPRINT + TEXT + NOTNULL + COMMA +
-            TxInput.AMOUNT + INTEGER + NOTNULL + COMMA +
+            TxInput.AMOUNT + TEXT + NOTNULL + COMMA +
             "FOREIGN KEY (" + TxInput.TX_ID + ") REFERENCES " +
             Tx.TABLE_NAME + "(" + Tx._ID + ") ON DELETE CASCADE" +
             ")";
@@ -235,7 +237,7 @@ public class SQLiteHelper extends SQLiteOpenHelper implements SQLiteTable {
             TxOutput._ID + " INTEGER PRIMARY KEY AUTOINCREMENT" + COMMA +
             TxOutput.TX_ID + INTEGER + NOTNULL + COMMA +
             TxOutput.PUBLIC_KEY + TEXT + NOTNULL + COMMA +
-            TxOutput.AMOUNT + INTEGER + NOTNULL + COMMA +
+            TxOutput.AMOUNT + TEXT + NOTNULL + COMMA +
             "FOREIGN KEY (" + TxOutput.TX_ID + ") REFERENCES " +
             Tx.TABLE_NAME + "(" + Tx._ID + ") ON DELETE CASCADE" + COMMA +
             UNIQUE + "(" + TxOutput.TX_ID + COMMA + TxOutput.PUBLIC_KEY + ")" +
@@ -271,7 +273,7 @@ public class SQLiteHelper extends SQLiteOpenHelper implements SQLiteTable {
             Operation.WALLET_ID + INTEGER + NOTNULL + COMMA +
             Operation.DIRECTION + TEXT + NOTNULL + COMMA +
             Operation.COMMENT + TEXT + COMMA +
-            Operation.QUANTITATIVE_AMOUNT + INTEGER + NOTNULL + COMMA +
+            Operation.QUANTITATIVE_AMOUNT + TEXT + NOTNULL + COMMA +
             Operation.BLOCK + INTEGER + NOTNULL + COMMA +
             Operation.TIME + INTEGER + NOTNULL + COMMA +
             Operation.STATE + TEXT + COMMA +
@@ -509,16 +511,7 @@ public class SQLiteHelper extends SQLiteOpenHelper implements SQLiteTable {
                     "last_ud_block." + Block.DIVIDEND + AS + SQLiteView.Currency.QUANTITATIVE_UD + COMMA +
                     "current_block." + Block.MONETARY_MASS + AS + SQLiteView.Currency.MONETARY_MASS + COMMA +
                     "current_block." + Block.MEMBERS_COUNT + AS + SQLiteView.Currency.MEMBERS_COUNT + COMMA +
-                    "current_block." + Block.NUMBER + AS + SQLiteView.Currency.CURRENT_BLOCK + COMMA +
-
-                    "strftime('%Y', datetime(" + "current_block." + Block.TIME + ", 'unixepoch', 'localtime'))" + AS + SQLiteView.Currency.BLOCK_YEAR + COMMA +
-                    "strftime('%m', datetime(" + "current_block." + Block.TIME + ", 'unixepoch', 'localtime'))" + AS + SQLiteView.Currency.BLOCK_MONTH + COMMA +
-                    "strftime('%d', datetime(" + "current_block." + Block.TIME + ", 'unixepoch', 'localtime'))" + AS + SQLiteView.Currency.BLOCK_DAY + COMMA +
-                    "strftime('%w', datetime(" + "current_block." + Block.TIME + ", 'unixepoch', 'localtime'))" + AS + SQLiteView.Currency.BLOCK_DAY_OF_WEEK + COMMA +
-                    "strftime('%H:%M:%S', datetime(" + "current_block." + Block.TIME + ", 'unixepoch', 'localtime'))" + AS + SQLiteView.Currency.BLOCK_HOUR + COMMA +
-
-
-                    "total.total_amount" + AS + SQLiteView.Currency.QUANT_BALANCE +
+                    "current_block." + Block.NUMBER + AS + SQLiteView.Currency.CURRENT_BLOCK +
 
                     " FROM " + Currency.TABLE_NAME +
                     " LEFT JOIN (SELECT " + Block.CURRENCY_ID + COMMA + "MAX(" + Block.NUMBER + ") AS " + Block.NUMBER + COMMA + Block.MONETARY_MASS + COMMA + Block.MEMBERS_COUNT + COMMA + Block.TIME +
@@ -530,13 +523,7 @@ public class SQLiteHelper extends SQLiteOpenHelper implements SQLiteTable {
                     " FROM " + Block.TABLE_NAME +
                     " WHERE " + Block.DIVIDEND + " IS NOT NULL" +
                     " GROUP BY " + Block.CURRENCY_ID + ") AS last_ud_block" +
-                    " ON " + Currency.TABLE_NAME + DOT + Currency._ID + "= last_ud_block." + Block.CURRENCY_ID +
-
-                    " LEFT JOIN (SELECT " + Wallet.CURRENCY_ID + COMMA + "SUM(" + Source.AMOUNT + ") AS total_amount" +
-                    " FROM " + Wallet.TABLE_NAME + COMMA + Source.TABLE_NAME +
-                    " WHERE " + Wallet.TABLE_NAME + DOT + Wallet._ID + "=" + Source.TABLE_NAME + DOT + Source.WALLET_ID +
-                    " GROUP BY " + Wallet.CURRENCY_ID + ") AS total" +
-                    " ON " + Currency.TABLE_NAME + DOT + Currency._ID + "= total." + Wallet.CURRENCY_ID;
+                    " ON " + Currency.TABLE_NAME + DOT + Currency._ID + "= last_ud_block." + Block.CURRENCY_ID;
             db.execSQL(CREATE_VIEW_CURRENCY);
 
             String CREATE_VIEW_WALLET = "CREATE VIEW " + SQLiteView.Wallet.VIEW_NAME +
@@ -551,7 +538,14 @@ public class SQLiteHelper extends SQLiteOpenHelper implements SQLiteTable {
                     Wallet.TABLE_NAME + DOT + Wallet.SYNC_BLOCK + AS + SQLiteView.Wallet.SYNC_BLOCK + COMMA +
                     Block.TABLE_NAME + DOT + Block.DIVIDEND + AS + SQLiteView.Wallet.UD_VALUE + COMMA +
                     " IFNULL(SUM (" + Source.TABLE_NAME + DOT + Source.AMOUNT + "), 0)" + AS + SQLiteView.Wallet.QUANTITATIVE_AMOUNT + COMMA +
-                    " ROUND ( CAST (IFNULL(SUM (" + Source.TABLE_NAME + DOT + Source.AMOUNT + "), 0) AS REAL) / " + Block.TABLE_NAME + DOT + Block.DIVIDEND + ", 8)" + AS + SQLiteView.Wallet.RELATIVE_AMOUNT +
+                    " ROUND ( IFNULL(SUM (" + Source.TABLE_NAME + DOT + Source.AMOUNT + "), 0) / " + Block.TABLE_NAME + DOT + Block.DIVIDEND + ", 8)" + AS + SQLiteView.Wallet.RELATIVE_AMOUNT + COMMA +
+                    " ROUND ( " +
+                    "IFNULL(SUM (" + Source.TABLE_NAME + DOT + Source.AMOUNT + "), 0)" +
+                    " * " +
+                    Currency.TABLE_NAME + DOT + Currency.DT +
+                    " / " +
+                    Block.TABLE_NAME + DOT + Block.DIVIDEND +
+                    ", 16)" + AS + SQLiteView.Wallet.TIME_AMOUNT +
                     " FROM " + Wallet.TABLE_NAME +
 
                     " LEFT JOIN " + Currency.TABLE_NAME +
@@ -648,7 +642,15 @@ public class SQLiteHelper extends SQLiteOpenHelper implements SQLiteTable {
                     Operation.TABLE_NAME + DOT + Operation.DAY_OF_WEEK + AS + SQLiteView.Operation.DAY_OF_WEEK + COMMA +
                     Operation.TABLE_NAME + DOT + Operation.HOUR + AS + SQLiteView.Operation.HOUR + COMMA +
                     "ROUND (CAST (" + Operation.TABLE_NAME + DOT + Operation.QUANTITATIVE_AMOUNT + " AS REAL ) / ud_block_then." + Block.DIVIDEND + ", 8)" +
-                    AS + SQLiteView.Operation.RELATIVE_AMOUNT_THEN +
+                    AS + SQLiteView.Operation.RELATIVE_AMOUNT_THEN + COMMA +
+                    " ROUND ( CAST (" +
+                    Operation.TABLE_NAME + DOT + Operation.QUANTITATIVE_AMOUNT + " AS REAL )" +
+                    " * " +
+                    Currency.TABLE_NAME + DOT + Currency.DT +
+                    " / " +
+                    "ud_block_then" + DOT + Block.DIVIDEND +
+                    ", 8)" + AS + SQLiteView.Operation.TIME_AMOUNT_THEN +
+
 
                     " FROM " + Operation.TABLE_NAME +
                     " LEFT JOIN " + Wallet.TABLE_NAME +
@@ -848,6 +850,7 @@ public class SQLiteHelper extends SQLiteOpenHelper implements SQLiteTable {
                     Identity.TABLE_NAME + DOT + Identity._ID + AS + SQLiteView.Identity._ID + COMMA +
                     Identity.TABLE_NAME + DOT + Identity.CURRENCY_ID + AS + SQLiteView.Identity.CURRENCY_ID + COMMA +
                     Identity.TABLE_NAME + DOT + Identity.WALLET_ID + AS + SQLiteView.Identity.WALLET_ID + COMMA +
+                    Identity.TABLE_NAME + DOT + Identity.PUBLIC_KEY + AS + SQLiteView.Identity.PUBLIC_KEY + COMMA +
                     Identity.TABLE_NAME + DOT + Identity.UID + AS + SQLiteView.Identity.UID + COMMA +
                     Identity.TABLE_NAME + DOT + Identity.SIG_DATE + AS + SQLiteView.Identity.SIG_DATE + COMMA +
                     Identity.TABLE_NAME + DOT + Identity.SYNC_BLOCK + AS + SQLiteView.Identity.SYNC_BLOCK + COMMA +

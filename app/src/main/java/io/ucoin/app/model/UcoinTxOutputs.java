@@ -9,4 +9,6 @@ public interface UcoinTxOutputs extends SqlTable, Iterable<UcoinTxOutput> {
     UcoinTxOutput add(String publicKey, Long amount);
 
     UcoinTxOutput getById(Long id);
+
+    UcoinTxOutputs getByOutput(String publicKey);
 }

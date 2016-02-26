@@ -12,7 +12,6 @@ import io.ucoin.app.model.UcoinIdentity;
 import io.ucoin.app.model.UcoinMembers;
 import io.ucoin.app.model.UcoinMemberships;
 import io.ucoin.app.model.UcoinSelfCertifications;
-import io.ucoin.app.model.UcoinWallet;
 import io.ucoin.app.sqlite.SQLiteTable;
 import io.ucoin.app.sqlite.SQLiteView;
 
@@ -30,8 +29,8 @@ public class Identity extends Row
     }
 
     @Override
-    public Long walletId() {
-        return getLong(SQLiteView.Identity.WALLET_ID);
+    public String publicKey() {
+        return getString(SQLiteView.Identity.PUBLIC_KEY);
     }
 
     @Override
@@ -119,11 +118,6 @@ public class Identity extends Row
     }
 
     @Override
-    public UcoinWallet wallet() {
-        return new Wallet(mContext, walletId());
-    }
-
-    @Override
     public UcoinMemberships memberships() {
         return new Memberships(mContext, mId);
     }
@@ -148,9 +142,8 @@ public class Identity extends Row
         String s = "\nIDENTITY id=" + ((id() == null) ? "not in database" : id()) + "\n";
         s += "\nsigDate=" + sigDate();
         s += "\ncurrencyId=" + currencyId();
-        s += "\nwalletId=" + walletId();
+        s += "\npublicKey=" + publicKey();
         s += "\nuid=" + uid();
-        s += "\n\twallet=" + wallet().toString();
 
         return s;
     }

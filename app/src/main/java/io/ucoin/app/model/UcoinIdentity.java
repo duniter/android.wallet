@@ -6,7 +6,7 @@ import io.ucoin.app.enumeration.MembershipType;
 public interface UcoinIdentity extends SqlRow {
     Long currencyId();
 
-    Long walletId();
+    String publicKey();
 
     String uid();
 
@@ -40,8 +40,6 @@ public interface UcoinIdentity extends SqlRow {
     void setSyncBlock(Long block);
 
     UcoinCurrency currency();
-
-    UcoinWallet wallet();
 
     UcoinCertifications certifications();
 

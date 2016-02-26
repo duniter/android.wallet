@@ -24,6 +24,11 @@ public class Contact extends Row
     }
 
     @Override
+    public String uid() {
+        return getString(SQLiteTable.Contact.UID);
+    }
+
+    @Override
     public String publicKey() {
         return getString(SQLiteTable.Contact.PUBLIC_KEY);
     }

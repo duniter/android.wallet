@@ -1,13 +1,15 @@
 package io.ucoin.app.activity;
 
-import android.app.LoaderManager;
-import android.content.CursorLoader;
+import android.app.DialogFragment;
+import android.app.Fragment;
+import android.app.FragmentManager;
 import android.content.Intent;
-import android.content.Loader;
+import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.database.Cursor;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
@@ -17,8 +19,13 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -31,28 +38,40 @@ import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 
 import java.math.BigDecimal;
-import java.text.DecimalFormat;
+import java.math.BigInteger;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import io.ucoin.app.Application;
 import io.ucoin.app.R;
-import io.ucoin.app.UcoinUris;
 import io.ucoin.app.enumeration.SourceState;
 import io.ucoin.app.enumeration.TxDirection;
+import io.ucoin.app.fragment.currency.ContactListFragment;
+import io.ucoin.app.fragment.currency.WalletListFragment;
+import io.ucoin.app.fragment.dialog.ConverterDialog;
+import io.ucoin.app.fragment.dialog.ListTransferDialog;
+import io.ucoin.app.model.IdentityContact;
+import io.ucoin.app.model.UcoinContact;
+import io.ucoin.app.model.UcoinContacts;
 import io.ucoin.app.model.UcoinEndpoint;
 import io.ucoin.app.model.UcoinSource;
 import io.ucoin.app.model.UcoinWallet;
+import io.ucoin.app.model.UcoinWallets;
 import io.ucoin.app.model.document.Transaction;
 import io.ucoin.app.model.http_api.TxHistory;
-import io.ucoin.app.model.http_api.WotLookup;
-import io.ucoin.app.model.sql.sqlite.Wallet;
-import io.ucoin.app.sqlite.SQLiteTable;
-import io.ucoin.app.sqlite.SQLiteView;
+import io.ucoin.app.model.sql.sqlite.Contacts;
+import io.ucoin.app.model.sql.sqlite.Currency;
+import io.ucoin.app.model.sql.sqlite.Wallets;
+import io.ucoin.app.Format;
+import io.ucoin.app.task.FindIdentityTask;
+import io.ucoin.app.task.FindIdentityTask.SendIdentity;
 import io.ucoin.app.technical.crypto.AddressFormatException;
 
-public class TransferActivity extends ActionBarActivity
-        implements LoaderManager.LoaderCallbacks<Cursor> {
+import static io.ucoin.app.fragment.currency.WalletListFragment.Action;
+
+public class TransferActivity extends ActionBarActivity implements SendIdentity,Action {
 
     /*
         https://github.com/ucoin-io/ucoin/blob/master/doc/Protocol.md#validity-1
@@ -62,26 +81,43 @@ public class TransferActivity extends ActionBarActivity
     private static final String COMMENT_REGEX = "^[\\p{Alnum}\\p{Space}{\\-_:/;\\*\\[\\]\\(\\)\\?\\!\\^\\+=@&~\\#\\{\\}\\|\\\\<>%\\.}]{0,255}";
     private static final String AMOUNT_REGEX = "^[0-9]{1,3}(\\.[0-9]{0,8})?$";
     private static final String PUBLIC_KEY_REGEX = "[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{43,44}$";
+    public static final String SEARCH_IDENTITY = "search_identity";
     private TextView mWalletAlias;
-    private TextView mWalletRelAmount;
-    private TextView mWalletQtAmount;
-    private TextView mReceiverUid;
+    private TextView mWalletAmount;
+    private TextView mWalletDefaultAmount;
+    private TextView mContact;
     private EditText mReceiverPublicKey;
-    private EditText mRelAmount;
-    private TextView mQtAmount;
+    private TextView defaultAmount;
+    private EditText amount;
     private EditText mComment;
-    private BigDecimal mQuantitativeUD;
-    private Cursor mWalletCursor;
-    private ImageButton mLookupButton;
     private MenuItem mTransferMenuItem;
+    private Long mcurrencyId;
+    private Spinner spinnerUnit;
+    private int unit;
+    private int defaultUnit;
+    private Currency currency;
+    private LinearLayout layoutTansfer;
+    private LinearLayout dataWallet;
+    private TextView noDataWallet;
+    private IdentityContact identityConatct;
+
+    private UcoinWallet walletSelected;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_transfer);
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        unit = Integer.parseInt(preferences.getString(Application.UNIT, Application.UNIT_CLASSIC + ""));
+        defaultUnit = Integer.parseInt(preferences.getString(Application.UNIT_DEFAULT, Application.UNIT_CLASSIC + ""));
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+
+        mcurrencyId = getIntent().getExtras().getLong(Application.EXTRA_CURRENCY_ID);
+        identityConatct = (IdentityContact) getIntent().getExtras().getSerializable(Application.EXTRA_IDENTITY);
+
+
 
         try {
             setSupportActionBar(toolbar);
@@ -90,8 +126,46 @@ public class TransferActivity extends ActionBarActivity
         }
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        mLookupButton = (ImageButton) findViewById(R.id.action_lookup);
-        mLookupButton.setOnClickListener(new View.OnClickListener() {
+        final LinearLayout mWallet = (LinearLayout) findViewById(R.id.wallet);
+        mWallet.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                actionWallet();
+            }
+        });
+
+        RelativeLayout layoutContact = (RelativeLayout) findViewById(R.id.layout_contact);
+        layoutContact.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mReceiverPublicKey.requestFocus();
+            }
+        });
+
+        RelativeLayout layoutAmount = (RelativeLayout) findViewById(R.id.layout_amount);
+        layoutAmount.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                amount.requestFocus();
+            }
+        });
+
+        layoutTansfer = (LinearLayout) findViewById(R.id.layout_transfer);
+        dataWallet = (LinearLayout) findViewById(R.id.data_wallet);
+        noDataWallet = (TextView) findViewById(R.id.no_data_wallet);
+
+        mContact = (TextView) findViewById(R.id.contact);
+
+        ImageButton mCalculate = (ImageButton) findViewById(R.id.action_calcul);
+        mCalculate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                actionAmount();
+            }
+        });
+
+        ImageButton mSearchButton = (ImageButton) findViewById(R.id.action_lookup);
+        mSearchButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 actionLookup();
@@ -107,82 +181,123 @@ public class TransferActivity extends ActionBarActivity
         });
 
         mWalletAlias = (TextView) findViewById(R.id.wallet_alias);
-        mWalletRelAmount = (TextView) findViewById(R.id.wallet_relative_amount);
-        mWalletQtAmount = (TextView) findViewById(R.id.wallet_qt_amount);
-        mWalletAlias = (TextView) findViewById(R.id.wallet_alias);
-        mReceiverUid = (TextView) findViewById(R.id.receiver_uid);
+        mWalletAmount = (TextView) findViewById(R.id.wallet_amount);
+        mWalletDefaultAmount = (TextView) findViewById(R.id.wallet_default_amount);
+
         mReceiverPublicKey = (EditText) findViewById(R.id.receiver_public_key);
-        mQtAmount = (TextView) findViewById(R.id.qt_amount);
-        mRelAmount = (EditText) findViewById(R.id.rel_amount);
-        mRelAmount.addTextChangedListener(new TextWatcher() {
+
+        amount = (EditText) findViewById(R.id.amount);
+        defaultAmount = (TextView) findViewById(R.id.second_amount);
+        amount.addTextChangedListener(new TextWatcher(){
+
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
             }
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-
+                Long walletId = getIntent().getLongExtra(Application.EXTRA_WALLET_ID,-1);
+                if(walletId.equals(Long.valueOf(-1))){
+                    dataWallet.requestFocus();
+                }else {
+                    majDefaultAmount();
+                }
             }
 
             @Override
             public void afterTextChanged(Editable s) {
-                String text = s.toString();
 
-                if (text.isEmpty()) {
-                    mQtAmount.setText("");
-                    return;
-                }
-
-                if (!text.matches(AMOUNT_REGEX)) {
-                    s.delete(s.length() - 1, s.length());
-                    return;
-                }
-
-
-                if (mQuantitativeUD != null) {
-                    BigDecimal amount = new BigDecimal(s.toString());
-                    amount = amount.multiply(mQuantitativeUD);
-
-                    DecimalFormat formatter = new DecimalFormat("#,###");
-                    mQtAmount.setText(formatter.format(amount.longValue()));
-                }
             }
         });
+        spinnerUnit = (Spinner) findViewById(R.id.spinner_unit);
+        if(unit==Application.UNIT_TIME){
+            List list = Arrays.asList(getResources().getStringArray(R.array.list_unit_time));
+            ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(this,
+                    android.R.layout.simple_spinner_item, list);
+            spinnerUnit.setAdapter(dataAdapter);
+            spinnerUnit.setSelection(Format.Time.MINUTE);
+            spinnerUnit.setVisibility(View.VISIBLE);
+            spinnerUnit.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                    majDefaultAmount();
+                }
+
+                @Override
+                public void onNothingSelected(AdapterView<?> parent) {
+
+                }
+            });
+        }else{
+            spinnerUnit.setVisibility(View.GONE);
+        }
+
         mComment = (EditText) findViewById(R.id.comment);
-        mComment.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
+        if (identityConatct != null) {
+            mReceiverPublicKey.setText(identityConatct.getPublicKey());
+            mContact.setText(identityConatct.getUid());
+        }
+
+        actionAfterWalletSelected();
+    }
+
+    private void majDefaultAmount(){
+        String val = amount.getText().toString();
+        if(val.equals("") || val.equals(" ") || val.equals(".")){
+            val="0";
+        }
+        if(val.substring(0,1).equals(".")){
+            val="0"+val;
+        }
+        if(unit!=defaultUnit) {
+            BigInteger quantitative = null;
+            switch (unit){
+                case Application.UNIT_CLASSIC:
+                    quantitative = new BigInteger(val);
+                    break;
+                case Application.UNIT_DU:
+                    quantitative = Format.Currency.relativeToQuantitative(this, new BigDecimal(val), walletSelected.udValue());
+                    break;
+                case Application.UNIT_TIME:
+                    val = Format.Time.toSecond(this, new BigDecimal(val), spinnerUnit.getSelectedItemPosition()).toString();
+                    quantitative = Format.Currency.timeToQuantitative(this, new BigDecimal(val), walletSelected.currency().dt(), walletSelected.udValue());
+                    break;
             }
+            Format.Currency.changeUnit(this, walletSelected.currency().name(), quantitative, walletSelected.udValue(), walletSelected.currency().dt(), null, defaultAmount, "");
+        }
+    }
 
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-
+    private BigInteger toQuantitative(BigDecimal val){
+        BigInteger res = null;
+        if(currency!=null) {
+            switch (unit) {
+                case Application.UNIT_CLASSIC:
+                    res = val.toBigInteger();
+                    break;
+                case Application.UNIT_DU:
+                    res = Format.Currency.relativeToQuantitative(this, val, walletSelected.udValue());
+                    break;
+                case Application.UNIT_TIME:
+                    val = Format.Time.toSecond(this, val, spinnerUnit.getSelectedItemPosition());
+                    res = Format.Currency.timeToQuantitative(this, val, walletSelected.currency().dt(), walletSelected.udValue());
+                    break;
             }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-                String text = s.toString();
-
-                if (text.isEmpty()) {
-                    mQtAmount.setText("");
-                    return;
-                }
-
-                if (!text.matches(COMMENT_REGEX)) {
-                    s.delete(s.length() - 1, s.length());
-                    return;
-                }
-            }
-        });
-
-        getLoaderManager().initLoader(0, getIntent().getExtras(), this);
+        }
+        return res;
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.toolbar_transfer, menu);
         mTransferMenuItem = menu.findItem(R.id.action_transfer);
+        int bsEntryCount = getFragmentManager().getBackStackEntryCount();
+        if(bsEntryCount>=1) {
+            mTransferMenuItem.setVisible(false);
+        }else{
+            mTransferMenuItem.setVisible(true);
+        }
         return true;
     }
 
@@ -190,13 +305,30 @@ public class TransferActivity extends ActionBarActivity
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                super.onBackPressed();
+                pressBack();
                 return true;
             case R.id.action_transfer:
                 actionTransfer();
                 return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void pressBack(){
+        int bsEntryCount = getFragmentManager().getBackStackEntryCount();
+        if(bsEntryCount>=1) {
+            String currentFragment = getFragmentManager()
+                    .getBackStackEntryAt(bsEntryCount - 1)
+                    .getName();
+
+            Fragment fragment = getFragmentManager().findFragmentByTag(currentFragment);
+            getFragmentManager().beginTransaction().remove(fragment).commit();
+            getFragmentManager().popBackStack();
+            layoutTansfer.setVisibility(View.VISIBLE);
+            ((View)layoutTansfer.getParent()).findViewById(R.id.frame_content).setVisibility(View.GONE);
+        }else{
+            super.onBackPressed();
+        }
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
@@ -206,67 +338,138 @@ public class TransferActivity extends ActionBarActivity
 
         IntentResult scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, intent);
         if (requestCode == Application.ACTIVITY_LOOKUP) {
-            WotLookup.Result result = (WotLookup.Result) intent.getExtras().getSerializable(WotLookup.Result.class.getSimpleName());
-            if (result.pubkey.matches(PUBLIC_KEY_REGEX)) {
-
-                mReceiverUid.setVisibility(View.VISIBLE);
-                mReceiverPublicKey.setText(result.pubkey);
-                mReceiverUid.setText(result.uids[0].uid);
+            getIntent().putExtra(Application.EXTRA_IS_CONTACT,false);
+            identityConatct = (IdentityContact) intent.getSerializableExtra(Application.IDENTITY_LOOKUP);
+            if (identityConatct.getPublicKey().matches(PUBLIC_KEY_REGEX)) {
+                mReceiverPublicKey.setText(identityConatct.getPublicKey());
+                mContact.setText(identityConatct.getUid());
             } else {
-                mReceiverUid.setVisibility(View.GONE);
                 mReceiverPublicKey.setText("");
             }
         } else {
-            mReceiverUid.setVisibility(View.GONE);
             if (scanResult.getContents().matches(PUBLIC_KEY_REGEX)) {
-                mReceiverPublicKey.setText(scanResult.getContents());
+                mContact.setText("Find by Qr Code");
+                Map<String, String> data = Format.parseUri(scanResult.getContents());
+
+                String uid = Format.isNull(data.get(Format.UID));
+                String publicKey = Format.isNull(data.get(Format.PUBLICKEY));
+                String currencyName = Format.isNull(data.get(Format.CURRENCY));
+
+                mReceiverPublicKey.setText(publicKey);
+                if(uid.isEmpty()) {
+                    FindIdentityTask findIdentityTask = new FindIdentityTask(this, mcurrencyId, publicKey, this);
+                    findIdentityTask.execute();
+                }else{
+                    mContact.setText(uid);
+                }
             } else
                 mReceiverPublicKey.setText("");
         }
     }
 
-    @Override
-    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-
-        Long walletId = args.getLong(Application.EXTRA_WALLET_ID);
-        String selection;
-        String selectionArgs[];
-
-        selection = SQLiteView.Wallet._ID + "=?";
-        selectionArgs = new String[]{walletId.toString()};
-
-        return new CursorLoader(
-                this,
-                UcoinUris.WALLET_URI,
-                null, selection, selectionArgs,
-                SQLiteTable.Wallet._ID + " ASC");
+    public void showDialog(int type,Cursor list){
+        DialogFragment dialog= null;
+        Long walletId = getIntent().getLongExtra(Application.EXTRA_WALLET_ID,-1);
+        if(walletSelected!=null && !walletId.equals(Long.valueOf(-1))){
+            dialog = new ConverterDialog(
+                    walletSelected.udValue(),
+                    currency.dt(), amount, spinnerUnit,walletSelected.currency().name());
+        }
+        if(dialog!=null){
+            dialog.show(getFragmentManager(), "listDialog");
+        }
     }
 
-    @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        if (data.moveToFirst()) {
-            mWalletCursor = data;
-            mWalletAlias.setText(data.getString(data.getColumnIndex(SQLiteView.Wallet.ALIAS)));
-            mWalletRelAmount.setText(String.format("%.8f", data.getDouble(data.getColumnIndex(SQLiteView.Wallet.RELATIVE_AMOUNT))));
-            DecimalFormat formatter = new DecimalFormat("#,###");
-            mWalletQtAmount.setText(formatter.format(data.getLong(data.getColumnIndex(SQLiteView.Wallet.QUANTITATIVE_AMOUNT))));
-            mQuantitativeUD = new BigDecimal(data.getString(data.getColumnIndex(SQLiteView.Wallet.UD_VALUE)));
-            setTitle(getResources().getString(R.string.transfer) +
-                    " "
-                    + data.getString(data.getColumnIndex(SQLiteView.Wallet.CURRENCY_NAME)));
-            mLookupButton.setEnabled(true);
+    public void actionAfterWalletSelected(){
+        Long walletId = getIntent().getLongExtra(Application.EXTRA_WALLET_ID,-1);
+        if(walletId.equals(Long.valueOf(-1))){
+            dataWallet.setVisibility(View.GONE);
+            noDataWallet.setVisibility(View.VISIBLE);
+        }else {
+            dataWallet.setVisibility(View.VISIBLE);
+            noDataWallet.setVisibility(View.GONE);
+            UcoinWallets wallets = new Wallets(Application.getContext(), mcurrencyId);
+            walletSelected = wallets.getById(walletId);
+
+            Format.Currency.changeUnit(this, walletSelected.currency().name(), walletSelected.quantitativeAmount(), walletSelected.udValue(), walletSelected.currency().dt(), mWalletAmount, mWalletDefaultAmount, "");
+
+            mWalletAlias.setText(walletSelected.alias());
+
+            setTitle(getResources().getString(R.string.transfer_of,walletSelected.currency().name()));
+            currency = new Currency(this, walletSelected.currencyId());
+        }
+        //mQuantitativeUD = new BigDecimal(data.getString(data.getColumnIndex(SQLiteView.Wallet.UD_VALUE)));
+
+        //TODO fma metre les valeurs des amount a jour
+
+        boolean isContact = getIntent().getExtras().getBoolean(Application.EXTRA_IS_CONTACT);
+
+        if(isContact){
+            Long contactId = getIntent().getExtras().getLong(Application.EXTRA_CONTACT_ID);
+            UcoinContacts contacts = new Contacts(Application.getContext(),mcurrencyId);
+            UcoinContact contact = contacts.getById(contactId);
+            mContact.setText(contact.name());
+            mReceiverPublicKey.setText(contact.publicKey());
         }
     }
 
     @Override
-    public void onLoaderReset(Loader<Cursor> loader) {
-        mLookupButton.setEnabled(false);
+    public void onBackPressed() {
+        pressBack();
+    }
+
+    @Override
+    public void send(IdentityContact entity,String message) {
+        if(entity==null){
+            mContact.setText(message);
+        }else {
+            mContact.setText(entity.getUid());
+        }
+    }
+
+    @Override
+    public void displayWalletFragment(Long walletId) {
+        pressBack();
+        getIntent().putExtra(Application.EXTRA_WALLET_ID, walletId);
+        actionAfterWalletSelected();
+    }
+
+    public interface DialogItemClickListener{
+        void onClick(Long id);
+    }
+
+    public void actionWallet(){
+        layoutTansfer.setVisibility(View.GONE);
+        ((View)layoutTansfer.getParent()).findViewById(R.id.frame_content).setVisibility(View.VISIBLE);
+
+        Fragment fragment = WalletListFragment.newInstance(mcurrencyId,false);
+        FragmentManager fragmentManager = getFragmentManager();
+
+        fragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+        fragmentManager.beginTransaction()
+                .setCustomAnimations(
+                        R.animator.delayed_fade_in,
+                        R.animator.fade_out,
+                        R.animator.delayed_fade_in,
+                        R.animator.fade_out)
+                .replace(R.id.frame_content, fragment, fragment.getClass().getSimpleName())
+                .addToBackStack(fragment.getClass().getSimpleName())
+                .commit();
+    }
+
+    public void actionAmount(){
+        showDialog(ListTransferDialog.TYPE_CURRENCY, (Cursor) null);
     }
 
     public void actionLookup() {
         Intent intent = new Intent(this, LookupActivity.class);
-        Long currencyId = mWalletCursor.getLong(mWalletCursor.getColumnIndex(SQLiteView.Wallet.CURRENCY_ID));
+        Long currencyId = currency.id();
         intent.putExtra(Application.EXTRA_CURRENCY_ID, currencyId);
+        intent.putExtra(ContactListFragment.SEE_CONTACT,true);
+        intent.putExtra(ContactListFragment.ADD_CONTACT,false);
+        intent.putExtra(ContactListFragment.OPEN_SEARCH,true);
+        intent.putExtra(ContactListFragment.TEXT_SEARCH,mReceiverPublicKey.getText().toString());
+        intent.putExtra(SEARCH_IDENTITY, mReceiverPublicKey.getText().toString());
         startActivityForResult(intent, Application.ACTIVITY_LOOKUP);
     }
 
@@ -279,16 +482,15 @@ public class TransferActivity extends ActionBarActivity
     }
 
     public boolean actionTransfer() {
-        Long walletId = getIntent().getExtras().getLong(Application.EXTRA_WALLET_ID);
-        Long qtAmount;
+        BigInteger qtAmount;
         String receiverPublicKey = mReceiverPublicKey.getText().toString();
         String comment;
 
         if ((receiverPublicKey = validatePublicKey(receiverPublicKey)) == null) return false;
-        if ((qtAmount = validateAmount(mRelAmount.getText().toString())) == null) return false;
-        if ((comment = validateComment(mComment.getText().toString())) == null) return false;
+        if ((qtAmount = validateAmount()) == null) return false;
+        if ((comment = validateComment()) == null) return false;
 
-        final UcoinWallet wallet = new Wallet(this, walletId);
+        final UcoinWallet wallet = walletSelected;
 
         //Create Tx
         final Transaction transaction = new Transaction();
@@ -298,18 +500,18 @@ public class TransferActivity extends ActionBarActivity
 
 
         //check funds
-        if (qtAmount > wallet.quantitativeAmount()) {
-            mRelAmount.setError(getResources().getString(R.string.insufficient_funds));
+        if (qtAmount.compareTo(wallet.quantitativeAmount()) == 1) {
+            defaultAmount.setError(getResources().getString(R.string.insufficient_funds));
             return false;
         }
 
         //set inputs
-        long cumulativeAmount = 0;
+        BigInteger cumulativeAmount = new BigInteger("0");
         for (UcoinSource source : wallet.sources().getByState(SourceState.AVAILABLE)) {
             transaction.addInput(source);
             source.setState(SourceState.CONSUMED);
-            cumulativeAmount += source.amount();
-            if (cumulativeAmount > qtAmount) {
+            cumulativeAmount.add(source.amount());
+            if (cumulativeAmount.compareTo(qtAmount) == 1) {
                 break;
             }
         }
@@ -321,8 +523,8 @@ public class TransferActivity extends ActionBarActivity
             transaction.addOuput(receiverPublicKey, cumulativeAmount);
         } else {
             transaction.addOuput(receiverPublicKey, qtAmount);
-            Long refundAmount = cumulativeAmount - qtAmount;
-            if (refundAmount > 0) {
+            BigInteger refundAmount = cumulativeAmount.subtract(qtAmount);
+            if (refundAmount.compareTo(BigInteger.ZERO) > 0) {
                 transaction.addOuput(wallet.publicKey(), refundAmount);
             }
         }
@@ -386,32 +588,34 @@ public class TransferActivity extends ActionBarActivity
         return true;
     }
 
-
     private String validatePublicKey(String publicKey) {
         if (!publicKey.matches(PUBLIC_KEY_REGEX)) {
             mReceiverPublicKey.setError(getResources().getString(R.string.public_key_is_not_valid));
+            mReceiverPublicKey.requestFocus();
             return null;
+        }else{
+            mReceiverPublicKey.setError(null);
         }
         return publicKey;
     }
 
-    private Long validateAmount(String relativeAmount) {
-        if (relativeAmount.isEmpty()) {
-            mRelAmount.setError(getResources().getString(R.string.amount_is_empty));
+    private BigInteger validateAmount() {
+        if (amount.getText().toString().isEmpty()) {
+            amount.setError(getResources().getString(R.string.amount_is_empty));
+            amount.requestFocus();
             return null;
+        }else{
+            amount.setError(null);
         }
-
-        BigDecimal amount = new BigDecimal(relativeAmount.toString());
-        amount = amount.multiply(mQuantitativeUD);
-        return amount.longValue();
+        return toQuantitative(new BigDecimal(amount.getText().toString()));
     }
 
-    private String validateComment(String comment) {
-        if (!comment.matches(COMMENT_REGEX)) {
-            mComment.setError(getResources().getString(R.string.comment_is_not_valid));
-            return null;
-        }
+    private String validateComment() {
+//        if (!comment.matches(COMMENT_REGEX)) {
+//            mComment.setError(getResources().getString(R.string.comment_is_not_valid));
+//            return null;
+//        }
 
-        return comment;
+        return mComment.getText().toString();
     }
 }

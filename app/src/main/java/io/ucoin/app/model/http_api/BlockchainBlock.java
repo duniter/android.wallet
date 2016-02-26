@@ -17,7 +17,7 @@ public class BlockchainBlock implements Serializable {
     public Long time;
     public Long medianTime;
     public Long membersCount;
-    public Long monetaryMass;
+    public String monetaryMass;
     public String currency;
     public String issuer;
     public String signature;

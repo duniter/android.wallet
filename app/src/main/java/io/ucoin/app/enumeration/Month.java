@@ -27,7 +27,9 @@ public enum Month {
     }
 
     public static Month fromInt(Integer month) {
-        if (month == 1)
+        if (month == null)
+            return UNKNOWN;
+        else if (month == 1)
             return JANUARY;
         else if (month == 2)
             return FEBRUARY;
@@ -64,7 +66,6 @@ public enum Month {
         if (context == null) {
             throw new NullPointerException("Context is null");
         }
-
         if (mMonth == null)
             return context.getString(R.string.UNK);
         else if (mMonth == 1)

@@ -29,7 +29,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements RequestQ
     public SyncAdapter(Context context, boolean autoInitialize, boolean allowParallelSyncs) {
         super(context, autoInitialize, allowParallelSyncs);
 
-
         mQueue = new UcoinQueue(context);
         mQueue.addRequestFinishedListener(this);
     }

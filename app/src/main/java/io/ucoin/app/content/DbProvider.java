@@ -64,6 +64,8 @@ public class DbProvider extends ContentProvider implements SQLiteTable {
     private static final int OPERATION = 200;
     private static final int OPERATION_ID = 201;
 
+    private static final int REQUETE = 300;
+
     private SQLiteHelper mSQLiteHelper;
 
     @Override
@@ -125,6 +127,8 @@ public class DbProvider extends ContentProvider implements SQLiteTable {
 
         uriMatcher.addURI(UcoinUris.OPERATION_URI.getAuthority(), UcoinUris.OPERATION_URI.getPath(), OPERATION);
         uriMatcher.addURI(UcoinUris.OPERATION_URI.getAuthority(), UcoinUris.OPERATION_URI.getPath() + "#", OPERATION_ID);
+
+        uriMatcher.addURI(UcoinUris.REQUETE_URI.getAuthority(), UcoinUris.REQUETE_URI.getPath(), REQUETE);
 
         return true;
     }
@@ -265,8 +269,7 @@ public class DbProvider extends ContentProvider implements SQLiteTable {
                 break;
             case TX_ISSUER:
                 queryBuilder.setTables(TxIssuer.TABLE_NAME);
-                cursor = queryBuilder.query(db, projection, selection,
-                        selectionArgs, null, null, sortOrder);
+                cursor = queryBuilder.query(db, projection, selection, selectionArgs, null, null, sortOrder);
                 break;
             case TX_ISSUER_ID:
                 queryBuilder.setTables(TxIssuer.TABLE_NAME);
@@ -371,6 +374,9 @@ public class DbProvider extends ContentProvider implements SQLiteTable {
                         new String[]{uri.getLastPathSegment()},
                         null, null, null);
                 break;
+            case REQUETE:
+                cursor = db.rawQuery(selection, selectionArgs);
+                break;
 
             default:
                 throw new RuntimeException("NO MATCH URI : " + uri.toString());
@@ -396,7 +402,7 @@ public class DbProvider extends ContentProvider implements SQLiteTable {
                 uri = Uri.parse(UcoinUris.CURRENCY_URI + Long.toString(id));
                 break;
             case IDENTITY:
-                id = db.insert(Identity.TABLE_NAME, null, values);
+                id = db.insertWithOnConflict(Identity.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_IGNORE);
                 uri = Uri.parse(UcoinUris.IDENTITY_URI + Long.toString(id));
                 break;
             case PEER:

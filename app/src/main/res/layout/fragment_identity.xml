@@ -1,44 +1,168 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
     <LinearLayout
-        android:id="@+id/header"
+        android:id="@+id/wallet_header"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:elevation="4dp"
-        android:paddingStart="80dp"
         android:background="@color/primary"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:elevation="@dimen/elevation"
         android:orientation="vertical"
-        android:visibility="gone">
+        android:paddingBottom="@dimen/small_padding">
 
-        <TextView
-            android:id="@+id/uid"
-            android:layout_width="wrap_content"
-            android:layout_height="80dp"
-            android:textColor="@color/textPrimary"
-            android:textSize="@dimen/abc_text_size_display_1_material" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingStart="8dp"
+            android:paddingLeft="8dp">
+
+            <ImageView
+                android:id="@+id/icon_member"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_no_member"
+                android:layout_marginRight="@dimen/margin"
+                android:layout_marginEnd="@dimen/margin"
+                android:layout_gravity="center_vertical"/>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/alias"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:gravity="bottom"
+                    android:textColor="@android:color/white"
+                    android:textSize="@dimen/abc_text_size_display_1_material" />
+
+                <TextView
+                    android:id="@+id/public_key"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:textColor="@color/grey600"
+                    android:textSize="@dimen/abc_text_size_caption_material"
+                    android:drawablePadding="@dimen/demi_padding"
+                    android:drawableStart="@drawable/ic_public_key"
+                    android:drawableLeft="@drawable/ic_public_key"/>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
     </LinearLayout>
 
-    <io.ucoin.app.widget.SlidingTabLayout
-        android:id="@+id/sliding_tabs"
-        android:layout_width="match_parent"
+    <LinearLayout
+        android:id="@+id/action_tab"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/header"
-        android:background="@color/primary"
-        android:elevation="4dp"
-        android:visibility="gone" />
+        android:orientation="vertical"
+        android:layout_marginTop="@dimen/demi_padding"
+        android:layout_below="@id/wallet_header">
 
-    <android.support.v4.view.ViewPager
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
 
-        android:id="@+id/viewpager"
+            <LinearLayout
+                android:id="@+id/certification"
+                android:layout_width="0dp"
+                android:layout_weight="0.5"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/txt_certification"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_horizontal"
+                    android:layout_gravity="center_horizontal"
+                    android:text="@string/certification"
+                    android:drawableTop="@drawable/ic_certification_grey"/>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/information"
+                android:layout_width="0dp"
+                android:layout_weight="0.5"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_horizontal"
+                    android:drawableTop="@drawable/ic_info_grey"
+                    android:layout_gravity="center_horizontal"
+                    android:text="Info"/>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <View android:layout_width="fill_parent"
+              android:layout_height="1dip"
+              android:background="@color/grey600"
+              android:layout_marginTop="@dimen/demi_padding"
+              android:layout_marginStart="@dimen/demi_padding"
+              android:layout_marginLeft="@dimen/demi_padding"
+              android:layout_marginEnd="@dimen/demi_padding"
+              android:layout_marginRight="@dimen/demi_padding" />
+
+    </LinearLayout>
+
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:id="@+id/swipe_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/sliding_tabs"
-        android:background="@android:color/white" />
+        android:layout_below="@id/action_tab">
+
+        <ListView
+            android:id="@android:id/list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingBottom="72dp"
+            android:scrollbarStyle="outsideOverlay" />
+    </android.support.v4.widget.SwipeRefreshLayout>
+
+    <TextView
+        android:id="@id/android:empty"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/action_tab"
+        android:text="@string/no_transactions"
+        android:textColor="@color/hideable_text_color"
+        android:textSize="18sp" />
 
     <ImageButton
-        android:id="@+id/add_identity_button"
+        android:id="@+id/contact_button"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:layout_above="@+id/transfer_button"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginBottom="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
+        android:background="@drawable/shape_circle_accent"
+        android:elevation="4dp"
+        android:src="@drawable/ic_person_add_white_24dp"
+        android:contentDescription="@string/add_contact"/>
+
+    <ImageButton
+        android:id="@+id/transfer_button"
         android:layout_width="56dp"
         android:layout_height="56dp"
         android:layout_alignParentBottom="true"
@@ -48,8 +172,8 @@
         android:layout_marginEnd="16dp"
         android:layout_marginRight="16dp"
         android:background="@drawable/shape_circle_accent"
-        android:contentDescription="@string/add_identity"
+        android:contentDescription="@string/transfer"
         android:elevation="4dp"
-        android:src="@drawable/ic_person_add_white_24dp"
-        android:visibility="gone" />
+        android:src="@drawable/ic_send_white_24dp" />
+
 </RelativeLayout>

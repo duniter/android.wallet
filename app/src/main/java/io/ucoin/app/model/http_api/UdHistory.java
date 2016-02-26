@@ -40,6 +40,6 @@ public class UdHistory implements Serializable {
         public Long block_number;
         public Boolean consumed;
         public Long time;
-        public Long amount;
+        public String amount;
     }
 }

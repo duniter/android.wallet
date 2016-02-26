@@ -11,4 +11,8 @@
     <color name="transparent">#00000000</color>
     <color name="grey200">#FFEEEEEE</color>
     <color name="grey400">#FFBDBDBD</color>
+    <color name="grey600">#FF757575</color>
+
+    <color name="red">#EF473A</color>
+    <color name="green">#33CD5F</color>
 </resources>

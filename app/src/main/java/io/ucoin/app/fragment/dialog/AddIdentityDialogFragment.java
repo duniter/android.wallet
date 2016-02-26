@@ -20,11 +20,8 @@ import io.ucoin.app.Application;
 import io.ucoin.app.R;
 import io.ucoin.app.activity.CurrencyActivity;
 import io.ucoin.app.model.UcoinCurrency;
-import io.ucoin.app.model.UcoinIdentity;
-import io.ucoin.app.model.UcoinWallet;
 import io.ucoin.app.model.sql.sqlite.Currency;
 import io.ucoin.app.task.GenerateKeysTask;
-import io.ucoin.app.technical.crypto.Base58;
 import io.ucoin.app.technical.crypto.KeyPair;
 
 public class AddIdentityDialogFragment extends DialogFragment {
@@ -45,7 +42,7 @@ public class AddIdentityDialogFragment extends DialogFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
-        return inflater.inflate(R.layout.fragment_add_identity_dialog, null);
+        return inflater.inflate(R.layout.dialog_fragment_add_identity, null);
     }
 
     @Override
@@ -155,23 +152,11 @@ public class AddIdentityDialogFragment extends DialogFragment {
                     public void onTaskFinished(KeyPair keyPair) {
                         UcoinCurrency currency = new Currency(getActivity(), getArguments().getLong(BaseColumns._ID));
 
-                        UcoinWallet wallet = currency.wallets().add(
-                                salt.getText().toString(),
-                                uid.getText().toString(),
-                                Base58.encode(keyPair.getPubKey()),
-                                Base58.encode(keyPair.getSecKey()));
-
-
-                        if (wallet == null) {
-                            wallet = currency.wallets().getByPublicKey(Base58.encode(keyPair.getPubKey()));
-                        }
-
                         try {
-                            UcoinIdentity identity = currency.addIdentity(uid.getText().toString(), wallet);
+                            //UcoinIdentity identity = currency.addIdentity(uid.getText().toString(), keyPair.getPubKey().toString());
                             dismiss();
                         } catch (Exception e) {
                             Toast.makeText(mActivity, e.getMessage(), Toast.LENGTH_LONG).show();
-                            wallet.delete();
                         }
                         Application.requestSync();
                     }

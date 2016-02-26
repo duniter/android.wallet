@@ -1,0 +1,154 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <!-- Load progress -->
+        <ProgressBar
+            android:id="@+id/load_progress"
+            style="?android:attr/progressBarStyleInverse"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:visibility="gone" />
+
+        <LinearLayout
+            android:id="@+id/wrap_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            >
+
+            <TextView
+                android:text="@string/rules_money"
+                style="@style/headline"/>
+
+            <!-- growth -->
+            <TextView
+                android:text="@string/rules_c_and_dt"
+                style="@style/RuleLabel"/>
+            <TextView
+                android:id="@+id/growth"
+                style="@style/RuleValue"
+                android:text="10 % / 1 days"
+                />
+
+            <!-- ud0 -->
+            <TextView
+                android:text="@string/rules_ud0"
+                style="@style/RuleLabel"/>
+            <TextView
+                android:id="@+id/ud0"
+                style="@style/RuleValue"/>
+
+
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/rules_wot"
+                style="@style/headline"/>
+
+
+            <!-- sig_qty -->
+            <TextView
+                android:text="@string/rules_sig_qty"
+                style="@style/RuleLabel" />
+            <TextView
+                android:id="@+id/sig_qty"
+                style="@style/RuleValue" />
+
+            <!-- sig_validity -->
+            <TextView
+                android:text="@string/rules_sig_validity"
+                style="@style/RuleLabel"/>
+            <TextView
+                android:id="@+id/sig_validity"
+                style="@style/RuleValue" />
+
+            <!-- sig_delay -->
+            <TextView
+                android:text="@string/rules_sig_delay"
+                style="@style/RuleLabel"/>
+            <TextView
+                android:id="@+id/sig_delay"
+                style="@style/RuleValue" />
+
+            <!-- sig_woT -->
+            <TextView
+                android:text="@string/rules_sig_woT"
+                style="@style/RuleLabel"/>
+            <TextView
+                android:id="@+id/sig_woT"
+                style="@style/RuleValue" />
+
+            <!-- ms_validity -->
+            <TextView
+                android:text="@string/rules_ms_validity"
+                style="@style/RuleLabel"/>
+            <TextView
+                android:id="@+id/ms_validity"
+                style="@style/RuleValue"  />
+
+            <!-- step_max -->
+            <TextView
+                android:text="@string/rules_step_max"
+                style="@style/RuleLabel"/>
+            <TextView
+                android:id="@+id/step_max"
+                style="@style/RuleValue" />
+
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/rules_blockchain"
+                style="@style/headline"/>
+
+            <!-- avg_gen_time -->
+            <TextView
+                android:text="@string/rules_avg_gen_time"
+                style="@style/RuleLabel"/>
+            <TextView
+                android:id="@+id/avg_gen_time"
+                style="@style/RuleValue"  />
+
+            <!-- median_time_blocks -->
+            <TextView
+                android:text="@string/rules_median_time_blocks"
+                style="@style/RuleLabel"/>
+            <TextView
+                android:id="@+id/median_time_blocks"
+                style="@style/RuleValue" />
+
+            <!-- dt_diff_eval -->
+            <TextView
+                android:text="@string/rules_dt_diff_eval"
+                style="@style/RuleLabel"/>
+            <TextView
+                android:id="@+id/dt_diff_eval"
+                style="@style/RuleValue"  />
+
+            <!-- blocks_rot -->
+            <TextView
+                android:text="@string/rules_blocks_rot"
+                style="@style/RuleLabel"/>
+            <TextView
+                android:id="@+id/blocks_rot"
+                style="@style/RuleValue" />
+
+            <!-- percent_rot -->
+            <TextView
+                android:text="@string/rules_percent_rot"
+                style="@style/RuleLabel"/>
+            <TextView
+                android:id="@+id/percent_rot"
+                style="@style/RuleValue"  />
+
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>

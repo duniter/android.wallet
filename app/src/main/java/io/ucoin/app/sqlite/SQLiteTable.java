@@ -48,6 +48,7 @@ public interface SQLiteTable {
         public static final String TABLE_NAME = "identity";
         public static final String CURRENCY_ID = "currency_id";
         public static final String WALLET_ID = "wallet_id";
+        public static final String PUBLIC_KEY = "public_key";
         public static final String UID = "uid";
         public static final String SIG_DATE = "sig_date";
         public static final String SYNC_BLOCK = "sync_block";
@@ -123,6 +124,7 @@ public interface SQLiteTable {
         public static final String TABLE_NAME = "contact";
         public static final String CURRENCY_ID = "currency_id";
         public static final String NAME = "name";
+        public static final String UID = "uid";
         public static final String PUBLIC_KEY = "public_key";
     }
 

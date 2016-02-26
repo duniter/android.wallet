@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.CursorAdapter;
 import android.widget.TextView;
 
+import java.math.BigInteger;
 import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -17,6 +18,7 @@ import io.ucoin.app.enumeration.DayOfWeek;
 import io.ucoin.app.enumeration.Month;
 import io.ucoin.app.enumeration.TxDirection;
 import io.ucoin.app.enumeration.TxState;
+import io.ucoin.app.Format;
 import io.ucoin.app.sqlite.SQLiteView;
 
 public class OperationSectionCursorAdapter extends CursorAdapter {
@@ -26,19 +28,25 @@ public class OperationSectionCursorAdapter extends CursorAdapter {
     private int dayOfWeekIndex;
     private int dayIndex;
     private int hourIndex;
+    private int timeAmountThenIndex;
     private int relAmountThenIndex;
     private int directionIndex;
     private int qtAmountIndex;
     private int commentIndex;
     private int stateIndex;
 
+    private BigInteger mUd;
+    private int delay;
+
 
     private HashMap<Integer, String> mSectionPosition;
 
-    public OperationSectionCursorAdapter(Context context, Cursor c, int flags) {
+    public OperationSectionCursorAdapter(Context context, Cursor c, int flags, BigInteger mUd, int delay) {
         super(context, c, flags);
         mContext = context;
         mCursor = c;
+        this.mUd = mUd;
+        this.delay = delay;
         mSectionPosition = new LinkedHashMap<>(16, (float) 0.75, false);
     }
 
@@ -71,7 +79,7 @@ public class OperationSectionCursorAdapter extends CursorAdapter {
     }
 
     public void bindSectionView(View v, Context context, String section) {
-        ((TextView) v.findViewById(R.id.month_year)).setText(section);
+        ((TextView) v.findViewById(R.id.section_name)).setText(section);
     }
 
     @Override
@@ -84,8 +92,8 @@ public class OperationSectionCursorAdapter extends CursorAdapter {
         ViewHolder holder = new ViewHolder();
         holder.day = (TextView) view.findViewById(R.id.day);
         holder.hour = (TextView) view.findViewById(R.id.hour);
-        holder.relAmoutThen = (TextView) view.findViewById(R.id.rel_amount_then);
-        holder.qtAmount = (TextView) view.findViewById(R.id.qt_amount);
+        holder.amount = (TextView) view.findViewById(R.id.amount);
+        holder.defaultAmount = (TextView) view.findViewById(R.id.second_amount);
         holder.comment = (TextView) view.findViewById(R.id.comment);
 
         view.setTag(holder);
@@ -94,29 +102,26 @@ public class OperationSectionCursorAdapter extends CursorAdapter {
 
     @Override
     public void bindView(View view, Context context, Cursor cursor) {
-        ;
 
         ViewHolder holder = (ViewHolder) view.getTag();
         String d = cursor.getString(dayOfWeekIndex);
         if (d == null) d = Integer.toString(DayOfWeek.UNKNOWN.ordinal());
 
-        String dayOfWeek = DayOfWeek.fromInt(Integer.parseInt(d)).toString(context);
+        String dayOfWeek = DayOfWeek.fromInt(Integer.parseInt(d),false).toString(context);
 
         holder.day.setText(dayOfWeek + " " + cursor.getString(dayIndex));
         holder.hour.setText(cursor.getString(hourIndex));
-        String rel_amount = String.format("%.8f", cursor.getDouble(relAmountThenIndex));
-
+        DecimalFormat formatter;
+        String dir ="";
         if (cursor.isNull(directionIndex) ||
                 TxDirection.valueOf(cursor.getString(directionIndex)) == TxDirection.IN) {
-            rel_amount = "+ " + rel_amount;
+            dir = "+ ";
         } else {
-            rel_amount = "- " + rel_amount;
+            dir = "- ";
         }
 
-        holder.relAmoutThen.setText(rel_amount);
-        DecimalFormat formatter = new DecimalFormat("#,###");
-        Long qtAmount = cursor.getLong(qtAmountIndex);
-        holder.qtAmount.setText(formatter.format(qtAmount));
+        Format.Currency.changeUnit(context, "NAN", new BigInteger(cursor.getString(qtAmountIndex)), mUd, delay, holder.amount, holder.defaultAmount, dir);
+
         holder.comment.setText(cursor.getString(commentIndex));
 
         if (cursor.isNull(stateIndex)) {
@@ -140,6 +145,7 @@ public class OperationSectionCursorAdapter extends CursorAdapter {
         dayIndex = newCursor.getColumnIndex(SQLiteView.Operation.DAY);
         hourIndex = newCursor.getColumnIndex(SQLiteView.Operation.HOUR);
         relAmountThenIndex = newCursor.getColumnIndex(SQLiteView.Operation.RELATIVE_AMOUNT_THEN);
+        timeAmountThenIndex = newCursor.getColumnIndex(SQLiteView.Operation.TIME_AMOUNT_THEN);
         directionIndex = newCursor.getColumnIndex(SQLiteView.Operation.DIRECTION);
         qtAmountIndex = newCursor.getColumnIndex(SQLiteView.Operation.QUANTITATIVE_AMOUNT);
         commentIndex = newCursor.getColumnIndex(SQLiteView.Operation.COMMENT);
@@ -187,8 +193,8 @@ public class OperationSectionCursorAdapter extends CursorAdapter {
     private static class ViewHolder {
         public TextView day;
         public TextView hour;
-        public TextView relAmoutThen;
-        public TextView qtAmount;
+        public TextView amount;
+        public TextView defaultAmount;
         public TextView comment;
     }
 

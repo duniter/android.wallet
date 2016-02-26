@@ -37,17 +37,18 @@
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:orientation="vertical"
+        android:paddingLeft="16dp"
         android:paddingStart="16dp">
 
         <TextView
-            android:id="@+id/rel_amount_then"
+            android:id="@+id/amount"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="end"
             android:textSize="@dimen/abc_text_size_title_material" />
 
         <TextView
-            android:id="@+id/qt_amount"
+            android:id="@+id/second_amount"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="end"

@@ -20,7 +20,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
             android:layout_alignParentTop="true"
-            android:layout_toStartOf="@+id/drawer_switch_currency_button"
+            android:layout_toStartOf="@+id/deconnection"
             android:clickable="false"
             android:ellipsize="end"
             android:paddingEnd="16dp"
@@ -30,7 +30,7 @@
             android:textStyle="bold" />
 
         <ImageButton
-            android:id="@+id/drawer_switch_currency_button"
+            android:id="@+id/deconnection"
             android:layout_width="56dp"
             android:layout_height="56dp"
             android:layout_alignParentEnd="true"
@@ -47,7 +47,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
             android:layout_below="@id/drawer_currency_name"
-            android:layout_toStartOf="@id/drawer_switch_currency_button"
+            android:layout_toStartOf="@id/deconnection"
             android:textColor="@color/textPrimary"
             android:textSize="@dimen/abc_text_size_caption_material" />
 
@@ -57,7 +57,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
             android:layout_below="@id/drawer_members_count"
-            android:layout_toStartOf="@id/drawer_switch_currency_button"
+            android:layout_toStartOf="@id/deconnection"
             android:textColor="@color/textPrimary"
             android:textSize="@dimen/abc_text_size_caption_material" />
 
@@ -67,14 +67,14 @@
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
             android:layout_below="@id/drawer_block_number"
-            android:layout_toStartOf="@id/drawer_switch_currency_button"
+            android:layout_toStartOf="@id/deconnection"
             android:textColor="@color/textPrimary"
             android:textSize="@dimen/abc_text_size_caption_material" />
     </RelativeLayout>
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="match_parent">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -88,7 +88,8 @@
                 android:layout_marginTop="8dp"
                 android:background="@drawable/list_item_background_selector"
                 android:drawablePadding="48dp"
-                android:drawableStart="@drawable/ic_label_grey600_24dp"
+                android:drawableStart="@drawable/ic_home_24dp"
+                android:drawableLeft="@drawable/ic_home_24dp"
                 android:gravity="center_vertical"
                 android:paddingEnd="16dp"
                 android:paddingLeft="16dp"
@@ -103,7 +104,8 @@
                 android:layout_height="48dp"
                 android:background="@drawable/list_item_background_selector"
                 android:drawablePadding="48dp"
-                android:drawableStart="@drawable/ic_label_grey600_24dp"
+                android:drawableStart="@drawable/ic_contact_24dp"
+                android:drawableLeft="@drawable/ic_contact_24dp"
                 android:gravity="center_vertical"
                 android:paddingEnd="16dp"
                 android:paddingLeft="16dp"
@@ -112,18 +114,39 @@
                 android:textColor="#000"
                 android:textSize="@dimen/abc_text_size_body_2_material" />
 
+            <include layout="@layout/drawer_separator" />
+
             <TextView
-                android:id="@+id/drawer_identity"
+                android:id="@+id/drawer_currency"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
+                android:layout_marginTop="8dp"
                 android:background="@drawable/list_item_background_selector"
                 android:drawablePadding="48dp"
                 android:drawableStart="@drawable/ic_label_grey600_24dp"
+                android:drawableLeft="@drawable/ic_label_grey600_24dp"
                 android:gravity="center_vertical"
                 android:paddingEnd="16dp"
                 android:paddingLeft="16dp"
                 android:paddingRight="16dp"
-                android:text="@string/identity"
+                android:text="@string/currencies"
+                android:textColor="#000"
+                android:textSize="@dimen/abc_text_size_body_2_material" />
+
+            <TextView
+                android:id="@+id/drawer_rules"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/list_item_background_selector"
+                android:drawablePadding="48dp"
+                android:drawableStart="@drawable/ic_label_grey600_24dp"
+                android:drawableLeft="@drawable/ic_label_grey600_24dp"
+                android:gravity="center_vertical"
+                android:paddingEnd="16dp"
+                android:paddingLeft="16dp"
+                android:paddingRight="16dp"
+                android:text="@string/list_rules"
                 android:textColor="#000"
                 android:textSize="@dimen/abc_text_size_body_2_material" />
 
@@ -158,7 +181,6 @@
                 android:textSize="@dimen/abc_text_size_body_2_material"
                 android:visibility="gone" />
 
-
             <include layout="@layout/drawer_separator" />
 
             <TextView
@@ -175,8 +197,7 @@
                 android:paddingStart="16dp"
                 android:text="@string/settings"
                 android:textColor="#FF000000"
-                android:textSize="@dimen/abc_text_size_body_2_material"
-                android:visibility="gone" />
+                android:textSize="@dimen/abc_text_size_body_2_material"/>
 
             <TextView
                 android:id="@+id/export_db"
@@ -201,7 +222,7 @@
                 android:layout_height="48dp"
                 android:background="@drawable/textview_background_selector"
                 android:drawablePadding="48dp"
-                android:drawableStart="@drawable/ic_settings_grey600_24dp"
+                android:drawableStart="@drawable/ic_sync_grey_600_24dp"
                 android:gravity="center_vertical"
                 android:paddingEnd="16dp"
                 android:paddingLeft="16dp"
@@ -209,8 +230,8 @@
                 android:paddingStart="16dp"
                 android:text="@string/force_sync"
                 android:textColor="#FF000000"
-                android:textSize="@dimen/abc_text_size_body_2_material"
-                android:visibility="gone" />
+                android:textSize="@dimen/abc_text_size_body_2_material" />
+
         </LinearLayout>
     </ScrollView>
 </LinearLayout>

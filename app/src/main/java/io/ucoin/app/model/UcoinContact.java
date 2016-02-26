@@ -5,5 +5,7 @@ public interface UcoinContact extends SqlRow {
 
     String name();
 
+    String uid();
+
     String publicKey();
 }

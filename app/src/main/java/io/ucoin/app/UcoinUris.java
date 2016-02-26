@@ -24,6 +24,7 @@ public class UcoinUris {
     public final static Uri SELF_CERTIFICATION_URI;
     public final static Uri CONTACT_URI;
     public final static Uri OPERATION_URI;
+    public final static Uri REQUETE_URI;
 
     static {
         CURRENCY_URI = new Uri.Builder().scheme("content").authority(AUTHORITY)
@@ -65,5 +66,7 @@ public class UcoinUris {
                 .path("contact/").build();
         OPERATION_URI = new Uri.Builder().scheme("content").authority(AUTHORITY)
                 .path("operation/").build();
+        REQUETE_URI = new Uri.Builder().scheme("content").authority(AUTHORITY)
+                .path("requete/").build();
     }
 }

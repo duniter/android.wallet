@@ -1,5 +1,10 @@
 package io.ucoin.app.model;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+
+import io.ucoin.app.technical.crypto.AddressFormatException;
+
 public interface UcoinWallet extends SqlRow {
     Long currencyId();
 
@@ -11,9 +16,13 @@ public interface UcoinWallet extends SqlRow {
 
     String alias();
 
-    Double relativeAmount();
+    BigDecimal relativeAmount();
 
-    Long quantitativeAmount();
+    BigDecimal timeAmount();
+
+    BigInteger quantitativeAmount();
+
+    BigInteger udValue();
 
     Long syncBlock();
 
@@ -24,6 +33,10 @@ public interface UcoinWallet extends SqlRow {
     UcoinUds uds();
 
     UcoinCurrency currency();
+
+    UcoinIdentity identity();
+
+    UcoinIdentity addIdentity(String uid, String publicKey) throws AddressFormatException;
 
     void setSyncBlock(Long number);
 }

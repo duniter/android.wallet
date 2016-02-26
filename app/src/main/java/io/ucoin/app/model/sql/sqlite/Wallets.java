@@ -19,12 +19,18 @@ final public class Wallets extends Table
 
     private Long mCurrencyId;
 
+    public Wallets(Context context) {
+        this(context, null, null, null);
+    }
+
     public Wallets(Context context, Long currencyId) {
         this(context, currencyId, SQLiteTable.Wallet.CURRENCY_ID + "=?", new String[]{currencyId.toString()});
+        mCurrencyId = currencyId;
     }
 
     private Wallets(Context context, Long currencyId, String selection, String[] selectionArgs) {
         this(context, currencyId, selection, selectionArgs, null);
+        mCurrencyId = currencyId;
     }
 
     private Wallets(Context context, Long currencyId, String selection, String[] selectionArgs, String sortOrder) {
@@ -75,6 +81,19 @@ final public class Wallets extends Table
     }
 
     @Override
+    public Cursor getbyCurrency() {
+        String selection = SQLiteTable.Wallet.CURRENCY_ID + "=?";
+        String[] selectionArgs = new String[]{mCurrencyId.toString()};
+        UcoinWallets wallets;
+        if (mCurrencyId.equals(Long.valueOf(-1))){
+            wallets = new Wallets(mContext, mCurrencyId, null, null,null);
+        }else {
+            wallets = new Wallets(mContext, mCurrencyId, selection, selectionArgs,null);
+        }
+        return ((Table)wallets).fetch();
+    }
+
+    @Override
     public Iterator<UcoinWallet> iterator() {
         Cursor cursor = fetch();
         if (cursor != null) {
@@ -88,5 +107,36 @@ final public class Wallets extends Table
             return data.iterator();
         }
         return null;
+    }
+
+    @Override
+    public ArrayList<UcoinWallet> list() {
+        Cursor cursor = fetch();
+        ArrayList<UcoinWallet> data = new ArrayList<>();
+        if (cursor != null) {
+            while (cursor.moveToNext()) {
+                Long id = cursor.getLong(cursor.getColumnIndex(BaseColumns._ID));
+                data.add(new Wallet(mContext, id));
+            }
+            cursor.close();
+        }
+        return data;
+    }
+
+    @Override
+    public String[] listPublicKey() {
+        Cursor cursor = fetch();
+        String[] data = null;
+        if (cursor != null) {
+            data = new String[cursor.getCount()];
+            int i=0;
+            while (cursor.moveToNext()) {
+                Long id = cursor.getLong(cursor.getColumnIndex(BaseColumns._ID));
+                data[i] = new Wallet(mContext, id).publicKey();
+                i++;
+            }
+            cursor.close();
+        }
+        return data;
     }
 }

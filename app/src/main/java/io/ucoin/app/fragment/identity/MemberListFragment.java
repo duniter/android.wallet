@@ -17,6 +17,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import com.android.volley.NoConnectionError;
@@ -31,6 +32,7 @@ import java.util.Map;
 import io.ucoin.app.Application;
 import io.ucoin.app.R;
 import io.ucoin.app.UcoinUris;
+import io.ucoin.app.activity.CurrencyActivity;
 import io.ucoin.app.activity.LookupActivity;
 import io.ucoin.app.adapter.MemberCursorAdapter;
 import io.ucoin.app.model.UcoinBlock;
@@ -42,7 +44,6 @@ import io.ucoin.app.model.http_api.WotLookup;
 import io.ucoin.app.model.sql.sqlite.Identity;
 import io.ucoin.app.sqlite.SQLiteTable;
 import io.ucoin.app.sqlite.SQLiteView;
-import io.ucoin.app.technical.crypto.AddressFormatException;
 
 
 public class MemberListFragment extends ListFragment
@@ -85,7 +86,7 @@ public class MemberListFragment extends ListFragment
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-            inflater.inflate(R.menu.toolbar_certified, menu);
+        inflater.inflate(R.menu.toolbar_certified, menu);
     }
 
     @Override
@@ -140,14 +141,10 @@ public class MemberListFragment extends ListFragment
                 certification.blockNumber = currentBlock.number();
                 certification.blockHash = currentBlock.hash();
 
-                certification.certifierPublicKey = identity.wallet().publicKey();
+                certification.certifierPublicKey = identity.publicKey();
                 certification.certifiedPublicKey = result.pubkey;
 
-                try {
-                    certification.certifierSignature = certification.sign(identity.wallet().privateKey());
-                } catch (AddressFormatException e) {
-                    Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_LONG).show();
-                }
+                certification.certifierSignature = "";//certification.sign(identity.wallet().privateKey());
 
                 UcoinEndpoint endpoint = identity.currency().peers().at(0).endpoints().at(0);
                 String url = "http://" + endpoint.ipv4() + ":" + endpoint.port() + "/wot/add/";
@@ -221,5 +218,50 @@ public class MemberListFragment extends ListFragment
     public void onResponse(String response) {
         Toast.makeText(getActivity(), getResources().getString(R.string.certification_sent), Toast.LENGTH_LONG).show();
         Application.requestSync();
+    }
+
+    @Override
+    public void onListItemClick(ListView l, View v, int position, long id) {
+        super.onListItemClick(l, v, position, id);
+        Cursor cursor = (Cursor) l.getItemAtPosition(position);
+        int indexPubkey = cursor.getColumnIndex(SQLiteView.Member.PUBLIC_KEY);
+        int indexUid = cursor.getColumnIndex(SQLiteView.Member.UID);
+
+        WotLookup.Result result = findIdentity(cursor.getString(indexPubkey), cursor.getString(indexUid));
+
+        Intent intent = new Intent(getActivity(),
+                LookupActivity.class);
+        intent.putExtra(Application.EXTRA_CURRENCY_ID, getArguments().getLong(CURRENCY_ID));
+        intent.putExtra(WotLookup.Result.class.getSimpleName(), result);
+        if(getActivity() instanceof CurrencyActivity){
+            ((CurrencyActivity)getActivity()).onActivityRes(Application.ACTIVITY_LOOKUP, Activity.RESULT_OK, intent);
+        }
+
+    }
+
+    public static WotLookup.Result findIdentity(String query,String uid){
+        String s =
+                "{" +
+                    "\"partial\": false," +
+                    "\"results\": [" +
+                        "{" +
+                            "\"pubkey\": \""+ query +"\"," +
+                            "\"uids\": [" +
+                                "{" +
+                                    "\"uid\": \""+ uid +"\"," +
+                                    "\"meta\": {"+
+                                        "\"timestamp\": 1443858505" +
+                                    "}," +
+                                    "\"self\": \"t6YiDooCg==\"," +
+                                    "\"others\": []" +
+                                "}" +
+                            "]," +
+                            "\"signed\": []" +
+                        "}" +
+                    "]" +
+                "}";
+        WotLookup w= WotLookup.fromJson(s);
+        WotLookup.Result res = w.results[0];
+        return res;
     }
 }

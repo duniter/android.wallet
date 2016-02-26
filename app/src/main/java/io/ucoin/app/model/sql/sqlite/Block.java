@@ -3,6 +3,8 @@ package io.ucoin.app.model.sql.sqlite;
 import android.content.ContentValues;
 import android.content.Context;
 
+import java.math.BigInteger;
+
 import io.ucoin.app.UcoinUris;
 import io.ucoin.app.model.UcoinBlock;
 import io.ucoin.app.model.UcoinCurrency;
@@ -31,8 +33,8 @@ public class Block extends Row
     }
 
     @Override
-    public Long monetaryMass() {
-        return getLong(SQLiteTable.Block.MONETARY_MASS);
+    public BigInteger monetaryMass() {
+        return new BigInteger(getString(SQLiteTable.Block.MONETARY_MASS));
     }
 
     @Override
@@ -112,8 +114,8 @@ public class Block extends Row
     }
 
     @Override
-    public Long dividend() {
-        return getLong(SQLiteTable.Block.DIVIDEND);
+    public BigInteger dividend() {
+        return new BigInteger(getString(SQLiteTable.Block.DIVIDEND));
     }
 
     @Override

@@ -40,7 +40,7 @@ final public class Uds extends Table
         values.put(SQLiteTable.Ud.BLOCK, ud.block_number);
         values.put(SQLiteTable.Ud.CONSUMED, ud.consumed);
         values.put(SQLiteTable.Ud.TIME, ud.time);
-        values.put(SQLiteTable.Ud.QUANTITATIVE_AMOUNT, ud.amount);
+        values.put(SQLiteTable.Ud.QUANTITATIVE_AMOUNT, ud.amount.toString());
 
         Uri uri = insert(values);
         if (Long.parseLong(uri.getLastPathSegment()) > 0) {

@@ -49,8 +49,7 @@ public class Table implements SqlTable {
 
 
     public int delete(Long id) {
-        return mContext.getContentResolver().delete(Uri.withAppendedPath(mUri, id.toString()),
-                null, null);
+        return mContext.getContentResolver().delete(Uri.withAppendedPath(mUri, id.toString()), null, null);
     }
 
     @Override

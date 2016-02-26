@@ -23,6 +23,28 @@ public class WotLookup implements Serializable {
         return gson.fromJson(json, WotLookup.class);
     }
 
+    public void add (Result[] res, Long currencyId){
+        if(this.results==null){
+            results = new Result[res.length];
+            for(int i=0;i<res.length;i++){
+                res[i].currencyId = currencyId;
+                results[i]=res[i];
+            }
+        }else {
+
+            Result[] r = new Result[results.length + res.length];
+            for (int i = 0; i < r.length; i++) {
+                if (i < results.length) {
+                    r[i] = results[i];
+                } else {
+                    res[i - results.length].currencyId = currencyId;
+                    r[i] = res[i - results.length];
+                }
+            }
+            results = r;
+        }
+    }
+
     public String toString() {
         String s = "";
         for (Result result : results) {
@@ -39,16 +61,30 @@ public class WotLookup implements Serializable {
     public class Result implements Serializable {
         public String pubkey;
         public Uid[] uids;
-
+        public Long currencyId;
     }
 
     public class Uid implements Serializable {
         public String uid;
         public Meta meta;
         public String self;
+        public Other[] others;
     }
 
     public class Meta implements Serializable {
         public Long timestamp;
+    }
+
+    public class Other implements Serializable {
+        public String pubkey;
+        public MetaOther meta;
+        public String[] uids;
+        public Boolean isMember;
+        public Boolean wasMember;
+        public String signature;
+    }
+
+    public class MetaOther implements Serializable {
+        public Long block_number;
     }
 }

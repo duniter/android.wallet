@@ -1,6 +1,8 @@
 package io.ucoin.app.model;
 
 
+import android.database.Cursor;
+
 import io.ucoin.app.enumeration.TxDirection;
 import io.ucoin.app.enumeration.TxState;
 import io.ucoin.app.model.http_api.TxHistory;
@@ -22,5 +24,11 @@ public interface UcoinTxs extends SqlTable, Iterable<UcoinTx> {
 
     UcoinTx getByHash(String hash);
 
+    UcoinTxs getByPublicKey(String publicKey,long walletId);
+
+    UcoinTxs getByWalletId(long walletId);
+
     UcoinWallet wallet();
+
+    Cursor cursor();
 }

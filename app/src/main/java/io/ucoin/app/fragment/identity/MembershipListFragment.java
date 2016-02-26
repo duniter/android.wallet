@@ -42,7 +42,6 @@ import io.ucoin.app.model.UcoinSelfCertification;
 import io.ucoin.app.model.document.Membership;
 import io.ucoin.app.sqlite.SQLiteTable;
 import io.ucoin.app.sqlite.SQLiteView;
-import io.ucoin.app.technical.crypto.AddressFormatException;
 
 
 public class MembershipListFragment extends ListFragment
@@ -184,7 +183,6 @@ public class MembershipListFragment extends ListFragment
         ((MembershipCursorAdapter) this.getListAdapter()).swapCursor(null);
     }
 
-
     public void actionJoin() {
         Long identityId = getArguments().getLong(BaseColumns._ID);
         UcoinIdentity identity = new io.ucoin.app.model.sql.sqlite.Identity(getActivity(), identityId);
@@ -225,7 +223,7 @@ public class MembershipListFragment extends ListFragment
         final UcoinIdentity identity = new io.ucoin.app.model.sql.sqlite.Identity(getActivity(), identityId);
         final Membership membership = new Membership();
         membership.currency = identity.currency().name();
-        membership.issuer = identity.wallet().publicKey();
+        membership.issuer = identity.publicKey();
         UcoinBlock lastBlock = identity.currency().blocks().currentBlock();
         membership.block = lastBlock.number();
         membership.hash = lastBlock.hash();
@@ -234,12 +232,7 @@ public class MembershipListFragment extends ListFragment
         membership.certificationTs = identity.sigDate();
 
         //todo prompt for password
-        try {
-            membership.signature = membership.sign(identity.wallet().privateKey());
-        } catch (AddressFormatException e) {
-            Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_LONG).show();
-            return;
-        }
+        membership.signature = "";//membership.sign(identity.wallet().privateKey());
 
         builder.setPositiveButton(R.string.OK, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
